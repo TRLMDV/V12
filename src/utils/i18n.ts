@@ -90,6 +90,7 @@ const i18n = {
     selectDestinationWarehouse: 'Please select a destination warehouse for the sell order first.', // New translation
     movementNotNeeded: 'The sell order is already linked to the Main Warehouse. No movement needed.', // New translation
     noValidProductsForMovement: 'No valid products in the sell order to generate a movement for.', // New translation
+    productMovementAlreadyGenerated: 'A product movement has already been generated for this sell order.', // New translation
   }
 };
 

@@ -145,6 +145,14 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
   }, []);
 
   const handleGenerateProductMovement = useCallback(() => {
+    if (!order.id) {
+      showAlertModal('Validation Error', 'Please save the sell order first before generating a product movement.');
+      return;
+    }
+    if (order.productMovementId) {
+      showAlertModal('Info', t('productMovementAlreadyGenerated'));
+      return;
+    }
     if (!mainWarehouse) {
       showAlertModal('Error', t('mainWarehouseNotFound'));
       return;
@@ -205,9 +213,17 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     };
 
     saveItem('productMovements', newMovement);
+    
+    // Update the sell order with the new productMovementId
+    setOrder(prev => {
+      const updatedOrder = { ...prev, productMovementId: newMovementId };
+      saveItem('sellOrders', updatedOrder); // Save the updated sell order
+      return updatedOrder;
+    });
+
     toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[order.warehouseId as number]?.name}.` });
 
-  }, [mainWarehouse, order.warehouseId, orderItems, products, showAlertModal, setProducts, getNextId, saveItem, warehouseMap]);
+  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap]);
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -289,6 +305,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     onSuccess();
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
   };
+
+  const isGenerateMovementDisabled = !order.id || !!order.productMovementId;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -449,7 +467,13 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
         </div>
       </div>
       <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700 space-x-2">
-        <Button type="button" onClick={handleGenerateProductMovement} variant="secondary" className="flex items-center">
+        <Button 
+          type="button" 
+          onClick={handleGenerateProductMovement} 
+          variant="secondary" 
+          className="flex items-center"
+          disabled={isGenerateMovementDisabled}
+        >
           <ArrowRight className="w-4 h-4 mr-2" />
           {t('generateProductMovement')}
         </Button>
