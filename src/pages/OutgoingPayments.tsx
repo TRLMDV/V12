@@ -9,6 +9,7 @@ import FormModal from '@/components/FormModal';
 import PaymentForm from '@/forms/PaymentForm';
 import { PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label'; // Added missing import
 
 type SortConfig = {
   key: keyof Payment | 'linkedOrderDisplay';
