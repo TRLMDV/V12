@@ -40,18 +40,42 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
   } = useData();
   const isEdit = orderId !== undefined;
 
-  const [order, setOrder] = useState<Partial<SellOrder>>({});
-  const [orderItems, setOrderItems] = useState<SellOrderItemState[]>([{ productId: '', qty: 1, price: 0 }]);
-  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
-
   const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c }), {} as { [key: number]: Customer }), [customers]);
   const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]);
   const warehouseMap = useMemo(() => warehouses.reduce((acc, w) => ({ ...acc, [w.id]: w }), {} as { [key: number]: Warehouse }), [warehouses]);
 
   const mainWarehouse = useMemo(() => warehouses.find(w => w.type === 'Main'), [warehouses]);
 
+  // Initialize order state once, or when orderId changes for editing
+  const [order, setOrder] = useState<Partial<SellOrder>>(() => {
+    if (isEdit && orderId !== undefined) {
+      const existingOrder = sellOrders.find(o => o.id === orderId);
+      if (existingOrder) return existingOrder;
+    }
+    return {
+      orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      status: 'Draft',
+      vatPercent: settings.defaultVat,
+      total: 0,
+    };
+  });
+
+  // Initialize order items state once, or when orderId changes for editing
+  const [orderItems, setOrderItems] = useState<SellOrderItemState[]>(() => {
+    if (isEdit && orderId !== undefined) {
+      const existingOrder = sellOrders.find(o => o.id === orderId);
+      if (existingOrder) return existingOrder.items.map(item => ({
+        productId: item.productId,
+        qty: item.qty,
+        price: item.price,
+      }));
+    }
+    return [{ productId: '', qty: 1, price: 0 }];
+  });
+
+  // Update order and orderItems if orderId changes (e.g., when opening a new edit form)
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit && orderId !== undefined) {
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) {
         setOrder(existingOrder);
@@ -61,7 +85,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           price: item.price,
         })));
       }
-    } else {
+    } else if (!isEdit && orderId === undefined) {
+      // Reset for new order if component is reused for new entry
       setOrder({
         orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
         status: 'Draft',
@@ -70,7 +95,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
       });
       setOrderItems([{ productId: '', qty: 1, price: 0 }]);
     }
-  }, [orderId, isEdit, sellOrders, products, settings.defaultVat]);
+  }, [orderId, isEdit, sellOrders, settings.defaultVat]);
+
 
   const calculateTotalOrderValue = useCallback(() => {
     let subtotal = 0;
@@ -165,8 +191,10 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     // If all checks pass, update the actual products state
     setProducts(productsCopy);
 
+    // Generate ID once and use it consistently
+    const newMovementId = getNextId('productMovements');
     const newMovement: ProductMovement = {
-      id: getNextId('productMovements'),
+      id: newMovementId,
       sourceWarehouseId: mainWarehouse.id,
       destWarehouseId: order.warehouseId as number,
       items: newMovementItems,
@@ -174,7 +202,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     };
 
     saveItem('productMovements', newMovement);
-    toast.success(t('success'), { description: `Product Movement #${newMovement.id} generated successfully from ${mainWarehouse.name} to ${warehouseMap[order.warehouseId as number]?.name}.` });
+    toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[order.warehouseId as number]?.name}.` });
 
   }, [mainWarehouse, order.warehouseId, orderItems, products, showAlertModal, setProducts, getNextId, saveItem, warehouseMap]);
 
