@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useData, SellOrder, Product, Customer, Warehouse, OrderItem } from '@/context/DataContext';
+import { useData, SellOrder, Product, Customer, Warehouse, OrderItem, ProductMovement } from '@/context/DataContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, ArrowRight } from 'lucide-react'; // Added ArrowRight icon
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { MOCK_CURRENT_DATE } from '@/context/DataContext';
@@ -35,6 +35,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     saveItem,
     updateStockFromOrder,
     showAlertModal,
+    setProducts, // Needed to update product stock directly
+    getNextId, // Needed for new product movement ID
   } = useData();
   const isEdit = orderId !== undefined;
 
@@ -44,6 +46,9 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
 
   const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c }), {} as { [key: number]: Customer }), [customers]);
   const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]);
+  const warehouseMap = useMemo(() => warehouses.reduce((acc, w) => ({ ...acc, [w.id]: w }), {} as { [key: number]: Warehouse }), [warehouses]);
+
+  const mainWarehouse = useMemo(() => warehouses.find(w => w.name === 'Main Warehouse'), [warehouses]);
 
   useEffect(() => {
     if (isEdit) {
@@ -110,6 +115,70 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     );
   }, []);
 
+  const handleGenerateProductMovement = useCallback(() => {
+    if (!mainWarehouse) {
+      showAlertModal('Error', 'Main Warehouse not found. Please ensure a warehouse named "Main Warehouse" exists.');
+      return;
+    }
+    if (!order.warehouseId) {
+      showAlertModal('Validation Error', 'Please select a destination warehouse for the sell order first.');
+      return;
+    }
+    if (mainWarehouse.id === order.warehouseId) {
+      showAlertModal('Info', 'The sell order is already linked to the Main Warehouse. No movement needed.');
+      return;
+    }
+
+    const newMovementItems: { productId: number; quantity: number }[] = [];
+    const productsCopy: Product[] = JSON.parse(JSON.stringify(products)); // Deep copy for mutable stock
+
+    for (const item of orderItems) {
+      if (!item.productId || item.qty <= 0) {
+        continue; // Skip invalid items
+      }
+
+      const product = productsCopy.find(p => p.id === item.productId);
+      if (!product) {
+        showAlertModal('Error', `Product with ID ${item.productId} not found.`);
+        return;
+      }
+
+      const sourceStock = product.stock?.[mainWarehouse.id] || 0;
+      if (sourceStock < item.qty) {
+        showAlertModal('Stock Error', `${t('notEnoughStock')} ${product.name} (${product.sku}) in Main Warehouse. ${t('available')}: ${sourceStock}, ${t('requested')}: ${item.qty}.`);
+        return;
+      }
+
+      newMovementItems.push({ productId: item.productId as number, quantity: item.qty });
+
+      // Tentatively update stock in the copy
+      if (!product.stock) product.stock = {};
+      product.stock[mainWarehouse.id] = sourceStock - item.qty;
+      product.stock[order.warehouseId as number] = (product.stock[order.warehouseId as number] || 0) + item.qty;
+    }
+
+    if (newMovementItems.length === 0) {
+      showAlertModal('Info', 'No valid products in the sell order to generate a movement for.');
+      return;
+    }
+
+    // If all checks pass, update the actual products state
+    setProducts(productsCopy);
+
+    const newMovement: ProductMovement = {
+      id: getNextId('productMovements'),
+      sourceWarehouseId: mainWarehouse.id,
+      destWarehouseId: order.warehouseId as number,
+      items: newMovementItems,
+      date: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+    };
+
+    saveItem('productMovements', newMovement);
+    toast.success(t('success'), { description: `Product Movement #${newMovement.id} generated successfully from Main Warehouse to ${warehouseMap[order.warehouseId as number]?.name}.` });
+
+  }, [mainWarehouse, order.warehouseId, orderItems, products, showAlertModal, setProducts, getNextId, saveItem, warehouseMap]);
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -124,41 +193,43 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
       return;
     }
 
-    // Stock validation
-    const productsInWarehouses: { [warehouseId: number]: { [productId: number]: number } } = {};
-    products.forEach(p => {
-      if (p.stock) {
-        for (const warehouseId in p.stock) {
-          if (!productsInWarehouses[parseInt(warehouseId)]) {
-            productsInWarehouses[parseInt(warehouseId)] = {};
+    // Stock validation for sell order (only if status is Shipped)
+    if (order.status === 'Shipped') {
+      const productsInWarehouses: { [warehouseId: number]: { [productId: number]: number } } = {};
+      products.forEach(p => {
+        if (p.stock) {
+          for (const warehouseId in p.stock) {
+            if (!productsInWarehouses[parseInt(warehouseId)]) {
+              productsInWarehouses[parseInt(warehouseId)] = {};
+            }
+            productsInWarehouses[parseInt(warehouseId)][p.id] = p.stock[parseInt(warehouseId)];
           }
-          productsInWarehouses[parseInt(warehouseId)][p.id] = p.stock[parseInt(warehouseId)];
         }
-      }
-    });
+      });
 
-    const currentOrderItems = isEdit ? sellOrders.find(o => o.id === orderId)?.items || [] : [];
-    const currentOrderWarehouseId = isEdit ? sellOrders.find(o => o.id === orderId)?.warehouseId : undefined;
+      const currentOrderItems = isEdit ? sellOrders.find(o => o.id === orderId)?.items || [] : [];
+      const currentOrderWarehouseId = isEdit ? sellOrders.find(o => o.id === orderId)?.warehouseId : undefined;
 
-    for (const item of validOrderItems) {
-      const productId = item.productId as number;
-      const requestedQty = item.qty;
-      const warehouseId = order.warehouseId as number;
+      for (const item of validOrderItems) {
+        const productId = item.productId as number;
+        const requestedQty = item.qty;
+        const warehouseId = order.warehouseId as number;
 
-      let availableStock = productsInWarehouses[warehouseId]?.[productId] || 0;
+        let availableStock = productsInWarehouses[warehouseId]?.[productId] || 0;
 
-      // If editing, add back the quantity from the old order for this product in this warehouse
-      if (isEdit && currentOrderWarehouseId === warehouseId) {
-        const oldItem = currentOrderItems.find(old => old.productId === productId);
-        if (oldItem) {
-          availableStock += oldItem.qty;
+        // If editing, add back the quantity from the old order for this product in this warehouse
+        if (isEdit && currentOrderWarehouseId === warehouseId) {
+          const oldItem = currentOrderItems.find(old => old.productId === productId);
+          if (oldItem) {
+            availableStock += oldItem.qty;
+          }
         }
-      }
 
-      if (order.status === 'Shipped' && availableStock < requestedQty) {
-        const productName = productMap[productId]?.name || 'Unknown Product';
-        showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName}. ${t('available')}: ${availableStock}, ${t('requested')}: ${requestedQty}.`);
-        return;
+        if (availableStock < requestedQty) {
+          const productName = productMap[productId]?.name || 'Unknown Product';
+          showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName}. ${t('available')}: ${availableStock}, ${t('requested')}: ${requestedQty}.`);
+          return;
+        }
       }
     }
 
@@ -346,7 +417,11 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           />
         </div>
       </div>
-      <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700">
+      <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700 space-x-2">
+        <Button type="button" onClick={handleGenerateProductMovement} variant="secondary" className="flex items-center">
+          <ArrowRight className="w-4 h-4 mr-2" />
+          {t('generateProductMovement')}
+        </Button>
         <Button type="submit">{t('saveOrder')}</Button>
       </div>
     </form>

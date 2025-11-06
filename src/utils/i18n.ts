@@ -79,6 +79,7 @@ const i18n = {
     chooseJsonFile: 'Choose JSON File', // New translation
     searchProductBySku: 'Search product by name or SKU...', // New translation
     noProductFound: 'No product found.', // New translation
+    generateProductMovement: 'Generate Product Movement', // New translation
   }
 };
 
