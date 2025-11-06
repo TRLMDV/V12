@@ -68,7 +68,14 @@ const i18n = {
     exportDataToExcel: 'Export Data to Excel',
     export: 'Export',
     noProductsToAnalyze: 'No products to analyze for this period.',
-    cancel: 'Cancel', // Added missing translation key
+    cancel: 'Cancel',
+    fees: 'Fees', // New translation
+    selectSupplier: 'Select Supplier', // New translation
+    selectWarehouse: 'Select Warehouse', // New translation
+    selectCustomer: 'Select Customer', // New translation
+    detailsForOrder: 'Details for Order', // New translation
+    costOfGoodsSold: 'Cost of Goods Sold', // New translation
+    vatCollectedFromSales: 'VAT Collected From Sales', // New translation
   }
 };
 

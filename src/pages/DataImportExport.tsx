@@ -1,0 +1,140 @@
+"use client";
+
+import React, { useState } from 'react';
+import { useData } from '@/context/DataContext';
+import { t } from '@/utils/i18n';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+import { Download, Upload } from 'lucide-react';
+
+const DataImportExport: React.FC = () => {
+  const {
+    products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
+    incomingPayments, outgoingPayments, productMovements, settings,
+    setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders,
+    setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements,
+    setSettings,
+    showConfirmationModal,
+  } = useData();
+
+  const handleExportData = () => {
+    const dataToExport = {
+      products,
+      suppliers,
+      customers,
+      warehouses,
+      purchaseOrders,
+      sellOrders,
+      incomingPayments,
+      outgoingPayments,
+      productMovements,
+      settings,
+    };
+
+    const ws = XLSX.utils.json_to_sheet([dataToExport]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ERP_Backup");
+    XLSX.writeFile(wb, `erp_data_backup_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success(t('success'), { description: t('backupData') + ' exported successfully.' });
+  };
+
+  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      toast.error(t('restoreError'), { description: 'No file selected.' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+
+        if (json.length === 0) {
+          toast.error(t('restoreError'), { description: 'Empty or invalid backup file.' });
+          return;
+        }
+
+        const importedData = json[0] as any;
+
+        showConfirmationModal(
+          t('restoreData'),
+          t('restoreWarning'),
+          () => {
+            // Perform the restore
+            setProducts(importedData.products || []);
+            setSuppliers(importedData.suppliers || []);
+            setCustomers(importedData.customers || []);
+            setWarehouses(importedData.warehouses || []);
+            setPurchaseOrders(importedData.purchaseOrders || []);
+            setSellOrders(importedData.sellOrders || []);
+            setIncomingPayments(importedData.incomingPayments || []);
+            setOutgoingPayments(importedData.outgoingPayments || []);
+            setProductMovements(importedData.productMovements || []);
+            setSettings(importedData.settings || {});
+            toast.success(t('restoreSuccess'));
+            // Optionally reload the app to ensure all contexts are re-initialized
+            setTimeout(() => window.location.reload(), 1000);
+          }
+        );
+
+      } catch (error) {
+        console.error("Error importing data:", error);
+        toast.error(t('restoreError'), { description: 'Failed to parse backup file.' });
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('dataImportExport')}</h1>
+
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('backupData')}</h2>
+        <p className="text-gray-600 dark:text-slate-400 mb-4">
+          {t('exportDataToExcel')}
+        </p>
+        <Button onClick={handleExportData} className="bg-sky-500 hover:bg-sky-600 text-white">
+          <Download className="w-4 h-4 mr-2" />
+          {t('export')}
+        </Button>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('restoreData')}</h2>
+        <p className="text-gray-600 dark:text-slate-400 mb-4">
+          {t('restoreWarning')}
+        </p>
+        <div className="flex items-center space-x-4">
+          <Label htmlFor="import-file" className="sr-only">{t('chooseFile')}</Label>
+          <Input
+            id="import-file"
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={handleImportData}
+            className="block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-semibold
+            file:bg-sky-50 file:text-sky-700
+            hover:file:bg-sky-100 dark:file:bg-slate-700 dark:file:text-slate-200 dark:hover:file:bg-slate-600"
+          />
+          <Button type="button" onClick={() => document.getElementById('import-file')?.click()} variant="outline">
+            <Upload className="w-4 h-4 mr-2" />
+            {t('chooseFile')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DataImportExport;

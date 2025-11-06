@@ -10,9 +10,15 @@ import Products from "./pages/Products";
 import Suppliers from "./pages/Suppliers";
 import Customers from "./pages/Customers";
 import Warehouses from "./pages/Warehouses";
-import IncomingPayments from "./pages/IncomingPayments"; // Import IncomingPayments page
-import OutgoingPayments from "./pages/OutgoingPayments"; // Import OutgoingPayments page
-import ProductMovement from "./pages/ProductMovement"; // Import ProductMovement page
+import IncomingPayments from "./pages/IncomingPayments";
+import OutgoingPayments from "./pages/OutgoingPayments";
+import ProductMovement from "./pages/ProductMovement";
+import PurchaseOrders from "./pages/PurchaseOrders"; // New import
+import SellOrders from "./pages/SellOrders";       // New import
+import Finance from "./pages/Finance";             // New import
+import Profitability from "./pages/Profitability"; // New import
+import DataImportExport from "./pages/DataImportExport"; // New import
+import SettingsPage from "./pages/Settings";       // New import (renamed to avoid conflict with 'Settings' type)
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,12 +33,18 @@ const App = () => (
           <Routes>
             <Route path="/" element={<MainLayout><Dashboard /></MainLayout>} />
             <Route path="/products" element={<MainLayout><Products /></MainLayout>} />
+            <Route path="/purchase-orders" element={<MainLayout><PurchaseOrders /></MainLayout>} /> {/* New Route */}
+            <Route path="/sell-orders" element={<MainLayout><SellOrders /></MainLayout>} />       {/* New Route */}
             <Route path="/suppliers" element={<MainLayout><Suppliers /></MainLayout>} />
             <Route path="/customers" element={<MainLayout><Customers /></MainLayout>} />
+            <Route path="/incoming-payments" element={<MainLayout><IncomingPayments /></MainLayout>} />
+            <Route path="/outgoing-payments" element={<MainLayout><OutgoingPayments /></MainLayout>} />
             <Route path="/warehouses" element={<MainLayout><Warehouses /></MainLayout>} />
-            <Route path="/incoming-payments" element={<MainLayout><IncomingPayments /></MainLayout>} /> {/* New Incoming Payments Route */}
-            <Route path="/outgoing-payments" element={<MainLayout><OutgoingPayments /></MainLayout>} /> {/* New Outgoing Payments Route */}
-            <Route path="/product-movement" element={<MainLayout><ProductMovement /></MainLayout>} /> {/* New Product Movement Route */}
+            <Route path="/product-movement" element={<MainLayout><ProductMovement /></MainLayout>} />
+            <Route path="/finance" element={<MainLayout><Finance /></MainLayout>} />             {/* New Route */}
+            <Route path="/profitability" element={<MainLayout><Profitability /></MainLayout>} /> {/* New Route */}
+            <Route path="/data-import-export" element={<MainLayout><DataImportExport /></MainLayout>} /> {/* New Route */}
+            <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />       {/* New Route */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
