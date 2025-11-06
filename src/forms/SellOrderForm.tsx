@@ -47,15 +47,15 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
   const mainWarehouse = useMemo(() => warehouses.find(w => w.type === 'Main'), [warehouses]);
 
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); 
+  const [isFormInitialized, setIsFormInitialized] = useState(false); // New state to track initialization
 
   const [order, setOrder] = useState<Partial<SellOrder>>(() => {
     if (isEdit && orderId !== undefined) {
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) return existingOrder;
     }
-    // For new orders, generate an ID immediately
     return {
-      id: getNextId('sellOrders'), // Pre-generate ID for new orders
+      id: getNextId('sellOrders'),
       orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       status: 'Draft',
       vatPercent: settings.defaultVat,
@@ -85,19 +85,20 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           qty: item.qty,
           price: item.price,
         })));
+        setIsFormInitialized(true); // Mark as initialized if editing
       }
-    } else if (!isEdit && orderId === undefined) {
-      // Reset for new order if component is reused for new entry, ensuring a new ID
+    } else if (!isEdit && !isFormInitialized) { // Only initialize new order once
       setOrder({
-        id: getNextId('sellOrders'), // Ensure new ID on reset
+        id: getNextId('sellOrders'),
         orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
         status: 'Draft',
         vatPercent: settings.defaultVat,
         total: 0,
       });
       setOrderItems([{ productId: '', qty: 1, price: 0 }]);
+      setIsFormInitialized(true); // Mark as initialized
     }
-  }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId]);
+  }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized]);
 
 
   const calculateTotalOrderValue = useCallback(() => {
@@ -326,7 +327,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
   };
 
-  const isGenerateMovementDisabled = !!order.productMovementId; // Only disabled if a movement is already linked
+  const isGenerateMovementDisabled = !!order.productMovementId;
 
   return (
     <form onSubmit={handleSubmit}>
