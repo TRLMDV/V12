@@ -64,12 +64,13 @@ const Warehouses: React.FC = () => {
   };
 
   const exportWarehouseStock = (warehouseId: number, warehouseName: string) => {
-    const warehouseProducts = products.filter(p => p.stock && p.stock[warehouseId] && p.stock[warehouseId] > 0)
+    const warehouseProducts = products
+      .filter(p => p && p.stock && p.stock[warehouseId] && p.stock[warehouseId] > 0) // Defensive check for 'p'
       .map(p => ({
         'Product Name': p.name,
         'SKU': p.sku,
         'Stock Quantity': p.stock[warehouseId],
-        'Avg Landed Cost (AZN)': p.averageLandedCost.toFixed(4),
+        'Avg Landed Cost (AZN)': (p.averageLandedCost || 0).toFixed(4),
         'Avg LC + Markup (Excl VAT)': ((p.averageLandedCost || 0) * (1 + defaultMarkup)).toFixed(4),
         'Avg LC + Markup + VAT (Incl VAT)': ((p.averageLandedCost || 0) * (1 + defaultMarkup) * (1 + defaultVat)).toFixed(4),
       }));
@@ -88,7 +89,8 @@ const Warehouses: React.FC = () => {
   const sortedWarehouseProducts = useMemo(() => {
     if (!expandedWarehouseId) return {};
 
-    const productsInWarehouse = products.filter(p => p.stock && p.stock[expandedWarehouseId] && p.stock[expandedWarehouseId] > 0);
+    const productsInWarehouse = products
+      .filter(p => p && p.stock && p.stock[expandedWarehouseId] && p.stock[expandedWarehouseId] > 0); // Defensive check for 'p'
 
     const sortableItems = productsInWarehouse.map(p => {
       const qty = p.stock[expandedWarehouseId];
