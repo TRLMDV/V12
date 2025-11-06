@@ -24,6 +24,26 @@ const SellOrders: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<SellOrder | null>(null);
 
+  const requestSort = useCallback((key: SortConfig['key']) => {
+    let direction: SortConfig['direction'] = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  }, [sortConfig]);
+
+  const getSortIndicator = useCallback((key: SortConfig['key']) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
+    }
+    return '';
+  }, [sortConfig]);
+
+  // Memoized handler for sorting clicks
+  const handleSortClick = useCallback((key: SortConfig['key']) => () => {
+    requestSort(key);
+  }, [requestSort]);
+
   const customerMap = useMemo(() => {
     return customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
   }, [customers]);
@@ -49,6 +69,35 @@ const SellOrders: React.FC = () => {
     if (totalPaid > 0) return 'Partially Paid';
     return 'Unpaid';
   }, [paymentsByOrder]);
+
+  const handleAddOrder = () => {
+    setEditingOrderId(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleEditOrder = (id: number) => {
+    setEditingOrderId(id);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteOrder = (id: number) => {
+    deleteItem('sellOrders', id);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingOrderId(undefined);
+  };
+
+  const viewOrderDetails = (orderId: number) => {
+    const order = sellOrders.find(o => o.id === orderId);
+    if (order) {
+      setSelectedOrderDetails(order);
+      setIsDetailsModalOpen(true);
+    } else {
+      showAlertModal('Error', 'Order details not found.');
+    }
+  };
 
   const filteredAndSortedOrders = useMemo(() => {
     let filteredOrders = sellOrders;
@@ -91,42 +140,6 @@ const SellOrders: React.FC = () => {
     return sortableItems;
   }, [sellOrders, customerMap, warehouseMap, productMap, sortConfig, filterWarehouseId, getPaymentStatus]);
 
-  const handleAddOrder = () => {
-    setEditingOrderId(undefined);
-    setIsModalOpen(true);
-  };
-
-  const handleEditOrder = (id: number) => {
-    setEditingOrderId(id);
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteOrder = (id: number) => {
-    deleteItem('sellOrders', id);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setEditingOrderId(undefined);
-  };
-
-  const viewOrderDetails = (orderId: number) => {
-    const order = sellOrders.find(o => o.id === orderId);
-    if (order) {
-      setSelectedOrderDetails(order);
-      setIsDetailsModalOpen(true);
-    } else {
-      showAlertModal('Error', 'Order details not found.');
-    }
-  };
-
-  const getSortIndicator = (key: SortConfig['key']) => {
-    if (sortConfig.key === key) {
-      return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
-    }
-    return '';
-  };
-
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -162,25 +175,25 @@ const SellOrders: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('id')}>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('id')}>
                 {t('orderId')} {getSortIndicator('id')}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('customerName')}>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('customerName')}>
                 {t('customer')} {getSortIndicator('customerName')}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('orderDate')}>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('orderDate')}>
                 {t('orderDate')} {getSortIndicator('orderDate')}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('warehouseName')}>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('warehouseName')}>
                 {t('warehouse')} {getSortIndicator('warehouseName')}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('status')}>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('status')}>
                 {t('orderStatus')} {getSortIndicator('status')}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('paymentStatus')}>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('paymentStatus')}>
                 {t('paymentStatus')} {getSortIndicator('paymentStatus')}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalValueAZN')}>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalValueAZN')}>
                 {t('total')} (AZN) {getSortIndicator('totalValueAZN')}
               </TableHead>
               <TableHead className="p-3">{t('actions')}</TableHead>
