@@ -286,10 +286,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     let updatedItems;
-    if (item.id) {
+    const existingItemIndex = currentItems.findIndex(i => i.id === item.id);
+
+    if (item.id === 0 || existingItemIndex === -1) { // New item (either id is 0 or id doesn't exist in currentItems)
+      const newItemId = item.id === 0 ? getNextId(key) : item.id; // Use existing ID if provided, else generate new
+      updatedItems = [...currentItems, { ...item, id: newItemId }];
+    } else { // Existing item, update it
       updatedItems = currentItems.map(i => i.id === item.id ? item : i);
-    } else {
-      updatedItems = [...currentItems, { ...item, id: getNextId(key) }];
     }
     
     if (key === 'productMovements') {
