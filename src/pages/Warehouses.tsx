@@ -157,7 +157,7 @@ const Warehouses: React.FC = () => {
                     <h2 className="2xl font-bold text-gray-800 dark:text-slate-200">{w.name}</h2>
                     <p className="text-gray-600 dark:text-slate-400">{w.location}</p>
                     <p className="text-sm text-gray-500 dark:text-slate-400">
-                      {t('warehouseType')}: <span className="font-medium">{t(w.type.toLowerCase() + 'WarehouseType' as keyof typeof t)}</span>
+                      {t('warehouseType')}: <span className="font-medium">{t(((w.type || 'secondary').toLowerCase() + 'WarehouseType') as keyof typeof t)}</span>
                     </p>
                   </div>
                   <div className="flex items-center">
