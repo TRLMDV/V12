@@ -6,6 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { MOCK_CURRENT_DATE } from '@/context/DataContext';
 
@@ -26,6 +30,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   const [sourceWarehouseId, setSourceWarehouseId] = useState<number | ''>('');
   const [destWarehouseId, setDestWarehouseId] = useState<number | ''>('');
   const [movementItems, setMovementItems] = useState<MovementItemState[]>([{ productId: '', quantity: 1 }]);
+  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
 
   useEffect(() => {
     if (isEdit) {
@@ -97,7 +102,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
         return;
       }
 
-      const stockInSource = p.stock[sourceWarehouseId] || 0;
+      const stockInSource = p.stock[sourceWarehouseId as number] || 0;
       if (stockInSource < item.quantity) {
         const originalProduct = products.find(prod => prod.id === item.productId);
         const safeProductName = originalProduct?.name || 'Unknown Product';
@@ -105,8 +110,8 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
         return;
       }
       // Apply tentative stock changes for subsequent checks in the same form submission
-      p.stock[sourceWarehouseId] = stockInSource - item.quantity;
-      p.stock[destWarehouseId] = (p.stock[destWarehouseId] || 0) + item.quantity;
+      p.stock[sourceWarehouseId as number] = stockInSource - item.quantity;
+      p.stock[destWarehouseId as number] = (p.stock[destWarehouseId as number] || 0) + item.quantity;
     }
 
     // If all checks pass, update the actual products state
@@ -167,21 +172,47 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
         <div id="movement-items">
           {movementItems.map((item, index) => (
             <div key={index} className="grid grid-cols-10 gap-2 mb-2 items-center">
-              <Select
-                onValueChange={(value) => handleItemChange(index, 'productId', parseInt(value))}
-                value={String(item.productId)}
-              >
-                <SelectTrigger className="col-span-6">
-                  <SelectValue placeholder={t('selectProduct')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map(p => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      {p.name} ({p.sku})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={openComboboxIndex === index} onOpenChange={(open) => setOpenComboboxIndex(open ? index : null)}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openComboboxIndex === index}
+                    className="col-span-6 justify-between"
+                  >
+                    {item.productId
+                      ? products.find(p => p.id === item.productId)?.name || t('selectProduct')
+                      : t('selectProduct')}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <Command>
+                    <CommandInput placeholder={t('searchProductBySku')} />
+                    <CommandEmpty>{t('noProductFound')}</CommandEmpty>
+                    <CommandGroup>
+                      {products.map((product) => (
+                        <CommandItem
+                          key={product.id}
+                          value={`${product.name} ${product.sku}`} // Searchable value
+                          onSelect={() => {
+                            handleItemChange(index, 'productId', product.id);
+                            setOpenComboboxIndex(null);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              item.productId === product.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {product.name} ({product.sku})
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <Input
                 type="number"
                 value={item.quantity}
