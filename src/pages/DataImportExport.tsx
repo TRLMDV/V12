@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Download, Upload } from 'lucide-react';
+import { Download } from 'lucide-react'; // Removed Upload icon
 
 const DataImportExport: React.FC = () => {
   const {
@@ -114,7 +114,7 @@ const DataImportExport: React.FC = () => {
           {t('restoreWarning')}
         </p>
         <div className="flex items-center space-x-4">
-          <Label htmlFor="import-file" className="sr-only">{t('chooseFile')}</Label>
+          <Label htmlFor="import-file" className="sr-only">{t('chooseJsonFile')}</Label>
           <Input
             id="import-file"
             type="file"
@@ -128,8 +128,8 @@ const DataImportExport: React.FC = () => {
             hover:file:bg-sky-100 dark:file:bg-slate-700 dark:file:text-slate-200 dark:hover:file:bg-slate-600"
           />
           <Button type="button" onClick={() => document.getElementById('import-file')?.click()} variant="outline">
-            <Upload className="w-4 h-4 mr-2" />
-            {t('chooseFile')}
+            {/* Removed Upload icon */}
+            {t('chooseJsonFile')}
           </Button>
         </div>
       </div>
