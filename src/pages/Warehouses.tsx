@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useData, Warehouse, Product } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import FormModal from '@/components/FormModal';
 import WarehouseForm from '@/forms/WarehouseForm';
 import { ChevronRight, PlusCircle, Download } from 'lucide-react';
