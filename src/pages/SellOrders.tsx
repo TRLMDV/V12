@@ -7,8 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import FormModal from '@/components/FormModal';
 import SellOrderForm from '@/forms/SellOrderForm';
-import { PlusCircle, Eye } from 'lucide-react';
+import { PlusCircle, Eye, Check, ChevronsUpDown } from 'lucide-react'; // Added Check, ChevronsUpDown
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input'; // Added Input
+import { Label } from '@/components/ui/label'; // Added Label
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Added Popover components
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command'; // Added Command components
+import { cn } from '@/lib/utils'; // Added cn utility
 
 type SortConfig = {
   key: keyof SellOrder | 'customerName' | 'warehouseName' | 'totalItems' | 'totalValueAZN' | 'paymentStatus';
@@ -23,6 +28,14 @@ const SellOrders: React.FC = () => {
   const [filterWarehouseId, setFilterWarehouseId] = useState<number | 'all'>('all');
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<SellOrder | null>(null);
+
+  // New states for date range filter
+  const [startDateFilter, setStartDateFilter] = useState<string>('');
+  const [endDateFilter, setEndDateFilter] = useState<string>('');
+
+  // New states for product filter combobox
+  const [productFilterId, setProductFilterId] = useState<number | 'all'>('all');
+  const [isProductComboboxOpen, setIsProductComboboxOpen] = useState(false);
 
   const requestSort = useCallback((key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -106,6 +119,21 @@ const SellOrders: React.FC = () => {
       filteredOrders = filteredOrders.filter(order => order.warehouseId === filterWarehouseId);
     }
 
+    // Apply date range filter
+    if (startDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate >= startDateFilter);
+    }
+    if (endDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate <= endDateFilter);
+    }
+
+    // Apply product filter
+    if (productFilterId !== 'all') {
+      filteredOrders = filteredOrders.filter(order =>
+        order.items?.some(item => item.productId === productFilterId)
+      );
+    }
+
     const sortableItems = filteredOrders.map(order => {
       const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 0), 0) || 0;
       const totalValueAZN = order.total || 0;
@@ -124,21 +152,48 @@ const SellOrders: React.FC = () => {
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
         const key = sortConfig.key;
-        const valA = a[key] === undefined ? '' : a[key];
-        const valB = b[key] === undefined ? '' : b[key];
+        let valA: any = a[key];
+        let valB: any = b[key];
+
+        // Handle undefined/null values by treating them as empty strings or 0 for numbers
+        if (valA === undefined || valA === null) valA = (key === 'id' || key === 'totalItems' || key === 'totalValueAZN') ? 0 : '';
+        if (valB === undefined || valB === null) valB = (key === 'id' || key === 'totalItems' || key === 'totalValueAZN') ? 0 : '';
 
         let comparison = 0;
-        if (typeof valA === 'string' || typeof valB === 'string') {
-          comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
-        } else {
-          if (valA < valB) comparison = -1;
-          if (valA > valB) comparison = 1;
+
+        switch (key) {
+          case 'id':
+          case 'totalItems':
+          case 'totalValueAZN':
+            comparison = (valA as number) - (valB as number);
+            break;
+          case 'orderDate':
+            comparison = new Date(valA).getTime() - new Date(valB).getTime();
+            break;
+          case 'customerName':
+          case 'warehouseName':
+          case 'status':
+          case 'paymentStatus':
+            comparison = String(valA).localeCompare(String(valB));
+            break;
+          default:
+            // Fallback for other potential string/numeric fields
+            if (typeof valA === 'string' && typeof valB === 'string') {
+              comparison = valA.localeCompare(valB);
+            } else if (typeof valA === 'number' && typeof valB === 'number') {
+              comparison = valA - valB;
+            } else {
+              // Attempt a generic string comparison if types are mixed or unknown
+              comparison = String(valA).localeCompare(String(valB));
+            }
+            break;
         }
+
         return sortConfig.direction === 'ascending' ? comparison : -comparison;
       });
     }
     return sortableItems;
-  }, [sellOrders, customerMap, warehouseMap, productMap, sortConfig, filterWarehouseId, getPaymentStatus]);
+  }, [sellOrders, customerMap, warehouseMap, productMap, sortConfig, filterWarehouseId, startDateFilter, endDateFilter, productFilterId, getPaymentStatus]);
 
   return (
     <div className="container mx-auto p-4">
@@ -151,23 +206,106 @@ const SellOrders: React.FC = () => {
       </div>
 
       <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-        <div className="flex items-center gap-4">
-          <label htmlFor="warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
-            {t('filterByWarehouse')}
-          </label>
-          <Select onValueChange={(value) => setFilterWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterWarehouseId)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t('allWarehouses')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('allWarehouses')}</SelectItem>
-              {warehouses.map(w => (
-                <SelectItem key={w.id} value={String(w.id)}>
-                  {w.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <Label htmlFor="warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('filterByWarehouse')}
+            </Label>
+            <Select onValueChange={(value) => setFilterWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterWarehouseId)}>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder={t('allWarehouses')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allWarehouses')}</SelectItem>
+                {warehouses.map(w => (
+                  <SelectItem key={w.id} value={String(w.id)}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="product-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('product')}
+            </Label>
+            <Popover open={isProductComboboxOpen} onOpenChange={setIsProductComboboxOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isProductComboboxOpen}
+                  className="w-full justify-between mt-1"
+                >
+                  {productFilterId !== 'all'
+                    ? productMap[productFilterId as number]?.name || t('allProducts')
+                    : t('allProducts')}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder={t('searchProductBySku')} />
+                  <CommandEmpty>{t('noProductFound')}</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all-products"
+                      onSelect={() => {
+                        setProductFilterId('all');
+                        setIsProductComboboxOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          productFilterId === 'all' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {t('allProducts')}
+                    </CommandItem>
+                    {products.map((product) => (
+                      <CommandItem
+                        key={product.id}
+                        value={`${product.name} ${product.sku}`}
+                        onSelect={() => {
+                          setProductFilterId(product.id);
+                          setIsProductComboboxOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            productFilterId === product.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {product.name} ({product.sku})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div>
+            <Label htmlFor="start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
+            <Input
+              type="date"
+              id="start-date-filter"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
+          </div>
+          <div>
+            <Label htmlFor="end-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('endDate')}</Label>
+            <Input
+              type="date"
+              id="end-date-filter"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
+          </div>
         </div>
       </div>
 
@@ -242,7 +380,7 @@ const SellOrders: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400">
-                  {filterWarehouseId !== 'all' ? t('noOrdersForWarehouse') : t('noItemsFound')}
+                  {filterWarehouseId !== 'all' || startDateFilter || endDateFilter || productFilterId !== 'all' ? t('noItemsFound') : t('noItemsFound')}
                 </TableCell>
               </TableRow>
             )}
