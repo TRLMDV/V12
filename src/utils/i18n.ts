@@ -94,6 +94,7 @@ const i18n = {
     paymentForFees: 'Payment for Fees', // New translation
     productsTotal: 'Products Total', // New translation
     feesTotal: 'Fees Total', // New translation
+    itemTotal: 'Item Total', // New translation
   }
 };
 
