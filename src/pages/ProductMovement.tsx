@@ -7,7 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import FormModal from '@/components/FormModal';
 import ProductMovementForm from '@/forms/ProductMovementForm';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Check, ChevronsUpDown } from 'lucide-react'; // Added Check, ChevronsUpDown
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Added Select components
+import { Input } from '@/components/ui/input'; // Added Input
+import { Label } from '@/components/ui/label'; // Added Label
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Added Popover components
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command'; // Added Command components
+import { cn } from '@/lib/utils'; // Added cn utility
 
 type SortConfig = {
   key: keyof ProductMovement | 'sourceWarehouseName' | 'destWarehouseName' | 'totalItems';
@@ -21,6 +27,14 @@ const ProductMovement: React.FC = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedMovementDetails, setSelectedMovementDetails] = useState<ProductMovement | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'date', direction: 'descending' });
+
+  // New states for filters
+  const [filterSourceWarehouseId, setFilterSourceWarehouseId] = useState<number | 'all'>('all');
+  const [filterDestWarehouseId, setFilterDestWarehouseId] = useState<number | 'all'>('all');
+  const [startDateFilter, setStartDateFilter] = useState<string>('');
+  const [endDateFilter, setEndDateFilter] = useState<string>('');
+  const [productFilterId, setProductFilterId] = useState<number | 'all'>('all');
+  const [isProductComboboxOpen, setIsProductComboboxOpen] = useState(false);
 
   // Log productMovements whenever it changes
   useEffect(() => {
@@ -36,7 +50,27 @@ const ProductMovement: React.FC = () => {
   }, [products]);
 
   const filteredAndSortedMovements = useMemo(() => {
-    const sortableItems = productMovements.map(m => {
+    let filteredMovements = productMovements;
+
+    if (filterSourceWarehouseId !== 'all') {
+      filteredMovements = filteredMovements.filter(m => m.sourceWarehouseId === filterSourceWarehouseId);
+    }
+    if (filterDestWarehouseId !== 'all') {
+      filteredMovements = filteredMovements.filter(m => m.destWarehouseId === filterDestWarehouseId);
+    }
+    if (startDateFilter) {
+      filteredMovements = filteredMovements.filter(m => m.date >= startDateFilter);
+    }
+    if (endDateFilter) {
+      filteredMovements = filteredMovements.filter(m => m.date <= endDateFilter);
+    }
+    if (productFilterId !== 'all') {
+      filteredMovements = filteredMovements.filter(m =>
+        m.items?.some(item => item.productId === productFilterId)
+      );
+    }
+
+    const sortableItems = filteredMovements.map(m => {
       const totalItems = m.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
       return {
         ...m,
@@ -63,7 +97,7 @@ const ProductMovement: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [productMovements, warehouseMap, sortConfig]);
+  }, [productMovements, warehouseMap, sortConfig, filterSourceWarehouseId, filterDestWarehouseId, startDateFilter, endDateFilter, productFilterId]);
 
   const handleAddMovement = () => {
     setEditingMovementId(undefined);
@@ -119,6 +153,128 @@ const ProductMovement: React.FC = () => {
         </Button>
       </div>
 
+      <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <Label htmlFor="from-warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('fromWarehouse')}
+            </Label>
+            <Select onValueChange={(value) => setFilterSourceWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterSourceWarehouseId)}>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder={t('allWarehouses')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allWarehouses')}</SelectItem>
+                {warehouses.map(w => (
+                  <SelectItem key={w.id} value={String(w.id)}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="to-warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('toWarehouse')}
+            </Label>
+            <Select onValueChange={(value) => setFilterDestWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterDestWarehouseId)}>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder={t('allWarehouses')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allWarehouses')}</SelectItem>
+                {warehouses.map(w => (
+                  <SelectItem key={w.id} value={String(w.id)}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="product-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('product')}
+            </Label>
+            <Popover open={isProductComboboxOpen} onOpenChange={setIsProductComboboxOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isProductComboboxOpen}
+                  className="w-full justify-between mt-1"
+                >
+                  {productFilterId !== 'all'
+                    ? productMap[productFilterId as number]?.name || t('allProducts')
+                    : t('allProducts')}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder={t('searchProductBySku')} />
+                  <CommandEmpty>{t('noProductFound')}</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all-products"
+                      onSelect={() => {
+                        setProductFilterId('all');
+                        setIsProductComboboxOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          productFilterId === 'all' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {t('allProducts')}
+                    </CommandItem>
+                    {products.map((product) => (
+                      <CommandItem
+                        key={product.id}
+                        value={`${product.name} ${product.sku}`}
+                        onSelect={() => {
+                          setProductFilterId(product.id);
+                          setIsProductComboboxOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            productFilterId === product.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {product.name} ({product.sku})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div>
+            <Label htmlFor="start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
+            <Input
+              type="date"
+              id="start-date-filter"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
+          </div>
+          <div>
+            <Label htmlFor="end-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('endDate')}</Label>
+            <Input
+              type="date"
+              id="end-date-filter"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto">
         <Table>
           <TableHeader>
@@ -166,7 +322,7 @@ const ProductMovement: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
-                  {t('noItemsFound')}
+                  {filterSourceWarehouseId !== 'all' || filterDestWarehouseId !== 'all' || startDateFilter || endDateFilter || productFilterId !== 'all' ? t('noItemsFound') : t('noItemsFound')}
                 </TableCell>
               </TableRow>
             )}
