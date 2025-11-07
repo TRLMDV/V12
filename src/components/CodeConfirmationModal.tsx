@@ -56,8 +56,7 @@ const CodeConfirmationModal: React.FC<CodeConfirmationModalProps> = ({
             {t('enterCodeToConfirm')}
             <br />
             <strong className="text-lg text-red-500 dark:text-red-400">{codeToEnter}</strong>
-          </p>
-        </AlertDialogDescription>
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
