@@ -2,9 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { t, getKeyAsPageId } from '@/utils/i18n';
-import { toast as sonnerToast } from 'sonner';
+import { t } from '@/utils/i18n';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
+// Import new hooks
+import { useModals } from '@/hooks/useModals';
+import { useInventoryManagement } from '@/hooks/useInventoryManagement';
+import { useCrudOperations } from '@/hooks/useCrudOperations';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
 export const MOCK_CURRENT_DATE = new Date('2025-10-29T15:53:00');
@@ -123,18 +127,18 @@ export interface Settings {
 // --- Initial Data & Defaults ---
 const initialCurrencyRates: CurrencyRates = { 'USD': 1.70, 'EUR': 2.00, 'RUB': 0.019, 'AZN': 1.00 };
 
-const initialData = {
+export const initialData = { // Export initialData for use in useCrudOperations
   warehouses: [
-    { id: 1, name: 'Main Warehouse', location: 'Baku, Azerbaijan', type: 'Main' },
-    { id: 2, name: 'Secondary Hub', location: 'Ganja, Azerbaijan', type: 'Secondary' }
+    { id: 1, name: 'Main Warehouse', location: 'Baku, Azerbaijan', type: 'Main' } as Warehouse,
+    { id: 2, name: 'Secondary Hub', location: 'Ganja, Azerbaijan', type: 'Secondary' } as Warehouse
   ],
   products: [
-    { id: 1, name: 'Laptop Pro 15"', sku: 'LP15-PRO', category: 'Electronics', description: 'High-end professional laptop', stock: { 1: 50, 2: 20 }, minStock: 10, averageLandedCost: 1200.00, imageUrl: '' },
-    { id: 2, name: 'Wireless Mouse', sku: 'WM-001', category: 'Accessories', description: 'Ergonomic wireless mouse', stock: { 1: 150, 2: 75 }, minStock: 25, averageLandedCost: 8.50, imageUrl: '' },
-    { id: 3, name: 'Mechanical Keyboard', sku: 'MK-ELITE', category: 'Accessories', description: 'Gaming mechanical keyboard', stock: { 1: 80, 2: 30 }, minStock: 15, averageLandedCost: 45.00, imageUrl: '' }
+    { id: 1, name: 'Laptop Pro 15"', sku: 'LP15-PRO', category: 'Electronics', description: 'High-end professional laptop', stock: { 1: 50, 2: 20 }, minStock: 10, averageLandedCost: 1200.00, imageUrl: '' } as Product,
+    { id: 2, name: 'Wireless Mouse', sku: 'WM-001', category: 'Accessories', description: 'Ergonomic wireless mouse', stock: { 1: 150, 2: 75 }, minStock: 25, averageLandedCost: 8.50, imageUrl: '' } as Product,
+    { id: 3, name: 'Mechanical Keyboard', sku: 'MK-ELITE', category: 'Accessories', description: 'Gaming mechanical keyboard', stock: { 1: 80, 2: 30 }, minStock: 15, averageLandedCost: 45.00, imageUrl: '' } as Product
   ],
-  suppliers: [{ id: 1, name: 'Tech Supplies Inc.', contact: 'John Doe', email: 'john@techsupplies.com', phone: '+1234567890', address: '123 Tech Road' }],
-  customers: [{ id: 1, name: 'Global Innovations Ltd.', contact: 'Jane Smith', email: 'jane@globalinnovations.com', phone: '+9876543210', address: '456 Business Ave' }],
+  suppliers: [{ id: 1, name: 'Tech Supplies Inc.', contact: 'John Doe', email: 'john@techsupplies.com', phone: '+1234567890', address: '123 Tech Road' }] as Supplier[],
+  customers: [{ id: 1, name: 'Global Innovations Ltd.', contact: 'Jane Smith', email: 'jane@globalinnovations.com', phone: '+9876543210', address: '456 Business Ave' }] as Customer[],
   purchaseOrders: [] as PurchaseOrder[],
   sellOrders: [] as SellOrder[],
   incomingPayments: [] as Payment[],
@@ -215,8 +219,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1
   });
 
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [confirmationModalProps, setConfirmationModalProps] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  // Use the new modals hook
+  const {
+    showAlertModal,
+    showConfirmationModal,
+    isConfirmationModalOpen,
+    confirmationModalProps,
+    closeConfirmationModal,
+  } = useModals();
+
+  // Use the new inventory management hook
+  const {
+    updateStockFromOrder,
+    updateAverageCosts,
+  } = useInventoryManagement({ products, setProducts });
+
+  // Use the new CRUD operations hook
+  const {
+    getNextId,
+    setNextIdForCollection,
+    saveItem,
+    deleteItem,
+  } = useCrudOperations({
+    products, setProducts,
+    suppliers, setSuppliers,
+    customers, setCustomers,
+    warehouses, setWarehouses,
+    purchaseOrders, setPurchaseOrders,
+    sellOrders, setSellOrders,
+    incomingPayments, setIncomingPayments,
+    outgoingPayments, setOutgoingPayments,
+    productMovements, setProductMovements,
+    nextIds, setNextIds,
+    showAlertModal, showConfirmationModal,
+    updateStockFromOrder,
+  });
 
   // --- Initialization Logic ---
   useEffect(() => {
@@ -248,237 +285,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setInitialized(true);
     }
   }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates, setNextIds]);
-
-  // --- Utility Functions ---
-  const getNextId = useCallback((key: keyof typeof initialData) => {
-    return nextIds[key] || 1;
-  }, [nextIds]);
-
-  const setNextIdForCollection = useCallback((key: keyof typeof initialData, newNextId: number) => {
-    setNextIds(prev => ({ ...prev, [key]: newNextId }));
-  }, [setNextIds]);
-
-  const showAlertModal = useCallback((title: string, message: string) => {
-    sonnerToast.info(message, {
-      duration: 5000,
-      action: {
-        label: 'OK',
-        onClick: () => sonnerToast.dismiss(),
-      },
-      description: title,
-    });
-  }, []);
-
-  const showConfirmationModal = useCallback((title: string, message: string, onConfirm: () => void) => {
-    setConfirmationModalProps({ title, message, onConfirm });
-    setIsConfirmationModalOpen(true);
-  }, []);
-
-  const closeConfirmationModal = useCallback(() => {
-    setIsConfirmationModalOpen(false);
-    setConfirmationModalProps(null);
-  }, []);
-
-  // --- Stock and Cost Update Functions (defined first due to dependencies) ---
-  const updateStockFromOrder = useCallback((newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => {
-    setProducts(prevProducts => {
-      const updatedProducts = JSON.parse(JSON.stringify(prevProducts)); // Deep copy
-      if (!newOrder && !oldOrder) return prevProducts;
-
-      const isSell = newOrder ? 'vatPercent' in newOrder : (oldOrder ? 'vatPercent' in oldOrder : false);
-      const statusCompleted = isSell ? 'Shipped' : 'Received';
-
-      // --- 1. Reverse old stock change if the status was previously completed ---
-      if (oldOrder && oldOrder.status === statusCompleted) {
-        (oldOrder.items || []).forEach(item => {
-          const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
-          if (p) {
-            if (!p.stock) p.stock = {};
-            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + (isSell ? item.qty : -item.qty);
-            if (p.stock[oldOrder.warehouseId] < 0) p.stock[oldOrder.warehouseId] = 0;
-          }
-        });
-      }
-
-      // --- 2. Apply new stock change if status is now completed ---
-      if (newOrder && newOrder.status === statusCompleted) {
-        (newOrder.items || []).forEach(item => {
-          const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
-          if (p) {
-            if (!p.stock) p.stock = {};
-            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - (isSell ? item.qty : -item.qty);
-            if (p.stock[newOrder.warehouseId] < 0) p.stock[newOrder.warehouseId] = 0;
-          }
-        });
-      }
-      return updatedProducts;
-    });
-  }, [setProducts]);
-
-  const updateAverageCosts = useCallback((purchaseOrder: PurchaseOrder) => {
-    setProducts(prevProducts => {
-      const updatedProducts = JSON.parse(JSON.stringify(prevProducts));
-      (purchaseOrder.items || []).forEach(item => {
-        const product = updatedProducts.find((p: Product) => p.id === item.productId);
-        if (product) {
-          const landedCostInAZN = item.landedCostPerUnit || 0;
-          if (landedCostInAZN <= 0) return;
-
-          const totalStock = Object.values(product.stock || {}).reduce((a, b) => a + b, 0);
-          const stockBeforeThisOrder = totalStock - item.qty;
-
-          if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {
-            const oldTotalValue = stockBeforeThisOrder * product.averageLandedCost;
-            const newItemsValue = item.qty * landedCostInAZN;
-            if (totalStock > 0) {
-              product.averageLandedCost = parseFloat(((oldTotalValue + newItemsValue) / totalStock).toFixed(4));
-            } else {
-              product.averageLandedCost = landedCostInAZN;
-            }
-          } else {
-            product.averageLandedCost = landedCostInAZN;
-          }
-        }
-      });
-      return updatedProducts;
-    });
-  }, [setProducts]);
-
-  // --- CRUD Operations (now defined after their dependencies) ---
-  const saveItem = useCallback((key: keyof typeof initialData, item: any) => {
-    let currentItems: any[] = [];
-    let setter: React.Dispatch<React.SetStateAction<any[]>>;
-
-    switch (key) {
-      case 'products': currentItems = products; setter = setProducts; break;
-      case 'suppliers': currentItems = suppliers; setter = setSuppliers; break;
-      case 'customers': currentItems = customers; setter = setCustomers; break;
-      case 'warehouses': currentItems = warehouses; setter = setWarehouses; break;
-      case 'purchaseOrders': currentItems = purchaseOrders; setter = setPurchaseOrders; break;
-      case 'sellOrders': currentItems = sellOrders; setter = setSellOrders; break;
-      case 'incomingPayments': currentItems = incomingPayments; setter = setIncomingPayments; break;
-      case 'outgoingPayments': currentItems = outgoingPayments; setter = setOutgoingPayments; break;
-      case 'productMovements': currentItems = productMovements; setter = setProductMovements; break;
-      default: return;
-    }
-
-    // Specific validation for warehouses
-    if (key === 'warehouses' && item.type === 'Main') {
-      const existingMainWarehouse = currentItems.find((w: Warehouse) => w.type === 'Main' && w.id !== item.id);
-      if (existingMainWarehouse) {
-        showAlertModal(t('validationError'), t('onlyOneMainWarehouse'));
-        return;
-      }
-    }
-
-    let updatedItems;
-    const existingItemIndex = currentItems.findIndex(i => i.id === item.id);
-
-    if (item.id === 0 || existingItemIndex === -1) { // New item (either id is 0 or id doesn't exist in currentItems)
-      const newItemId = getNextId(key);
-      updatedItems = [...currentItems, { ...item, id: newItemId }];
-      setNextIdForCollection(key, newItemId + 1); // Increment next ID for this collection
-    } else { // Existing item, update it
-      updatedItems = currentItems.map(i => i.id === item.id ? item : i);
-    }
-    
-    if (key === 'productMovements') {
-      console.log(`[DataContext] Saving product movement. Before:`, currentItems.length, `After:`, updatedItems.length, `New item ID:`, item.id || getNextId(key));
-      console.log(`[DataContext] Updated productMovements array:`, updatedItems);
-    }
-
-    setter(updatedItems);
-    sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
-  }, [products, setProducts, suppliers, setSuppliers, customers, setCustomers, warehouses, setWarehouses, purchaseOrders, setPurchaseOrders, sellOrders, setSellOrders, incomingPayments, setIncomingPayments, outgoingPayments, setOutgoingPayments, productMovements, setProductMovements, getNextId, setNextIdForCollection, showAlertModal]);
-
-  const deleteItem = useCallback((key: keyof typeof initialData, id: number) => {
-    const onConfirmDelete = () => {
-      let currentItems: any[] = [];
-      let setter: React.Dispatch<React.SetStateAction<any[]>>;
-
-      switch (key) {
-        case 'products': currentItems = products; setter = setProducts; break;
-        case 'suppliers': currentItems = suppliers; setter = setSuppliers; break;
-        case 'customers': currentItems = customers; setter = setCustomers; break;
-        case 'warehouses': currentItems = warehouses; setter = setWarehouses; break;
-        case 'purchaseOrders': currentItems = purchaseOrders; setter = setPurchaseOrders; break;
-        case 'sellOrders': currentItems = sellOrders; setter = setSellOrders; break;
-        case 'incomingPayments': currentItems = incomingPayments; setter = setIncomingPayments; break;
-        case 'outgoingPayments': currentItems = outgoingPayments; setter = setOutgoingPayments; break;
-        case 'productMovements': currentItems = productMovements; setter = setProductMovements; break;
-        default: return;
-      }
-
-      // --- Deletion validation checks ---
-      if (key === 'products') {
-        const hasOrders = sellOrders.some(o => o.items?.some(i => i.productId === id)) || purchaseOrders.some(o => o.items?.some(i => i.productId === id));
-        if (hasOrders) { showAlertModal('Deletion Failed', 'Cannot delete this product because it is used in existing purchase or sell orders.'); return; }
-
-        const hasMovements = productMovements.some(m => m.items?.some(i => i.productId === id));
-        if (hasMovements) { showAlertModal('Deletion Failed', 'Cannot delete this product. It is used in existing product movements.'); return; }
-
-        const productToDelete = products.find(p => p.id === id);
-        if (productToDelete && productToDelete.stock && Object.values(productToDelete.stock).some(qty => qty > 0)) {
-          showAlertModal('Deletion Failed', 'Cannot delete this product. There is remaining stock across warehouses.');
-          return;
-        }
-      }
-      if (key === 'warehouses') {
-        const warehouseToDelete = currentItems.find((w: Warehouse) => w.id === id);
-        if (warehouseToDelete && warehouseToDelete.type === 'Main') {
-          showAlertModal('Deletion Failed', 'Cannot delete the Main Warehouse. Please designate another warehouse as Main first.');
-          return;
-        }
-        if (products.some(p => p.stock && p.stock[id] && p.stock[id] > 0)) {
-          showAlertModal('Deletion Failed', 'Cannot delete this warehouse because it contains stock. Please move all products first.');
-          return;
-        }
-        const hasOrders = purchaseOrders.some(o => o.warehouseId === id) ||
-                         sellOrders.some(o => o.warehouseId === id) ||
-                         productMovements.some(m => m.sourceWarehouseId === id || m.destWarehouseId === id);
-        if (hasOrders) { showAlertModal('Deletion Failed', 'Cannot delete this warehouse. It is used in existing orders or movements.'); return; }
-      }
-      if (key === 'suppliers' || key === 'customers') {
-        const orderKey = key === 'suppliers' ? purchaseOrders : sellOrders;
-        if (orderKey.some(o => o.contactId === id)) { showAlertModal('Deletion Failed', `Cannot delete this ${key.slice(0, -1)} because they are linked to existing orders.`); return; }
-      }
-
-      // Reverse stock change if deleting a completed order/movement
-      if (key === 'purchaseOrders' || key === 'sellOrders') {
-        const orderToDelete = currentItems.find(o => o.id === id);
-        if (orderToDelete) updateStockFromOrder(null, orderToDelete);
-      } else if (key === 'productMovements') {
-        const movementToDelete = currentItems.find(m => m.id === id);
-        if (movementToDelete) {
-          // Find the linked sell order and clear its productMovementId
-          setSellOrders(prevSellOrders => prevSellOrders.map(so => 
-            so.productMovementId === movementToDelete.id 
-              ? { ...so, productMovementId: undefined } 
-              : so
-          ));
-
-          const updatedProducts = products.map(p => {
-            if (p.stock && movementToDelete.items?.some(item => item.productId === p.id)) {
-              const newP = { ...p, stock: { ...p.stock } };
-              movementToDelete.items.forEach(item => {
-                if (item.productId === p.id) {
-                  newP.stock[movementToDelete.sourceWarehouseId] = (newP.stock[movementToDelete.sourceWarehouseId] || 0) + item.quantity;
-                  newP.stock[movementToDelete.destWarehouseId] = (newP.stock[movementToDelete.destWarehouseId] || 0) - item.quantity;
-                }
-              });
-              return newP;
-            }
-            return p;
-          });
-          setProducts(updatedProducts);
-        }
-      }
-
-      setter(currentItems.filter(i => i.id !== id));
-      sonnerToast.success(t('success'), { description: `Item deleted successfully.` });
-    };
-    showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete);
-  }, [products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, showAlertModal, showConfirmationModal, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, updateStockFromOrder]);
 
   const productsWithTotalStock = useMemo(() => {
     return products.map(p => ({
