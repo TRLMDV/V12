@@ -43,7 +43,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
   return (
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
-      <div className="grid grid-cols-13 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
+      <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
         <Label className="col-span-3">{t('product')}</Label>
         <Label className="col-span-2">{t('qty')}</Label>
         <Label className="col-span-2">{t('price')}</Label>
@@ -53,7 +53,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
       </div>
       <div id="order-items">
         {orderItems.map((item, index) => (
-          <div key={index} className="grid grid-cols-13 gap-2 mb-2 items-center">
+          <div key={index} className="grid grid-cols-12 gap-2 mb-2 items-center">
             <Popover open={openComboboxIndex === index} onOpenChange={(open) => setOpenComboboxIndex(open ? index : null)}>
               <PopoverTrigger asChild>
                 <Button
