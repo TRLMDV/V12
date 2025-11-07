@@ -25,6 +25,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
     saveItem,
     showAlertModal,
     currencyRates,
+    customers, // Added customers
+    suppliers, // Added suppliers
   } = useData();
 
   const isIncoming = type === 'incoming';
@@ -39,6 +41,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
   // Memoize order maps for efficient lookups
   const purchaseOrderMap = useMemo(() => purchaseOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: PurchaseOrder }), [purchaseOrders]);
   const sellOrderMap = useMemo(() => sellOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: SellOrder }), [sellOrders]);
+  const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string }), [customers]); // Added customerMap
+  const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as { [key: number]: string }), [suppliers]); // Added supplierMap
 
   // Aggregate payments by order ID and category (products/fees)
   const paymentsByOrderAndCategory = useMemo(() => {
@@ -128,13 +132,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
       if (isIncoming) { // Sell Orders
         const sellOrder = order as SellOrder;
+        const customerName = customerMap[sellOrder.contactId] || 'Unknown Customer'; // Get customer name
         const totalOrderValue = sellOrder.total; // Total includes VAT
         const remainingTotal = totalOrderValue - adjustedProductsPaid; // For sell orders, we treat it as one total
 
         if (remainingTotal > 0.001) {
           list.push({
             id: sellOrder.id,
-            display: `${t('orderId')} #${sellOrder.id} (${t('remaining')}: ${remainingTotal.toFixed(2)} AZN)`,
+            display: `${t('orderId')} #${sellOrder.id} (${customerName}) - ${t('remaining')}: ${remainingTotal.toFixed(2)} AZN`,
             remainingAmount: remainingTotal,
             category: 'products', // Sell orders are always 'products' category for simplicity
             orderType: 'sell',
@@ -142,6 +147,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         }
       } else { // Outgoing Payments for Purchase Orders
         const purchaseOrder = order as PurchaseOrder;
+        const supplierName = supplierMap[purchaseOrder.contactId] || 'Unknown Supplier'; // Get supplier name
         const { productsSubtotalAZN, totalFeesAZN } = calculatePurchaseOrderBreakdown(purchaseOrder);
 
         const remainingProductsBalance = productsSubtotalAZN - adjustedProductsPaid;
@@ -150,7 +156,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         if (remainingProductsBalance > 0.001) {
           list.push({
             id: purchaseOrder.id,
-            display: `${t('orderId')} #${purchaseOrder.id} (${t('productsTotal')} - ${t('remaining')}: ${remainingProductsBalance.toFixed(2)} AZN)`,
+            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${t('productsTotal')} - ${t('remaining')}: ${remainingProductsBalance.toFixed(2)} AZN`,
             remainingAmount: remainingProductsBalance,
             category: 'products',
             orderType: 'purchase',
@@ -159,7 +165,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         if (remainingFeesBalance > 0.001) {
           list.push({
             id: purchaseOrder.id,
-            display: `${t('orderId')} #${purchaseOrder.id} (${t('feesTotal')} - ${t('remaining')}: ${remainingFeesBalance.toFixed(2)} AZN)`,
+            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${t('feesTotal')} - ${t('remaining')}: ${remainingFeesBalance.toFixed(2)} AZN`,
             remainingAmount: remainingFeesBalance,
             category: 'fees',
             orderType: 'purchase',
@@ -168,7 +174,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       }
     });
     return list;
-  }, [allOrders, paymentsByOrderAndCategory, isIncoming, isEdit, payment, calculatePurchaseOrderBreakdown]);
+  }, [allOrders, paymentsByOrderAndCategory, isIncoming, isEdit, payment, calculatePurchaseOrderBreakdown, customerMap, supplierMap]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
