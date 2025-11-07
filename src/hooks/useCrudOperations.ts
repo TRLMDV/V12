@@ -130,7 +130,7 @@ export function useCrudOperations({
         if (hasMovements) { showAlertModal('Deletion Failed', 'Cannot delete this product. It is used in existing product movements.'); return; }
 
         const productToDelete = products.find(p => p.id === id);
-        if (productToDelete && p.stock && Object.values(productToDelete.stock).some(qty => qty > 0)) {
+        if (productToDelete && productToDelete.stock && Object.values(productToDelete.stock).some(qty => qty > 0)) {
           showAlertModal('Deletion Failed', 'Cannot delete this product. There is remaining stock across warehouses.');
           return;
         }
