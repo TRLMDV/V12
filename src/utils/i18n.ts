@@ -99,6 +99,7 @@ const i18n = {
     enterSku: 'Enter SKU...', // New translation
     totalVat: 'Total VAT', // New translation
     totalCleanProfit: 'Total Clean Profit', // New translation
+    landedCost: 'Landed Cost', // New translation
     // New translations for Excel Import
     importProductsFromExcel: 'Import Products from Excel',
     importProductsDescription: 'Upload an Excel file (.xlsx or .xls) to import your product list. The file should have columns like "Product Name", "SKU", "Category", "Description", "Min. Stock", "Avg. Landed Cost", "Image URL". Existing products with the same SKU will be skipped.',

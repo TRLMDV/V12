@@ -11,6 +11,7 @@ interface SellOrderItemState {
   price: number | string; // Allow string for intermediate input
   itemTotal: number | string; // Allow string for intermediate input
   cleanProfit?: number; // New field for calculated clean profit per item
+  landedCost?: number; // Added: Landed cost for the product
 }
 
 interface UseSellOrderFormProps {
@@ -61,9 +62,10 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         qty: String(item.qty), // Convert to string for input
         price: String(item.price), // Convert to string for input
         itemTotal: String(item.qty * item.price), // Calculate initial itemTotal and convert to string
+        landedCost: productMap[item.productId]?.averageLandedCost, // Populate landed cost
       }));
     }
-    return [{ productId: '', qty: '', price: '', itemTotal: '' }]; // Initialize itemTotal as string
+    return [{ productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined }]; // Initialize itemTotal as string
   });
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
@@ -78,6 +80,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
           qty: String(item.qty),
           price: String(item.price),
           itemTotal: String(item.qty * item.price),
+          landedCost: productMap[item.productId]?.averageLandedCost, // Populate landed cost
         })));
         setIsFormInitialized(true);
       }
@@ -89,10 +92,10 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         vatPercent: settings.defaultVat,
         total: 0,
       });
-      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '' }]);
+      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined }]);
       setIsFormInitialized(true);
     }
-  }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized]);
+  }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized, productMap]); // Added productMap to dependencies
 
   const calculateOrderFinancials = useCallback(() => {
     let subtotal = 0;
@@ -150,7 +153,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
   }, []);
 
   const addOrderItem = useCallback(() => {
-    setOrderItems(prev => [...prev, { productId: '', qty: '', price: '', itemTotal: '' }]);
+    setOrderItems(prev => [...prev, { productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined }]);
   }, []);
 
   const removeOrderItem = useCallback((index: number) => {
@@ -164,6 +167,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
 
       if (field === 'productId') {
         item.productId = value;
+        const selectedProduct = productMap[value as number];
+        item.landedCost = selectedProduct?.averageLandedCost; // Update landed cost when product changes
       } else if (field === 'qty') {
         item.qty = value; // Store raw string
         const qtyNum = parseFloat(value) || 0;
@@ -187,7 +192,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       newItems[index] = item;
       return newItems;
     });
-  }, []);
+  }, [productMap]);
 
   const handleGenerateProductMovement = useCallback(() => {
     const orderToSave: SellOrder = {
