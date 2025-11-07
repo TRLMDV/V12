@@ -115,6 +115,15 @@ const i18n = {
     excelImportInfo: 'Excel Import Info',
     duplicateProductsSkipped: 'Some products were skipped because their SKUs already exist.',
     duplicateCustomersSkipped: 'Some customers were skipped because their emails already exist.',
+    // New translations for Excel Export
+    exportProductsToExcel: 'Export Products to Excel',
+    exportProductsDescription: 'Download your current product list as an Excel file.',
+    exportCustomersToExcel: 'Export Customers to Excel',
+    exportCustomersDescription: 'Download your current customer list as an Excel file.',
+    exportExcelFile: 'Export Excel File',
+    noDataToExport: 'No data available to export.',
+    exportJsonFile: 'Export JSON File',
+    importJsonFile: 'Import JSON File',
   }
 };
 

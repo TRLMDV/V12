@@ -20,6 +20,7 @@ export interface Product {
   minStock: number;
   averageLandedCost: number;
   imageUrl: string;
+  totalStock?: number; // Added for easier export/display
 }
 
 export interface Supplier {
@@ -220,7 +221,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // --- Initialization Logic ---
   useEffect(() => {
     if (!initialized) {
-      // Initialize with dummy data if not already done
+      // Initialize with dummy data
       setWarehouses(initialData.warehouses);
       setProducts(initialData.products);
       setSuppliers(initialData.suppliers);
@@ -479,8 +480,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete);
   }, [products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, showAlertModal, showConfirmationModal, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, updateStockFromOrder]);
 
+  const productsWithTotalStock = useMemo(() => {
+    return products.map(p => ({
+      ...p,
+      totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
+    }));
+  }, [products]);
+
   const value = {
-    products, setProducts,
+    products: productsWithTotalStock, setProducts, // Provide products with totalStock
     suppliers, setSuppliers,
     customers, setCustomers,
     warehouses, setWarehouses,

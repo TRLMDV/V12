@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Download, UploadCloud } from 'lucide-react'; // Add UploadCloud icon
 import ExcelImportButton from '@/components/ExcelImportButton'; // Import the new component
+import ExcelExportButton from '@/components/ExcelExportButton'; // Import the new ExcelExportButton
 
 const DataImportExport: React.FC = () => {
   const {
@@ -159,41 +160,75 @@ const DataImportExport: React.FC = () => {
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('dataImportExport')}</h1>
 
+      {/* JSON Backup/Restore */}
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('backupData')}</h2>
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('backupRestore')}</h2>
         <p className="text-gray-600 dark:text-slate-400 mb-4">
           {t('exportDataToJson')}
         </p>
         <Button onClick={handleExportData} className="bg-sky-500 hover:bg-sky-600 text-white">
           <Download className="w-4 h-4 mr-2" />
-          {t('export')}
+          {t('exportJsonFile')}
         </Button>
-      </div>
-
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('restoreData')}</h2>
-        <p className="text-gray-600 dark:text-slate-400 mb-4">
-          {t('restoreWarning')}
-        </p>
-        <div className="flex items-center space-x-4">
-          {/* Hidden file input */}
-          <Input
-            id="import-file"
-            type="file"
-            accept=".json"
-            onChange={handleImportData}
-            ref={fileInputRef}
-            className="hidden" // Hide the input visually
-          />
-          {/* Styled button to trigger the hidden file input */}
-          <Button onClick={handleImportButtonClick} className="bg-sky-500 hover:bg-sky-600 text-white">
-            <UploadCloud className="w-4 h-4 mr-2" />
-            {t('import')}
-          </Button>
+        <div className="mt-4">
+          <p className="text-gray-600 dark:text-slate-400 mb-4">
+            {t('restoreWarning')}
+          </p>
+          <div className="flex items-center space-x-4">
+            <Input
+              id="import-file"
+              type="file"
+              accept=".json"
+              onChange={handleImportData}
+              ref={fileInputRef}
+              className="hidden"
+            />
+            <Button onClick={handleImportButtonClick} className="bg-sky-500 hover:bg-sky-600 text-white">
+              <UploadCloud className="w-4 h-4 mr-2" />
+              {t('importJsonFile')}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Excel Import Sections - Moved here */}
+      {/* Excel Export Sections */}
+      <ExcelExportButton
+        label={t('exportProductsToExcel')}
+        description={t('exportProductsDescription')}
+        data={products}
+        fileName="products_export"
+        sheetName="Products"
+        columns={[
+          { header: 'ID', accessor: 'id' },
+          { header: 'Product Name', accessor: 'name' },
+          { header: 'SKU', accessor: 'sku' },
+          { header: 'Category', accessor: 'category' },
+          { header: 'Description', accessor: 'description' },
+          { header: 'Min. Stock', accessor: 'minStock' },
+          { header: 'Avg. Landed Cost', accessor: 'averageLandedCost' },
+          { header: 'Image URL', accessor: 'imageUrl' },
+          // Note: Stock is per warehouse, so exporting total stock might be more practical here
+          { header: 'Total Stock', accessor: 'totalStock' }, // Assuming 'totalStock' is calculated or added to product objects
+        ]}
+      />
+
+      <ExcelExportButton
+        label={t('exportCustomersToExcel')}
+        description={t('exportCustomersDescription')}
+        data={customers}
+        fileName="customers_export"
+        sheetName="Customers"
+        columns={[
+          { header: 'ID', accessor: 'id' },
+          { header: 'Customer Name', accessor: 'name' },
+          { header: 'Contact Person', accessor: 'contact' },
+          { header: 'Email', accessor: 'email' },
+          { header: 'Phone', accessor: 'phone' },
+          { header: 'Address', accessor: 'address' },
+        ]}
+      />
+
+      {/* Excel Import Sections */}
       <ExcelImportButton
         label={t('importProductsFromExcel')}
         description={t('importProductsDescription')}
