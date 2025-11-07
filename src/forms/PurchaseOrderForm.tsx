@@ -92,13 +92,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     return manualExchangeRate !== undefined ? manualExchangeRate : currencyRates[selectedCurrency];
   }, [selectedCurrency, manualExchangeRate, currencyRates]);
 
-  const calculateLandedCost = useCallback((item: PurchaseOrderItemState, orderCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB', exchangeRate: number) => {
-    const itemPriceInAZN = item.price * (orderCurrency === 'AZN' ? 1 : exchangeRate);
-    // For simplicity, we'll distribute fees proportionally by item value.
-    // A more complex model might distribute by weight, volume, etc.
-    return itemPriceInAZN;
-  }, []);
-
   const calculateTotalOrderValue = useCallback(() => {
     let productsSubtotalNative = 0;
     orderItems.forEach(item => {
@@ -114,6 +107,10 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     const additionalFeesAZN = order.additionalFees * (order.additionalFeesCurrency === 'AZN' ? 1 : (currencyRates[order.additionalFeesCurrency || 'AZN'] || 1));
 
     const totalFeesAZN = transportationFeesAZN + customFeesAZN + additionalFeesAZN;
+    
+    // Convert total fees from AZN back to the selected order currency for display
+    const totalFeesNative = selectedCurrency === 'AZN' ? totalFeesAZN : (totalFeesAZN / currentExchangeRate);
+
     const totalOrderValueAZN = productsSubtotalAZN + totalFeesAZN;
 
     // Calculate landed cost per unit for each item
@@ -145,11 +142,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
       };
     });
 
-    return { totalOrderValueAZN, updatedOrderItems };
+    return { totalOrderValueAZN, updatedOrderItems, productsSubtotalNative, totalFeesNative };
   }, [order, orderItems, selectedCurrency, currentExchangeRate, currencyRates]);
 
+  const [productsSubtotalNative, setProductsSubtotalNative] = useState(0);
+  const [totalFeesNative, setTotalFeesNative] = useState(0);
+
   useEffect(() => {
-    const { totalOrderValueAZN, updatedOrderItems } = calculateTotalOrderValue();
+    const { totalOrderValueAZN, updatedOrderItems, productsSubtotalNative, totalFeesNative } = calculateTotalOrderValue();
     setOrder(prev => ({ ...prev, total: parseFloat(totalOrderValueAZN.toFixed(2)) }));
     setOrderItems(updatedOrderItems.map(item => ({
       productId: item.productId,
@@ -158,6 +158,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
       currency: item.currency as 'AZN' | 'USD' | 'EUR' | 'RUB',
       landedCostPerUnit: item.landedCostPerUnit,
     })));
+    setProductsSubtotalNative(productsSubtotalNative);
+    setTotalFeesNative(totalFeesNative);
   }, [order.transportationFees, order.customFees, order.additionalFees, order.transportationFeesCurrency, order.customFeesCurrency, order.additionalFeesCurrency, orderItems.map(i => `${i.productId}-${i.qty}-${i.price}`).join(','), selectedCurrency, manualExchangeRate, currencyRates, calculateTotalOrderValue]);
 
 
@@ -517,6 +519,28 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
               <SelectItem value="RUB">RUB</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        {/* New Subtotal and Fees Total Display */}
+        <div className="grid grid-cols-4 items-center gap-4 mt-6 border-t pt-4 dark:border-slate-700">
+          <Label className="text-right text-md font-semibold">{t('productsSubtotal')}</Label>
+          <Input
+            id="productsSubtotal"
+            type="text"
+            value={`${productsSubtotalNative.toFixed(2)} ${selectedCurrency}`}
+            readOnly
+            className="col-span-3 font-semibold bg-gray-50 dark:bg-slate-700"
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label className="text-right text-md font-semibold">{t('totalFees')}</Label>
+          <Input
+            id="totalFees"
+            type="text"
+            value={`${totalFeesNative.toFixed(2)} ${selectedCurrency}`}
+            readOnly
+            className="col-span-3 font-semibold bg-gray-50 dark:bg-slate-700"
+          />
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4 mt-6 border-t pt-4 dark:border-slate-700">
