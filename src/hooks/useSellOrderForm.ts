@@ -62,7 +62,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         itemTotal: item.qty * item.price, // Calculate initial itemTotal
       }));
     }
-    return [{ productId: '', qty: 1, price: 0, itemTotal: 0 }]; // Initialize itemTotal
+    return [{ productId: '', qty: 0, price: 0, itemTotal: 0 }]; // Initialize itemTotal
   });
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
@@ -88,7 +88,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         vatPercent: settings.defaultVat,
         total: 0,
       });
-      setOrderItems([{ productId: '', qty: 1, price: 0, itemTotal: 0 }]); // Initialize itemTotal
+      setOrderItems([{ productId: '', qty: 0, price: 0, itemTotal: 0 }]); // Initialize itemTotal
       setIsFormInitialized(true);
     }
   }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized]);
@@ -123,7 +123,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
   }, []);
 
   const addOrderItem = useCallback(() => {
-    setOrderItems(prev => [...prev, { productId: '', qty: 1, price: 0, itemTotal: 0 }]); // Initialize itemTotal
+    setOrderItems(prev => [...prev, { productId: '', qty: 0, price: 0, itemTotal: 0 }]); // Initialize itemTotal
   }, []);
 
   const removeOrderItem = useCallback((index: number) => {
@@ -139,7 +139,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         item.productId = value;
       } else if (field === 'qty') {
         const newQty = parseInt(value) || 0;
-        item.qty = newQty < 1 ? 1 : newQty;
+        item.qty = newQty < 0 ? 0 : newQty; // Allow 0, but not negative
         item.itemTotal = item.qty * item.price; // Recalculate itemTotal
       } else if (field === 'price') {
         const newPrice = parseFloat(value) || 0;
@@ -271,7 +271,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
 
     const validOrderItems = orderItems.filter(item => item.productId !== '' && item.qty > 0 && item.price >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price.');
+      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
       return;
     }
 

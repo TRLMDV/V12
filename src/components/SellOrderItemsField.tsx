@@ -94,11 +94,10 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
               </PopoverContent>
             </Popover>
             <Input
-              type="number"
+              type="text" // Changed to text
               value={String(item.qty)}
               onChange={(e) => handleOrderItemChange(index, 'qty', parseInt(e.target.value) || 0)}
               className="col-span-2"
-              min="1"
             />
             <Input
               type="number"

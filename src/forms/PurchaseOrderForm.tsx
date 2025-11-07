@@ -43,7 +43,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
   const isEdit = orderId !== undefined;
 
   const [order, setOrder] = useState<Partial<PurchaseOrder>>({});
-  const [orderItems, setOrderItems] = useState<PurchaseOrderItemState[]>([{ productId: '', qty: 1, price: 0, itemTotal: 0 }]);
+  const [orderItems, setOrderItems] = useState<PurchaseOrderItemState[]>([{ productId: '', qty: 0, price: 0, itemTotal: 0 }]);
   const [selectedCurrency, setSelectedCurrency] = useState<'AZN' | 'USD' | 'EUR' | 'RUB'>('AZN');
   const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
   const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>(''); // New state for input string
@@ -82,7 +82,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
         additionalFeesCurrency: 'AZN',
         total: 0,
       });
-      setOrderItems([{ productId: '', qty: 1, price: 0, itemTotal: 0 }]);
+      setOrderItems([{ productId: '', qty: 0, price: 0, itemTotal: 0 }]);
       setSelectedCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput(''); // Reset for new orders
@@ -207,7 +207,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
   };
 
   const addOrderItem = useCallback(() => {
-    setOrderItems(prev => [...prev, { productId: '', qty: 1, price: 0, itemTotal: 0, currency: selectedCurrency }]);
+    setOrderItems(prev => [...prev, { productId: '', qty: 0, price: 0, itemTotal: 0, currency: selectedCurrency }]);
   }, [selectedCurrency]);
 
   const removeOrderItem = useCallback((index: number) => {
@@ -223,7 +223,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
         item.productId = value;
       } else if (field === 'qty') {
         const newQty = parseInt(value) || 0;
-        item.qty = newQty < 1 ? 1 : newQty; // Ensure qty is at least 1
+        item.qty = newQty < 0 ? 0 : newQty; // Allow 0, but not negative
         item.itemTotal = item.qty * item.price; // Recalculate itemTotal based on new qty and existing price
       } else if (field === 'price') {
         const newPrice = parseFloat(value) || 0;
@@ -253,7 +253,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
 
     const validOrderItems = orderItems.filter(item => item.productId !== '' && item.qty > 0 && item.price >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price.');
+      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
       return;
     }
 
@@ -444,11 +444,10 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                 </PopoverContent>
               </Popover>
               <Input
-                type="number"
+                type="text" // Changed to text
                 value={String(item.qty)}
-                onChange={(e) => handleOrderItemChange(index, 'qty', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleOrderItemChange(index, 'qty', e.target.value)}
                 className="col-span-2"
-                min="1"
               />
               <Input
                 type="number"
@@ -459,7 +458,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                 min="0"
               />
               <Input
-                type="text" // Changed to text
+                type="text"
                 step="0.01"
                 value={item.itemTotal.toFixed(2)}
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
