@@ -125,6 +125,11 @@ const i18n = {
     noDataToExport: 'No data available to export.',
     exportJsonFile: 'Export JSON File',
     importJsonFile: 'Import JSON File',
+    // New translations for Erase All Data
+    eraseAllData: 'Erase All Data',
+    eraseAllDataDescription: 'This action will permanently delete ALL application data stored locally and reset the application to its initial state. This cannot be undone.',
+    eraseAllDataWarning: 'Are you absolutely sure you want to erase all data? This action is irreversible and will reset the application to its default state.',
+    allDataErased: 'All application data has been erased.',
   }
 };
 

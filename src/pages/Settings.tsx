@@ -8,11 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ImageUpload from '@/components/ImageUpload';
-// ExcelImportButton is no longer needed here
 import { toast } from 'sonner';
 
 const SettingsPage: React.FC = () => {
-  const { settings, setSettings, currencyRates, setCurrencyRates, setProducts, setCustomers, getNextId, setNextIdForCollection } = useData();
+  const { settings, setSettings, currencyRates, setCurrencyRates, setProducts, setCustomers, getNextId, setNextIdForCollection, showConfirmationModal } = useData();
 
   const [companyName, setCompanyName] = useState(settings.companyName);
   const [companyLogo, setCompanyLogo] = useState<string | null>(settings.companyLogo);
@@ -73,7 +72,31 @@ const SettingsPage: React.FC = () => {
     // The MainLayout useEffect will handle applying the class to document.documentElement
   };
 
-  // Removed handleImportProducts and handleImportCustomers functions
+  const handleEraseAllData = () => {
+    showConfirmationModal(
+      t('eraseAllData'),
+      t('eraseAllDataWarning'),
+      () => {
+        // Clear all local storage items used by the app
+        localStorage.removeItem('products');
+        localStorage.removeItem('suppliers');
+        localStorage.removeItem('customers');
+        localStorage.removeItem('warehouses');
+        localStorage.removeItem('purchaseOrders');
+        localStorage.removeItem('sellOrders');
+        localStorage.removeItem('incomingPayments');
+        localStorage.removeItem('outgoingPayments');
+        localStorage.removeItem('productMovements');
+        localStorage.removeItem('settings');
+        localStorage.removeItem('currencyRates');
+        localStorage.removeItem('nextIds');
+        localStorage.removeItem('initialized'); // Reset initialization flag
+
+        toast.success(t('success'), { description: t('allDataErased') });
+        setTimeout(() => window.location.reload(), 1000); // Reload to re-initialize with default data
+      }
+    );
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -210,6 +233,19 @@ const SettingsPage: React.FC = () => {
         </div>
         <div className="flex justify-end">
           <Button onClick={handleSaveCurrencyRates}>{t('saveCurrencyRates')}</Button>
+        </div>
+      </div>
+
+      {/* Erase All Data */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('eraseAllData')}</h2>
+        <p className="text-gray-600 dark:text-slate-400 mb-4">
+          {t('eraseAllDataDescription')}
+        </p>
+        <div className="flex justify-end">
+          <Button variant="destructive" onClick={handleEraseAllData}>
+            {t('eraseAllData')}
+          </Button>
         </div>
       </div>
     </div>
