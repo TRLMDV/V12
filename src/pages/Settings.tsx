@@ -1,17 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useData, Settings, CurrencyRates } from '@/context/DataContext';
+import { useData, Settings, CurrencyRates, Product, Customer } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ImageUpload from '@/components/ImageUpload';
+import ExcelImportButton from '@/components/ExcelImportButton'; // Import the new component
 import { toast } from 'sonner';
 
 const SettingsPage: React.FC = () => {
-  const { settings, setSettings, currencyRates, setCurrencyRates } = useData();
+  const { settings, setSettings, currencyRates, setCurrencyRates, setProducts, setCustomers, getNextId, setNextIdForCollection } = useData();
 
   const [companyName, setCompanyName] = useState(settings.companyName);
   const [companyLogo, setCompanyLogo] = useState<string | null>(settings.companyLogo);
@@ -70,6 +71,59 @@ const SettingsPage: React.FC = () => {
     setTheme(value);
     setSettings(prev => ({ ...prev, theme: value }));
     // The MainLayout useEffect will handle applying the class to document.documentElement
+  };
+
+  const handleImportProducts = (data: any[]) => {
+    const newProducts: Product[] = data.map((row: any) => ({
+      id: getNextId('products'), // Assign new ID for each imported product
+      name: String(row['Product Name'] || ''),
+      sku: String(row['SKU'] || ''),
+      category: String(row['Category'] || ''),
+      description: String(row['Description'] || ''),
+      stock: {}, // Initialize empty stock, will be updated by POs or movements
+      minStock: parseInt(row['Min. Stock'] || '0'),
+      averageLandedCost: parseFloat(row['Avg. Landed Cost'] || '0'),
+      imageUrl: String(row['Image URL'] || ''),
+    }));
+
+    setProducts(prev => {
+      const existingSkus = new Set(prev.map(p => p.sku.toLowerCase()));
+      const uniqueNewProducts = newProducts.filter(p => !existingSkus.has(p.sku.toLowerCase()));
+
+      if (uniqueNewProducts.length < newProducts.length) {
+        toast.info(t('excelImportInfo'), { description: t('duplicateProductsSkipped') });
+      }
+
+      const allProducts = [...prev, ...uniqueNewProducts];
+      const maxId = allProducts.reduce((max, p) => Math.max(max, p.id), 0);
+      setNextIdForCollection('products', maxId + 1); // Update next ID counter
+      return allProducts;
+    });
+  };
+
+  const handleImportCustomers = (data: any[]) => {
+    const newCustomers: Customer[] = data.map((row: any) => ({
+      id: getNextId('customers'), // Assign new ID for each imported customer
+      name: String(row['Customer Name'] || ''),
+      contact: String(row['Contact Person'] || ''),
+      email: String(row['Email'] || ''),
+      phone: String(row['Phone'] || ''),
+      address: String(row['Address'] || ''),
+    }));
+
+    setCustomers(prev => {
+      const existingEmails = new Set(prev.map(c => c.email.toLowerCase()).filter(Boolean));
+      const uniqueNewCustomers = newCustomers.filter(c => !c.email || !existingEmails.has(c.email.toLowerCase()));
+
+      if (uniqueNewCustomers.length < newCustomers.length) {
+        toast.info(t('excelImportInfo'), { description: t('duplicateCustomersSkipped') });
+      }
+
+      const allCustomers = [...prev, ...uniqueNewCustomers];
+      const maxId = allCustomers.reduce((max, c) => Math.max(max, c.id), 0);
+      setNextIdForCollection('customers', maxId + 1); // Update next ID counter
+      return allCustomers;
+    });
   };
 
   return (
@@ -165,7 +219,7 @@ const SettingsPage: React.FC = () => {
       </div>
 
       {/* Currency Rates */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('currencyRatesSettings')}</h2>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -209,6 +263,21 @@ const SettingsPage: React.FC = () => {
           <Button onClick={handleSaveCurrencyRates}>{t('saveCurrencyRates')}</Button>
         </div>
       </div>
+
+      {/* Excel Import Sections */}
+      <ExcelImportButton
+        label={t('importProductsFromExcel')}
+        description={t('importProductsDescription')}
+        onImport={handleImportProducts}
+        requiredColumns={['Product Name', 'SKU', 'Category', 'Description', 'Min. Stock', 'Avg. Landed Cost', 'Image URL']}
+      />
+
+      <ExcelImportButton
+        label={t('importCustomersFromExcel')}
+        description={t('importCustomersDescription')}
+        onImport={handleImportCustomers}
+        requiredColumns={['Customer Name', 'Contact Person', 'Email', 'Phone', 'Address']}
+      />
     </div>
   );
 };

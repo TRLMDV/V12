@@ -99,6 +99,22 @@ const i18n = {
     enterSku: 'Enter SKU...', // New translation
     totalVat: 'Total VAT', // New translation
     totalCleanProfit: 'Total Clean Profit', // New translation
+    // New translations for Excel Import
+    importProductsFromExcel: 'Import Products from Excel',
+    importProductsDescription: 'Upload an Excel file (.xlsx or .xls) to import your product list. The file should have columns like "Product Name", "SKU", "Category", "Description", "Min. Stock", "Avg. Landed Cost", "Image URL". Existing products with the same SKU will be skipped.',
+    importCustomersFromExcel: 'Import Customers from Excel',
+    importCustomersDescription: 'Upload an Excel file (.xlsx or .xls) to import your customer list. The file should have columns like "Customer Name", "Contact Person", "Email", "Phone", "Address". Existing customers with the same email will be skipped.',
+    importExcelFile: 'Import Excel File',
+    excelImportSuccess: 'Excel Import Success',
+    excelImportError: 'Excel Import Error',
+    noFileSelected: 'No file selected.',
+    emptyOrInvalidExcel: 'The Excel file is empty or has an invalid format.',
+    missingRequiredColumns: 'Missing required columns',
+    importedSuccessfully: 'imported successfully',
+    failedToParseExcel: 'Failed to parse the Excel file. Please ensure it is a valid .xlsx or .xls file.',
+    excelImportInfo: 'Excel Import Info',
+    duplicateProductsSkipped: 'Some products were skipped because their SKUs already exist.',
+    duplicateCustomersSkipped: 'Some customers were skipped because their emails already exist.',
   }
 };
 

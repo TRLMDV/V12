@@ -179,6 +179,7 @@ interface DataContextType {
   saveItem: (key: keyof typeof initialData, item: any) => void;
   deleteItem: (key: keyof typeof initialData, id: number) => void;
   getNextId: (key: keyof typeof initialData) => number;
+  setNextIdForCollection: (key: keyof typeof initialData, nextId: number) => void; // New function
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
 
@@ -208,6 +209,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [settings, setSettings] = useLocalStorage<Settings>('settings', initialSettings);
   const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', initialCurrencyRates);
 
+  // Internal state for next IDs, managed by DataProvider
+  const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
+    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1
+  });
+
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
 
@@ -226,18 +232,30 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProductMovements(initialData.productMovements);
       setSettings(initialSettings);
       setCurrencyRates(initialCurrencyRates);
+
+      // Initialize nextIds based on initial data
+      const initialNextIds: { [key: string]: number } = {};
+      (Object.keys(initialData) as (keyof typeof initialData)[]).forEach(key => {
+        const items = initialData[key];
+        if (Array.isArray(items) && items.length > 0) {
+          initialNextIds[key] = Math.max(...items.map((i: any) => i.id)) + 1;
+        } else {
+          initialNextIds[key] = 1;
+        }
+      });
+      setNextIds(initialNextIds);
       setInitialized(true);
     }
-  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates]);
+  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates, setNextIds]);
 
   // --- Utility Functions ---
   const getNextId = useCallback((key: keyof typeof initialData) => {
-    const items = {
-      products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements
-    }[key];
-    if (!Array.isArray(items)) return 1;
-    return items.length > 0 ? Math.max(...items.map((i: any) => i.id)) + 1 : 1;
-  }, [products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements]);
+    return nextIds[key] || 1;
+  }, [nextIds]);
+
+  const setNextIdForCollection = useCallback((key: keyof typeof initialData, newNextId: number) => {
+    setNextIds(prev => ({ ...prev, [key]: newNextId }));
+  }, [setNextIds]);
 
   const showAlertModal = useCallback((title: string, message: string) => {
     sonnerToast.info(message, {
@@ -291,8 +309,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const existingItemIndex = currentItems.findIndex(i => i.id === item.id);
 
     if (item.id === 0 || existingItemIndex === -1) { // New item (either id is 0 or id doesn't exist in currentItems)
-      const newItemId = item.id === 0 ? getNextId(key) : item.id; // Use existing ID if provided, else generate new
+      const newItemId = getNextId(key);
       updatedItems = [...currentItems, { ...item, id: newItemId }];
+      setNextIdForCollection(key, newItemId + 1); // Increment next ID for this collection
     } else { // Existing item, update it
       updatedItems = currentItems.map(i => i.id === item.id ? item : i);
     }
@@ -304,7 +323,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setter(updatedItems);
     sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
-  }, [products, setProducts, suppliers, setSuppliers, customers, setCustomers, warehouses, setWarehouses, purchaseOrders, setPurchaseOrders, sellOrders, setSellOrders, incomingPayments, setIncomingPayments, outgoingPayments, setOutgoingPayments, productMovements, setProductMovements, getNextId, showAlertModal]);
+  }, [products, setProducts, suppliers, setSuppliers, customers, setCustomers, warehouses, setWarehouses, purchaseOrders, setPurchaseOrders, sellOrders, setSellOrders, incomingPayments, setIncomingPayments, outgoingPayments, setOutgoingPayments, productMovements, setProductMovements, getNextId, setNextIdForCollection, showAlertModal]);
 
   const deleteItem = useCallback((key: keyof typeof initialData, id: number) => {
     const onConfirmDelete = () => {
@@ -393,7 +412,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sonnerToast.success(t('success'), { description: `Item deleted successfully.` });
     };
     showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete);
-  }, [products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, showAlertModal, showConfirmationModal, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements]);
+  }, [products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, showAlertModal, showConfirmationModal, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, updateStockFromOrder]);
 
   const updateStockFromOrder = useCallback((newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => {
     setProducts(prevProducts => {
@@ -471,7 +490,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     productMovements, setProductMovements,
     settings, setSettings,
     currencyRates, setCurrencyRates,
-    saveItem, deleteItem, getNextId,
+    saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
