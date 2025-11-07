@@ -335,7 +335,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                 id="exchangeRate"
                 type="number"
                 step="0.0001"
-                value={manualExchangeRate !== undefined ? manualExchangeRate : ''}
+                value={manualExchangeRate !== undefined ? String(manualExchangeRate) : ''}
                 onChange={handleExchangeRateChange}
                 placeholder={t('exchangeRatePlaceholder')}
                 className="mb-1"
@@ -393,7 +393,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
               </Popover>
               <Input
                 type="number"
-                value={item.qty}
+                value={String(item.qty)}
                 onChange={(e) => handleOrderItemChange(index, 'qty', parseInt(e.target.value) || 0)}
                 className="col-span-3"
                 min="1"
@@ -401,7 +401,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
               <Input
                 type="number"
                 step="0.01"
-                value={item.price}
+                value={String(item.price)}
                 onChange={(e) => handleOrderItemChange(index, 'price', parseFloat(e.target.value) || 0)}
                 className="col-span-3"
                 min="0"
@@ -429,7 +429,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             id="transportationFees"
             type="number"
             step="0.01"
-            value={order.transportationFees || 0}
+            value={String(order.transportationFees || 0)}
             onChange={(e) => handleNumericChange('transportationFees', e.target.value)}
             className="col-span-2"
             min="0"
@@ -452,7 +452,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             id="customFees"
             type="number"
             step="0.01"
-            value={order.customFees || 0}
+            value={String(order.customFees || 0)}
             onChange={(e) => handleNumericChange('customFees', e.target.value)}
             className="col-span-2"
             min="0"
@@ -475,7 +475,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             id="additionalFees"
             type="number"
             step="0.01"
-            value={order.additionalFees || 0}
+            value={String(order.additionalFees || 0)}
             onChange={(e) => handleNumericChange('additionalFees', e.target.value)}
             className="col-span-2"
             min="0"

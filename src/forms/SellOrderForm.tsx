@@ -54,8 +54,9 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) return existingOrder;
     }
+    // For new orders, generate an ID immediately
     return {
-      id: getNextId('sellOrders'),
+      id: getNextId('sellOrders'), // Pre-generate ID for new orders
       orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       status: 'Draft',
       vatPercent: settings.defaultVat,
@@ -392,7 +393,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
             id="vatPercent"
             type="number"
             step="0.01"
-            value={order.vatPercent || 0}
+            value={String(order.vatPercent || 0)}
             onChange={(e) => handleNumericChange('vatPercent', e.target.value)}
             className="col-span-3"
             min="0"
@@ -447,7 +448,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
               </Popover>
               <Input
                 type="number"
-                value={item.qty}
+                value={String(item.qty)}
                 onChange={(e) => handleOrderItemChange(index, 'qty', parseInt(e.target.value) || 0)}
                 className="col-span-2"
                 min="1"
@@ -455,7 +456,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
               <Input
                 type="number"
                 step="0.01"
-                value={item.price}
+                value={String(item.price)}
                 onChange={(e) => handleOrderItemChange(index, 'price', parseFloat(e.target.value) || 0)}
                 className="col-span-2"
                 min="0"
