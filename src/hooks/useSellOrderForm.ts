@@ -7,9 +7,9 @@ import { toast } from 'sonner';
 
 interface SellOrderItemState {
   productId: number | '';
-  qty: number;
-  price: number;
-  itemTotal: number; // Added itemTotal
+  qty: number | string; // Allow string for intermediate input
+  price: number | string; // Allow string for intermediate input
+  itemTotal: number | string; // Allow string for intermediate input
 }
 
 interface UseSellOrderFormProps {
@@ -57,12 +57,12 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) return existingOrder.items.map(item => ({
         productId: item.productId,
-        qty: item.qty,
-        price: item.price,
-        itemTotal: item.qty * item.price, // Calculate initial itemTotal
+        qty: String(item.qty), // Convert to string for input
+        price: String(item.price), // Convert to string for input
+        itemTotal: String(item.qty * item.price), // Calculate initial itemTotal and convert to string
       }));
     }
-    return [{ productId: '', qty: 0, price: 0, itemTotal: 0 }]; // Initialize itemTotal
+    return [{ productId: '', qty: '', price: '', itemTotal: '' }]; // Initialize itemTotal as string
   });
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
@@ -74,9 +74,9 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         setOrder(existingOrder);
         setOrderItems(existingOrder.items.map(item => ({
           productId: item.productId,
-          qty: item.qty,
-          price: item.price,
-          itemTotal: item.qty * item.price, // Calculate initial itemTotal
+          qty: String(item.qty),
+          price: String(item.price),
+          itemTotal: String(item.qty * item.price),
         })));
         setIsFormInitialized(true);
       }
@@ -88,7 +88,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         vatPercent: settings.defaultVat,
         total: 0,
       });
-      setOrderItems([{ productId: '', qty: 0, price: 0, itemTotal: 0 }]); // Initialize itemTotal
+      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '' }]);
       setIsFormInitialized(true);
     }
   }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized]);
@@ -96,18 +96,19 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
   const calculateTotalOrderValue = useCallback(() => {
     let subtotal = 0;
     orderItems.forEach(item => {
-      if (item.productId && item.qty > 0 && item.itemTotal > 0) { // Use itemTotal
-        subtotal += item.itemTotal; // Sum itemTotal
+      const itemTotalNum = parseFloat(String(item.itemTotal)) || 0;
+      if (item.productId && parseFloat(String(item.qty)) > 0 && itemTotalNum > 0) {
+        subtotal += itemTotalNum;
       }
     });
     const vatAmount = subtotal * ((order.vatPercent || 0) / 100);
     return parseFloat((subtotal + vatAmount).toFixed(2));
-  }, [orderItems, order.vatPercent]); // Dependency on orderItems (which includes itemTotal)
+  }, [orderItems, order.vatPercent]);
 
   useEffect(() => {
     const total = calculateTotalOrderValue();
     setOrder(prev => ({ ...prev, total }));
-  }, [orderItems.map(i => `${i.productId}-${i.qty}-${i.price}-${i.itemTotal}`).join(','), order.vatPercent, calculateTotalOrderValue]); // Dependency on itemTotal for recalculation
+  }, [orderItems.map(i => `${i.productId}-${i.qty}-${i.price}-${i.itemTotal}`).join(','), order.vatPercent, calculateTotalOrderValue]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -123,7 +124,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
   }, []);
 
   const addOrderItem = useCallback(() => {
-    setOrderItems(prev => [...prev, { productId: '', qty: 0, price: 0, itemTotal: 0 }]); // Initialize itemTotal
+    setOrderItems(prev => [...prev, { productId: '', qty: '', price: '', itemTotal: '' }]);
   }, []);
 
   const removeOrderItem = useCallback((index: number) => {
@@ -138,20 +139,23 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       if (field === 'productId') {
         item.productId = value;
       } else if (field === 'qty') {
-        const newQty = parseInt(value) || 0;
-        item.qty = newQty < 0 ? 0 : newQty; // Allow 0, but not negative
-        item.itemTotal = item.qty * item.price; // Recalculate itemTotal
+        item.qty = value; // Store raw string
+        const qtyNum = parseFloat(value) || 0;
+        const priceNum = parseFloat(String(item.price)) || 0;
+        item.itemTotal = String(qtyNum * priceNum);
       } else if (field === 'price') {
-        const newPrice = parseFloat(value) || 0;
-        item.price = newPrice < 0 ? 0 : newPrice;
-        item.itemTotal = item.qty * item.price; // Recalculate itemTotal
-      } else if (field === 'itemTotal') { // New logic for itemTotal
-        const newItemTotal = parseFloat(value) || 0;
-        item.itemTotal = newItemTotal < 0 ? 0 : newItemTotal;
-        if (item.qty > 0) {
-          item.price = newItemTotal / item.qty; // Recalculate price
+        item.price = value; // Store raw string
+        const qtyNum = parseFloat(String(item.qty)) || 0;
+        const priceNum = parseFloat(value) || 0;
+        item.itemTotal = String(qtyNum * priceNum);
+      } else if (field === 'itemTotal') {
+        item.itemTotal = value; // Store raw string
+        const qtyNum = parseFloat(String(item.qty)) || 0;
+        const itemTotalNum = parseFloat(value) || 0;
+        if (qtyNum > 0) {
+          item.price = String(itemTotalNum / qtyNum);
         } else {
-          item.price = 0; // If qty is 0, price is 0
+          item.price = '0';
         }
       }
       newItems[index] = item;
@@ -167,10 +171,10 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       warehouseId: order.warehouseId as number,
       orderDate: order.orderDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       status: order.status || 'Draft',
-      items: orderItems.filter(item => item.productId !== '' && item.qty > 0 && item.price >= 0).map(item => ({
+      items: orderItems.filter(item => item.productId !== '' && parseFloat(String(item.qty)) > 0 && parseFloat(String(item.price)) >= 0).map(item => ({
         productId: item.productId as number,
-        qty: item.qty,
-        price: item.price,
+        qty: parseFloat(String(item.qty)) || 0,
+        price: parseFloat(String(item.price)) || 0,
       })),
       vatPercent: order.vatPercent || 0,
       total: order.total || 0,
@@ -209,7 +213,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
 
     for (const item of orderItems) {
-      if (!item.productId || item.qty <= 0) {
+      const qtyNum = parseFloat(String(item.qty)) || 0;
+      if (!item.productId || qtyNum <= 0) {
         continue;
       }
 
@@ -220,16 +225,16 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       }
 
       const sourceStock = product.stock?.[mainWarehouse.id] || 0;
-      if (sourceStock < item.qty) {
-        showAlertModal('Stock Error', `${t('notEnoughStock')} ${product.name} (${product.sku}) in ${mainWarehouse.name}. ${t('available')}: ${sourceStock}, ${t('requested')}: ${item.qty}.`);
+      if (sourceStock < qtyNum) {
+        showAlertModal('Stock Error', `${t('notEnoughStock')} ${product.name} (${product.sku}) in ${mainWarehouse.name}. ${t('available')}: ${sourceStock}, ${t('requested')}: ${qtyNum}.`);
         return;
       }
 
-      newMovementItems.push({ productId: item.productId as number, quantity: item.qty });
+      newMovementItems.push({ productId: item.productId as number, quantity: qtyNum });
 
       if (!product.stock) product.stock = {};
-      product.stock[mainWarehouse.id] = sourceStock - item.qty;
-      product.stock[orderToSave.warehouseId as number] = (product.stock[orderToSave.warehouseId as number] || 0) + item.qty;
+      product.stock[mainWarehouse.id] = sourceStock - qtyNum;
+      product.stock[orderToSave.warehouseId as number] = (product.stock[orderToSave.warehouseId as number] || 0) + qtyNum;
     }
 
     if (newMovementItems.length === 0) {
@@ -269,7 +274,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       return;
     }
 
-    const validOrderItems = orderItems.filter(item => item.productId !== '' && item.qty > 0 && item.price >= 0);
+    const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.qty)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
       showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
       return;
@@ -293,7 +298,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
 
       for (const item of validOrderItems) {
         const productId = item.productId as number;
-        const requestedQty = item.qty;
+        const requestedQty = parseFloat(String(item.qty)) || 0;
         const warehouseId = order.warehouseId as number;
 
         let availableStock = productsInWarehouses[warehouseId]?.[productId] || 0;
@@ -315,8 +320,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => ({
       productId: item.productId as number,
-      qty: item.qty,
-      price: item.price, // This `item.price` will be the correct, possibly recalculated, unit price
+      qty: parseFloat(String(item.qty)) || 0,
+      price: parseFloat(String(item.price)) || 0, // This `item.price` will be the correct, possibly recalculated, unit price
     }));
 
     const orderToSave: SellOrder = {

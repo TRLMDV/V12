@@ -21,9 +21,9 @@ interface PurchaseOrderFormProps {
 
 interface PurchaseOrderItemState {
   productId: number | '';
-  qty: number;
-  price: number;
-  itemTotal: number; // New field to hold the total for the item line
+  qty: number | string; // Allow string for intermediate input
+  price: number | string; // Allow string for intermediate input
+  itemTotal: number | string; // Allow string for intermediate input
   currency?: 'AZN' | 'USD' | 'EUR' | 'RUB';
   landedCostPerUnit?: number;
 }
@@ -43,7 +43,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
   const isEdit = orderId !== undefined;
 
   const [order, setOrder] = useState<Partial<PurchaseOrder>>({});
-  const [orderItems, setOrderItems] = useState<PurchaseOrderItemState[]>([{ productId: '', qty: 0, price: 0, itemTotal: 0 }]);
+  const [orderItems, setOrderItems] = useState<PurchaseOrderItemState[]>([{ productId: '', qty: '', price: '', itemTotal: '' }]);
   const [selectedCurrency, setSelectedCurrency] = useState<'AZN' | 'USD' | 'EUR' | 'RUB'>('AZN');
   const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
   const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>(''); // New state for input string
@@ -59,9 +59,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
         setOrder(existingOrder);
         setOrderItems(existingOrder.items.map(item => ({
           productId: item.productId,
-          qty: item.qty,
-          price: item.price,
-          itemTotal: item.qty * item.price, // Calculate initial itemTotal
+          qty: String(item.qty), // Convert to string for input
+          price: String(item.price), // Convert to string for input
+          itemTotal: String(item.qty * item.price), // Calculate initial itemTotal and convert to string
           currency: item.currency || existingOrder.currency,
           landedCostPerUnit: item.landedCostPerUnit,
         })));
@@ -82,7 +82,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
         additionalFeesCurrency: 'AZN',
         total: 0,
       });
-      setOrderItems([{ productId: '', qty: 0, price: 0, itemTotal: 0 }]);
+      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '' }]);
       setSelectedCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput(''); // Reset for new orders
@@ -97,16 +97,18 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
   const calculateTotalOrderValue = useCallback(() => {
     let productsSubtotalNative = 0;
     orderItems.forEach(item => {
-      if (item.productId && item.qty > 0 && item.itemTotal > 0) { // Use itemTotal here
-        productsSubtotalNative += item.itemTotal;
+      const qtyNum = parseFloat(String(item.qty)) || 0;
+      const priceNum = parseFloat(String(item.price)) || 0;
+      if (item.productId && qtyNum > 0 && priceNum > 0) {
+        productsSubtotalNative += qtyNum * priceNum;
       }
     });
 
     const productsSubtotalAZN = productsSubtotalNative * currentExchangeRate;
 
-    const transportationFeesAZN = order.transportationFees * (order.transportationFeesCurrency === 'AZN' ? 1 : (currencyRates[order.transportationFeesCurrency || 'AZN'] || 1));
-    const customFeesAZN = order.customFees * (order.customFeesCurrency === 'AZN' ? 1 : (currencyRates[order.customFeesCurrency || 'AZN'] || 1));
-    const additionalFeesAZN = order.additionalFees * (order.additionalFeesCurrency === 'AZN' ? 1 : (currencyRates[order.additionalFeesCurrency || 'AZN'] || 1));
+    const transportationFeesAZN = (order.transportationFees || 0) * ((order.transportationFeesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.transportationFeesCurrency || 'AZN'] || 1));
+    const customFeesAZN = (order.customFees || 0) * ((order.customFeesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.customFeesCurrency || 'AZN'] || 1));
+    const additionalFeesAZN = (order.additionalFees || 0) * ((order.additionalFeesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.additionalFeesCurrency || 'AZN'] || 1));
 
     const totalFeesAZN = transportationFeesAZN + customFeesAZN + additionalFeesAZN;
     
@@ -117,28 +119,31 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
 
     // Calculate landed cost per unit for each item
     const updatedOrderItems: OrderItem[] = orderItems.map(item => {
-      if (!item.productId || item.qty <= 0 || item.price <= 0) {
-        return { productId: item.productId as number, qty: item.qty, price: item.price, currency: item.currency };
+      const qtyNum = parseFloat(String(item.qty)) || 0;
+      const priceNum = parseFloat(String(item.price)) || 0;
+
+      if (!item.productId || qtyNum <= 0 || priceNum <= 0) {
+        return { productId: item.productId as number, qty: qtyNum, price: priceNum, currency: item.currency };
       }
 
-      const itemValueNative = item.qty * item.price;
+      const itemValueNative = qtyNum * priceNum;
       const itemValueAZN = itemValueNative * currentExchangeRate;
 
-      let landedCostPerUnit = itemValueAZN / item.qty;
+      let landedCostPerUnit = itemValueAZN / qtyNum;
 
       if (productsSubtotalAZN > 0) {
         const proportionalFeeShare = (itemValueAZN / productsSubtotalAZN) * totalFeesAZN;
-        landedCostPerUnit = (itemValueAZN + proportionalFeeShare) / item.qty;
+        landedCostPerUnit = (itemValueAZN + proportionalFeeShare) / qtyNum;
       } else if (totalFeesAZN > 0 && orderItems.length === 1) {
         // If only one item and no product subtotal (e.g., all items have 0 price),
         // attribute all fees to this single item.
-        landedCostPerUnit = (itemValueAZN + totalFeesAZN) / item.qty;
+        landedCostPerUnit = (itemValueAZN + totalFeesAZN) / qtyNum;
       }
 
       return {
         productId: item.productId as number,
-        qty: item.qty,
-        price: item.price,
+        qty: qtyNum,
+        price: priceNum,
         currency: selectedCurrency,
         landedCostPerUnit: parseFloat(landedCostPerUnit.toFixed(4)),
       };
@@ -207,7 +212,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
   };
 
   const addOrderItem = useCallback(() => {
-    setOrderItems(prev => [...prev, { productId: '', qty: 0, price: 0, itemTotal: 0, currency: selectedCurrency }]);
+    setOrderItems(prev => [...prev, { productId: '', qty: '', price: '', itemTotal: '', currency: selectedCurrency }]);
   }, [selectedCurrency]);
 
   const removeOrderItem = useCallback((index: number) => {
@@ -222,20 +227,24 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
       if (field === 'productId') {
         item.productId = value;
       } else if (field === 'qty') {
-        const newQty = parseInt(value) || 0;
-        item.qty = newQty < 0 ? 0 : newQty; // Allow 0, but not negative
-        item.itemTotal = item.qty * item.price; // Recalculate itemTotal based on new qty and existing price
+        // Allow typing decimals for qty, but parse to int for calculations
+        item.qty = value;
+        const qtyNum = parseFloat(value) || 0;
+        const priceNum = parseFloat(String(item.price)) || 0;
+        item.itemTotal = String(qtyNum * priceNum);
       } else if (field === 'price') {
-        const newPrice = parseFloat(value) || 0;
-        item.price = newPrice < 0 ? 0 : newPrice; // Ensure price is not negative
-        item.itemTotal = item.qty * item.price; // Recalculate itemTotal based on existing qty and new price
+        item.price = value; // Store raw string
+        const qtyNum = parseFloat(String(item.qty)) || 0;
+        const priceNum = parseFloat(value) || 0;
+        item.itemTotal = String(qtyNum * priceNum);
       } else if (field === 'itemTotal') {
-        const newItemTotal = parseFloat(value) || 0;
-        item.itemTotal = newItemTotal < 0 ? 0 : newItemTotal; // Ensure itemTotal is not negative
-        if (item.qty > 0) {
-          item.price = item.itemTotal / item.qty; // Recalculate price based on new itemTotal and existing qty
+        item.itemTotal = value; // Store raw string
+        const qtyNum = parseFloat(String(item.qty)) || 0;
+        const itemTotalNum = parseFloat(value) || 0;
+        if (qtyNum > 0) {
+          item.price = String(itemTotalNum / qtyNum);
         } else {
-          item.price = 0; // If qty is 0, price is 0
+          item.price = '0';
         }
       }
       newItems[index] = item;
@@ -251,7 +260,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
       return;
     }
 
-    const validOrderItems = orderItems.filter(item => item.productId !== '' && item.qty > 0 && item.price >= 0);
+    const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.qty)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
       showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
       return;
@@ -264,8 +273,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => ({
       productId: item.productId as number,
-      qty: item.qty,
-      price: item.price, // Use the derived price
+      qty: parseFloat(String(item.qty)) || 0,
+      price: parseFloat(String(item.price)) || 0, // Use the derived price
       currency: selectedCurrency,
       landedCostPerUnit: item.landedCostPerUnit,
     }));
@@ -444,22 +453,22 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                 </PopoverContent>
               </Popover>
               <Input
-                type="text" // Changed to text
-                value={String(item.qty)}
+                type="text"
+                value={item.qty}
                 onChange={(e) => handleOrderItemChange(index, 'qty', e.target.value)}
                 className="col-span-2"
               />
               <Input
-                type="text" // Changed to text
+                type="text"
                 step="0.01"
-                value={String(item.price)}
+                value={item.price}
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
                 className="col-span-2"
               />
               <Input
                 type="text"
                 step="0.01"
-                value={String(item.itemTotal)}
+                value={item.itemTotal}
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
                 className="col-span-2"
               />
