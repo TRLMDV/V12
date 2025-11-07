@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useRef } from 'react'; // Import useRef
-import { useData } from '@/context/DataContext';
+import { useData, Product, Customer } from '@/context/DataContext'; // Import Product and Customer types
 import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Download, UploadCloud } from 'lucide-react'; // Add UploadCloud icon
+import ExcelImportButton from '@/components/ExcelImportButton'; // Import the new component
 
 const DataImportExport: React.FC = () => {
   const {
@@ -17,6 +18,8 @@ const DataImportExport: React.FC = () => {
     setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements,
     setSettings,
     showConfirmationModal,
+    getNextId, // Added for Excel import
+    setNextIdForCollection, // Added for Excel import
   } = useData();
 
   const fileInputRef = useRef<HTMLInputElement>(null); // Create a ref for the hidden file input
@@ -99,6 +102,59 @@ const DataImportExport: React.FC = () => {
     reader.readAsText(file);
   };
 
+  const handleImportProducts = (data: any[]) => {
+    const newProducts: Product[] = data.map((row: any) => ({
+      id: getNextId('products'), // Assign new ID for each imported product
+      name: String(row['Product Name'] || ''),
+      sku: String(row['SKU'] || ''),
+      category: String(row['Category'] || ''),
+      description: String(row['Description'] || ''),
+      stock: {}, // Initialize empty stock, will be updated by POs or movements
+      minStock: parseInt(row['Min. Stock'] || '0'),
+      averageLandedCost: parseFloat(row['Avg. Landed Cost'] || '0'),
+      imageUrl: String(row['Image URL'] || ''),
+    }));
+
+    setProducts(prev => {
+      const existingSkus = new Set(prev.map(p => p.sku.toLowerCase()));
+      const uniqueNewProducts = newProducts.filter(p => !existingSkus.has(p.sku.toLowerCase()));
+
+      if (uniqueNewProducts.length < newProducts.length) {
+        toast.info(t('excelImportInfo'), { description: t('duplicateProductsSkipped') });
+      }
+
+      const allProducts = [...prev, ...uniqueNewProducts];
+      const maxId = allProducts.reduce((max, p) => Math.max(max, p.id), 0);
+      setNextIdForCollection('products', maxId + 1); // Update next ID counter
+      return allProducts;
+    });
+  };
+
+  const handleImportCustomers = (data: any[]) => {
+    const newCustomers: Customer[] = data.map((row: any) => ({
+      id: getNextId('customers'), // Assign new ID for each imported customer
+      name: String(row['Customer Name'] || ''),
+      contact: String(row['Contact Person'] || ''),
+      email: String(row['Email'] || ''),
+      phone: String(row['Phone'] || ''),
+      address: String(row['Address'] || ''),
+    }));
+
+    setCustomers(prev => {
+      const existingEmails = new Set(prev.map(c => c.email.toLowerCase()).filter(Boolean));
+      const uniqueNewCustomers = newCustomers.filter(c => !c.email || !existingEmails.has(c.email.toLowerCase()));
+
+      if (uniqueNewCustomers.length < newCustomers.length) {
+        toast.info(t('excelImportInfo'), { description: t('duplicateCustomersSkipped') });
+      }
+
+      const allCustomers = [...prev, ...uniqueNewCustomers];
+      const maxId = allCustomers.reduce((max, c) => Math.max(max, c.id), 0);
+      setNextIdForCollection('customers', maxId + 1); // Update next ID counter
+      return allCustomers;
+    });
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('dataImportExport')}</h1>
@@ -136,6 +192,21 @@ const DataImportExport: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Excel Import Sections - Moved here */}
+      <ExcelImportButton
+        label={t('importProductsFromExcel')}
+        description={t('importProductsDescription')}
+        onImport={handleImportProducts}
+        requiredColumns={['Product Name', 'SKU', 'Category', 'Description', 'Min. Stock', 'Avg. Landed Cost', 'Image URL']}
+      />
+
+      <ExcelImportButton
+        label={t('importCustomersFromExcel')}
+        description={t('importCustomersDescription')}
+        onImport={handleImportCustomers}
+        requiredColumns={['Customer Name', 'Contact Person', 'Email', 'Phone', 'Address']}
+      />
     </div>
   );
 };

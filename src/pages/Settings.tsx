@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ImageUpload from '@/components/ImageUpload';
-import ExcelImportButton from '@/components/ExcelImportButton'; // Import the new component
+// ExcelImportButton is no longer needed here
 import { toast } from 'sonner';
 
 const SettingsPage: React.FC = () => {
@@ -73,58 +73,7 @@ const SettingsPage: React.FC = () => {
     // The MainLayout useEffect will handle applying the class to document.documentElement
   };
 
-  const handleImportProducts = (data: any[]) => {
-    const newProducts: Product[] = data.map((row: any) => ({
-      id: getNextId('products'), // Assign new ID for each imported product
-      name: String(row['Product Name'] || ''),
-      sku: String(row['SKU'] || ''),
-      category: String(row['Category'] || ''),
-      description: String(row['Description'] || ''),
-      stock: {}, // Initialize empty stock, will be updated by POs or movements
-      minStock: parseInt(row['Min. Stock'] || '0'),
-      averageLandedCost: parseFloat(row['Avg. Landed Cost'] || '0'),
-      imageUrl: String(row['Image URL'] || ''),
-    }));
-
-    setProducts(prev => {
-      const existingSkus = new Set(prev.map(p => p.sku.toLowerCase()));
-      const uniqueNewProducts = newProducts.filter(p => !existingSkus.has(p.sku.toLowerCase()));
-
-      if (uniqueNewProducts.length < newProducts.length) {
-        toast.info(t('excelImportInfo'), { description: t('duplicateProductsSkipped') });
-      }
-
-      const allProducts = [...prev, ...uniqueNewProducts];
-      const maxId = allProducts.reduce((max, p) => Math.max(max, p.id), 0);
-      setNextIdForCollection('products', maxId + 1); // Update next ID counter
-      return allProducts;
-    });
-  };
-
-  const handleImportCustomers = (data: any[]) => {
-    const newCustomers: Customer[] = data.map((row: any) => ({
-      id: getNextId('customers'), // Assign new ID for each imported customer
-      name: String(row['Customer Name'] || ''),
-      contact: String(row['Contact Person'] || ''),
-      email: String(row['Email'] || ''),
-      phone: String(row['Phone'] || ''),
-      address: String(row['Address'] || ''),
-    }));
-
-    setCustomers(prev => {
-      const existingEmails = new Set(prev.map(c => c.email.toLowerCase()).filter(Boolean));
-      const uniqueNewCustomers = newCustomers.filter(c => !c.email || !existingEmails.has(c.email.toLowerCase()));
-
-      if (uniqueNewCustomers.length < newCustomers.length) {
-        toast.info(t('excelImportInfo'), { description: t('duplicateCustomersSkipped') });
-      }
-
-      const allCustomers = [...prev, ...uniqueNewCustomers];
-      const maxId = allCustomers.reduce((max, c) => Math.max(max, c.id), 0);
-      setNextIdForCollection('customers', maxId + 1); // Update next ID counter
-      return allCustomers;
-    });
-  };
+  // Removed handleImportProducts and handleImportCustomers functions
 
   return (
     <div className="container mx-auto p-4">
@@ -263,21 +212,6 @@ const SettingsPage: React.FC = () => {
           <Button onClick={handleSaveCurrencyRates}>{t('saveCurrencyRates')}</Button>
         </div>
       </div>
-
-      {/* Excel Import Sections */}
-      <ExcelImportButton
-        label={t('importProductsFromExcel')}
-        description={t('importProductsDescription')}
-        onImport={handleImportProducts}
-        requiredColumns={['Product Name', 'SKU', 'Category', 'Description', 'Min. Stock', 'Avg. Landed Cost', 'Image URL']}
-      />
-
-      <ExcelImportButton
-        label={t('importCustomersFromExcel')}
-        description={t('importCustomersDescription')}
-        onImport={handleImportCustomers}
-        requiredColumns={['Customer Name', 'Contact Person', 'Email', 'Phone', 'Address']}
-      />
     </div>
   );
 };
