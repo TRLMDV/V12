@@ -315,7 +315,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <DataContext.Provider value={value}>
       {children}
       {confirmationModalProps && (
-        <AlertDialog open={isConfirmationModalOpen} onOpenChange={setIsConfirmationModalOpen}>
+        <AlertDialog open={isConfirmationModalOpen} onOpenChange={closeConfirmationModal}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{confirmationModalProps.title}</AlertDialogTitle>
