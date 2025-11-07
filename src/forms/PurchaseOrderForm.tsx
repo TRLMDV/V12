@@ -208,10 +208,32 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     setOrderItems(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  const handleOrderItemChange = useCallback((index: number, field: keyof PurchaseOrderItemState, value: any) => {
-    setOrderItems(prev =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
-    );
+  const handleOrderItemChange = useCallback((index: number, field: 'productId' | 'qty' | 'price' | 'itemTotal', value: any) => {
+    setOrderItems(prev => {
+      const newItems = [...prev];
+      const item = { ...newItems[index] };
+
+      if (field === 'productId') {
+        item.productId = value;
+      } else if (field === 'qty') {
+        item.qty = parseInt(value) || 0;
+        if (item.qty < 1) item.qty = 1;
+      } else if (field === 'price') {
+        item.price = parseFloat(value) || 0;
+        if (item.price < 0) item.price = 0;
+      } else if (field === 'itemTotal') {
+        const newItemTotal = parseFloat(value) || 0;
+        if (newItemTotal < 0) {
+          item.price = 0; // If total is negative, price should be 0
+        } else if (item.qty > 0) {
+          item.price = newItemTotal / item.qty; // Recalculate price
+        } else {
+          item.price = 0; // If qty is 0, price is 0
+        }
+      }
+      newItems[index] = item;
+      return newItems;
+    });
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -430,11 +452,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                 min="0"
               />
               <Input
-                type="text"
+                type="number" // Now editable
+                step="0.01"
                 value={((item.qty || 0) * (item.price || 0)).toFixed(2)}
-                readOnly
-                className="col-span-2 bg-gray-50 dark:bg-slate-700"
-              /> {/* New Item Total Input */}
+                onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)} // Handle change to itemTotal
+                className="col-span-2"
+                min="0"
+              />
               <Input
                 type="text" // Changed to text to display fixed decimal places
                 value={item.landedCostPerUnit !== undefined ? item.landedCostPerUnit.toFixed(4) : '0.0000'}
