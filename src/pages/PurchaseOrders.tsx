@@ -9,9 +9,11 @@ import FormModal from '@/components/FormModal';
 import PurchaseOrderForm from '@/forms/PurchaseOrderForm';
 import { PlusCircle, Eye } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input'; // Added Input import
+import { Label } from '@/components/ui/label'; // Added Label import
 
 type SortConfig = {
-  key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'totalItems' | 'totalValueNative'; // Changed from totalValueAZN
+  key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'totalItems' | 'totalValueNative';
   direction: 'ascending' | 'descending';
 };
 
@@ -21,6 +23,9 @@ const PurchaseOrders: React.FC = () => {
   const [editingOrderId, setEditingOrderId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
   const [filterWarehouseId, setFilterWarehouseId] = useState<number | 'all'>('all');
+  const [startDateFilter, setStartDateFilter] = useState<string>(''); // New state for start date filter
+  const [endDateFilter, setEndDateFilter] = useState<string>('');     // New state for end date filter
+  const [productFilterId, setProductFilterId] = useState<number | 'all'>('all'); // New state for product filter
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<PurchaseOrder | null>(null);
 
@@ -41,6 +46,19 @@ const PurchaseOrders: React.FC = () => {
 
     if (filterWarehouseId !== 'all') {
       filteredOrders = filteredOrders.filter(order => order.warehouseId === filterWarehouseId);
+    }
+
+    if (startDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate >= startDateFilter);
+    }
+    if (endDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate <= endDateFilter);
+    }
+
+    if (productFilterId !== 'all') {
+      filteredOrders = filteredOrders.filter(order =>
+        order.items?.some(item => item.productId === productFilterId)
+      );
     }
 
     const sortableItems = filteredOrders.map(order => {
@@ -121,7 +139,7 @@ const PurchaseOrders: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [purchaseOrders, supplierMap, warehouseMap, productMap, sortConfig, filterWarehouseId, currencyRates]);
+  }, [purchaseOrders, supplierMap, warehouseMap, productMap, sortConfig, filterWarehouseId, startDateFilter, endDateFilter, productFilterId, currencyRates]);
 
   const handleAddOrder = () => {
     setEditingOrderId(undefined);
@@ -178,23 +196,63 @@ const PurchaseOrders: React.FC = () => {
       </div>
 
       <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-        <div className="flex items-center gap-4">
-          <label htmlFor="warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
-            {t('filterByWarehouse')}
-          </label>
-          <Select onValueChange={(value) => setFilterWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterWarehouseId)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t('allWarehouses')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('allWarehouses')}</SelectItem>
-              {warehouses.map(w => (
-                <SelectItem key={w.id} value={String(w.id)}>
-                  {w.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div>
+            <Label htmlFor="warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('filterByWarehouse')}
+            </Label>
+            <Select onValueChange={(value) => setFilterWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterWarehouseId)}>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder={t('allWarehouses')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allWarehouses')}</SelectItem>
+                {warehouses.map(w => (
+                  <SelectItem key={w.id} value={String(w.id)}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="product-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('product')}
+            </Label>
+            <Select onValueChange={(value) => setProductFilterId(value === 'all' ? 'all' : parseInt(value))} value={String(productFilterId)}>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder={t('allProducts')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allProducts')}</SelectItem>
+                {products.map(p => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.name} ({p.sku})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
+            <Input
+              type="date"
+              id="start-date-filter"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
+          </div>
+          <div>
+            <Label htmlFor="end-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('endDate')}</Label>
+            <Input
+              type="date"
+              id="end-date-filter"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
+          </div>
         </div>
       </div>
 
@@ -261,7 +319,7 @@ const PurchaseOrders: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400">
-                  {filterWarehouseId !== 'all' ? t('noOrdersForWarehouse') : t('noItemsFound')}
+                  {filterWarehouseId !== 'all' || startDateFilter || endDateFilter || productFilterId !== 'all' ? t('noItemsFound') : t('noItemsFound')}
                 </TableCell>
               </TableRow>
             )}
