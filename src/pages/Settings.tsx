@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useData, Settings, CurrencyRates, Product, Customer } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ImageUpload from '@/components/ImageUpload';
 import { toast } from 'sonner';
+import CodeConfirmationModal from '@/components/CodeConfirmationModal'; // Import the new component
 
 const SettingsPage: React.FC = () => {
-  const { settings, setSettings, currencyRates, setCurrencyRates, setProducts, setCustomers, getNextId, setNextIdForCollection, showConfirmationModal } = useData();
+  const { settings, setSettings, currencyRates, setCurrencyRates, showConfirmationModal } = useData();
 
   const [companyName, setCompanyName] = useState(settings.companyName);
   const [companyLogo, setCompanyLogo] = useState<string | null>(settings.companyLogo);
@@ -22,6 +23,10 @@ const SettingsPage: React.FC = () => {
   const [usdRate, setUsdRate] = useState(currencyRates.USD);
   const [eurRate, setEurRate] = useState(currencyRates.EUR);
   const [rubRate, setRubRate] = useState(currencyRates.RUB);
+
+  // States for the new code confirmation modal
+  const [isCodeConfirmationModalOpen, setIsCodeConfirmationModalOpen] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
 
   useEffect(() => {
     setCompanyName(settings.companyName);
@@ -72,7 +77,7 @@ const SettingsPage: React.FC = () => {
     // The MainLayout useEffect will handle applying the class to document.documentElement
   };
 
-  const performEraseAllData = () => {
+  const performEraseAllData = useCallback(() => {
     // Clear all local storage items used by the app
     localStorage.removeItem('products');
     localStorage.removeItem('suppliers');
@@ -90,9 +95,24 @@ const SettingsPage: React.FC = () => {
 
     toast.success(t('success'), { description: t('allDataErased') });
     setTimeout(() => window.location.reload(), 1000); // Reload to re-initialize with default data
-  };
+  }, []);
 
-  const handleEraseAllData = () => {
+  const generateRandomCode = useCallback(() => {
+    return Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit random number
+  }, []);
+
+  const handleCodeConfirmation = useCallback((enteredCode: string) => {
+    if (enteredCode === generatedCode) {
+      performEraseAllData();
+    } else {
+      // This case should ideally be caught by CodeConfirmationModal itself,
+      // but added here as a fallback.
+      toast.error(t('codeMismatchError'), { description: t('pleaseEnterCorrectCode') });
+    }
+    setIsCodeConfirmationModalOpen(false);
+  }, [generatedCode, performEraseAllData]);
+
+  const handleEraseAllData = useCallback(() => {
     showConfirmationModal(
       t('eraseAllData'),
       t('eraseAllDataWarning'),
@@ -100,11 +120,15 @@ const SettingsPage: React.FC = () => {
         showConfirmationModal(
           t('eraseAllData'),
           t('eraseAllData100PercentSure'),
-          performEraseAllData
+          () => {
+            const code = generateRandomCode();
+            setGeneratedCode(code);
+            setIsCodeConfirmationModalOpen(true);
+          }
         );
       }
     );
-  };
+  }, [showConfirmationModal, generateRandomCode]);
 
   return (
     <div className="container mx-auto p-4">
@@ -256,6 +280,13 @@ const SettingsPage: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      <CodeConfirmationModal
+        isOpen={isCodeConfirmationModalOpen}
+        onClose={() => setIsCodeConfirmationModalOpen(false)}
+        onConfirm={handleCodeConfirmation}
+        codeToEnter={generatedCode}
+      />
     </div>
   );
 };

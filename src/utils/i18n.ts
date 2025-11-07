@@ -131,6 +131,14 @@ const i18n = {
     eraseAllDataWarning: 'Are you absolutely sure you want to erase all data? This action is irreversible and will reset the application to its default state.',
     eraseAllData100PercentSure: 'Are you 100% sure? This action is irreversible.', // New translation
     allDataErased: 'All application data has been erased.',
+    // New translations for code confirmation
+    finalConfirmation: 'Final Confirmation',
+    enterCodeToConfirm: 'To confirm, please type the following 4-digit code:',
+    enterCode: 'Enter Code',
+    enterTheCodeHere: 'Enter the code here',
+    confirmErase: 'Confirm Erase',
+    codeMismatchError: 'Code Mismatch',
+    pleaseEnterCorrectCode: 'Please enter the correct code to proceed.',
   }
 };
 
