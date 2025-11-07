@@ -37,7 +37,12 @@ const Sidebar: React.FC = () => {
     <div className="fixed top-0 left-0 h-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 w-64 p-4 z-20 sidebar border-r dark:border-slate-700 flex flex-col">
       <div className="flex-shrink-0 flex items-center mb-8">
         {companyLogo ? (
-          <img src={companyLogo} className="w-auto h-8 mr-3 object-contain" alt="Company Logo" />
+          <>
+            <img src={companyLogo} className="w-auto h-8 mr-3 object-contain" alt="Company Logo" />
+            {companyName && (
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{companyName}</h1>
+            )}
+          </>
         ) : companyName ? (
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{companyName}</h1>
         ) : (
