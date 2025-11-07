@@ -445,7 +445,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                               item.productId === product.id ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {product.name} ({product.sku})
+                          {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[order.warehouseId as number] || 0})
                         </CommandItem>
                       ))}
                     </CommandGroup>
