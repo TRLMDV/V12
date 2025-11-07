@@ -9,6 +9,8 @@ import FormModal from '@/components/FormModal';
 import ProductForm from '@/forms/ProductForm';
 import { ArrowUpDown, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input'; // Import Input component
+import { Label } from '@/components/ui/label'; // Import Label component
 
 type SortConfig = {
   key: keyof Product | 'totalStock' | 'priceWithMarkupCalc' | 'priceWithMarkupAndVatCalc';
@@ -20,12 +22,22 @@ const Products: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'sku', direction: 'ascending' });
+  const [searchSku, setSearchSku] = useState<string>(''); // New state for SKU search
 
   const defaultMarkup = settings.defaultMarkup / 100;
   const defaultVat = settings.defaultVat / 100;
 
-  const sortedProducts = useMemo(() => {
-    const sortableItems = products.map(p => ({
+  const filteredAndSortedProducts = useMemo(() => {
+    let filteredItems = products;
+
+    // Apply SKU search filter
+    if (searchSku) {
+      filteredItems = filteredItems.filter(p =>
+        p.sku.toLowerCase().includes(searchSku.toLowerCase())
+      );
+    }
+
+    const sortableItems = filteredItems.map(p => ({
       ...p,
       totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
       priceWithMarkupCalc: (p.averageLandedCost || 0) * (1 + defaultMarkup),
@@ -49,7 +61,7 @@ const Products: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [products, sortConfig, defaultMarkup, defaultVat]);
+  }, [products, sortConfig, defaultMarkup, defaultVat, searchSku]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -110,6 +122,24 @@ const Products: React.FC = () => {
         </Button>
       </div>
 
+      <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+          <div>
+            <Label htmlFor="search-sku" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('searchBySku')}
+            </Label>
+            <Input
+              id="search-sku"
+              type="text"
+              placeholder={t('enterSku')}
+              value={searchSku}
+              onChange={(e) => setSearchSku(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto">
         <Table>
           <TableHeader>
@@ -140,8 +170,8 @@ const Products: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedProducts.length > 0 ? (
-              sortedProducts.map(p => {
+            {filteredAndSortedProducts.length > 0 ? (
+              filteredAndSortedProducts.map(p => {
                 const stockIsLow = p.totalStock < p.minStock;
                 const landedCostDisplay = p.averageLandedCost > 0 ? `${p.averageLandedCost.toFixed(2)} AZN` : 'N/A';
                 const priceWithMarkupDisplay = p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : 'N/A';
