@@ -7,10 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import FormModal from '@/components/FormModal';
 import PurchaseOrderForm from '@/forms/PurchaseOrderForm';
-import { PlusCircle, Eye } from 'lucide-react';
+import { PlusCircle, Eye, Check, ChevronsUpDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input'; // Added Input import
-import { Label } from '@/components/ui/label'; // Added Label import
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 type SortConfig = {
   key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'totalItems' | 'totalValueNative';
@@ -23,9 +26,13 @@ const PurchaseOrders: React.FC = () => {
   const [editingOrderId, setEditingOrderId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
   const [filterWarehouseId, setFilterWarehouseId] = useState<number | 'all'>('all');
-  const [startDateFilter, setStartDateFilter] = useState<string>(''); // New state for start date filter
-  const [endDateFilter, setEndDateFilter] = useState<string>('');     // New state for end date filter
-  const [productFilterId, setProductFilterId] = useState<number | 'all'>('all'); // New state for product filter
+  const [startDateFilter, setStartDateFilter] = useState<string>('');
+  const [endDateFilter, setEndDateFilter] = useState<string>('');
+  
+  // State for product filter combobox
+  const [productFilterId, setProductFilterId] = useState<number | 'all'>('all');
+  const [isProductComboboxOpen, setIsProductComboboxOpen] = useState(false);
+
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<PurchaseOrder | null>(null);
 
@@ -219,19 +226,62 @@ const PurchaseOrders: React.FC = () => {
             <Label htmlFor="product-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
               {t('product')}
             </Label>
-            <Select onValueChange={(value) => setProductFilterId(value === 'all' ? 'all' : parseInt(value))} value={String(productFilterId)}>
-              <SelectTrigger className="w-full mt-1">
-                <SelectValue placeholder={t('allProducts')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('allProducts')}</SelectItem>
-                {products.map(p => (
-                  <SelectItem key={p.id} value={String(p.id)}>
-                    {p.name} ({p.sku})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={isProductComboboxOpen} onOpenChange={setIsProductComboboxOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isProductComboboxOpen}
+                  className="w-full justify-between mt-1"
+                >
+                  {productFilterId !== 'all'
+                    ? productMap[productFilterId as number]?.name || t('allProducts')
+                    : t('allProducts')}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder={t('searchProductBySku')} />
+                  <CommandEmpty>{t('noProductFound')}</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all-products"
+                      onSelect={() => {
+                        setProductFilterId('all');
+                        setIsProductComboboxOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          productFilterId === 'all' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {t('allProducts')}
+                    </CommandItem>
+                    {products.map((product) => (
+                      <CommandItem
+                        key={product.id}
+                        value={`${product.name} ${product.sku}`}
+                        onSelect={() => {
+                          setProductFilterId(product.id);
+                          setIsProductComboboxOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            productFilterId === product.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {product.name} ({product.sku})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <Label htmlFor="start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
@@ -371,7 +421,7 @@ const PurchaseOrders: React.FC = () => {
                       <TableCell className="p-2">{item.qty}</TableCell>
                       <TableCell className="p-2">{item.price?.toFixed(2)} {item.currency || selectedOrderDetails.currency}</TableCell>
                       <TableCell className="p-2">{item.landedCostPerUnit?.toFixed(2)} AZN</TableCell>
-                      <TableCell className="p-2">{itemTotalLandedAZN.toFixed(2)} AZN</TableCell>
+                      <TableCell className="p-2">{itemTotalLandedAZN.toFixed(2)} AZN}</TableCell>
                     </TableRow>
                   );
                 })}
