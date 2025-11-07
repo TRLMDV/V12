@@ -125,20 +125,14 @@ export interface Settings {
 }
 
 // --- Initial Data & Defaults ---
-const initialCurrencyRates: CurrencyRates = { 'USD': 1.70, 'EUR': 2.00, 'RUB': 0.019, 'AZN': 1.00 };
+const defaultCurrencyRates: CurrencyRates = { 'USD': 1.70, 'EUR': 2.00, 'RUB': 0.019, 'AZN': 1.00 };
 
-export const initialData = { // Export initialData for use in useCrudOperations
-  warehouses: [
-    { id: 1, name: 'Main Warehouse', location: 'Baku, Azerbaijan', type: 'Main' } as Warehouse,
-    { id: 2, name: 'Secondary Hub', location: 'Ganja, Azerbaijan', type: 'Secondary' } as Warehouse
-  ],
-  products: [
-    { id: 1, name: 'Laptop Pro 15"', sku: 'LP15-PRO', category: 'Electronics', description: 'High-end professional laptop', stock: { 1: 50, 2: 20 }, minStock: 10, averageLandedCost: 1200.00, imageUrl: '' } as Product,
-    { id: 2, name: 'Wireless Mouse', sku: 'WM-001', category: 'Accessories', description: 'Ergonomic wireless mouse', stock: { 1: 150, 2: 75 }, minStock: 25, averageLandedCost: 8.50, imageUrl: '' } as Product,
-    { id: 3, name: 'Mechanical Keyboard', sku: 'MK-ELITE', category: 'Accessories', description: 'Gaming mechanical keyboard', stock: { 1: 80, 2: 30 }, minStock: 15, averageLandedCost: 45.00, imageUrl: '' } as Product
-  ],
-  suppliers: [{ id: 1, name: 'Tech Supplies Inc.', contact: 'John Doe', email: 'john@techsupplies.com', phone: '+1234567890', address: '123 Tech Road' }] as Supplier[],
-  customers: [{ id: 1, name: 'Global Innovations Ltd.', contact: 'Jane Smith', email: 'jane@globalinnovations.com', phone: '+9876543210', address: '456 Business Ave' }] as Customer[],
+// Initial data for a truly blank slate
+export const initialData = {
+  warehouses: [] as Warehouse[],
+  products: [] as Product[],
+  suppliers: [] as Supplier[],
+  customers: [] as Customer[],
   purchaseOrders: [] as PurchaseOrder[],
   sellOrders: [] as SellOrder[],
   incomingPayments: [] as Payment[],
@@ -152,7 +146,7 @@ const initialSettings: Settings = {
   theme: 'light',
   defaultVat: 18,
   defaultMarkup: 70,
-  currencyRates: initialCurrencyRates,
+  currencyRates: defaultCurrencyRates,
 };
 
 // --- Context Definition ---
@@ -201,18 +195,18 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [initialized, setInitialized] = useLocalStorage<boolean>('initialized', false);
 
-  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
-  const [suppliers, setSuppliers] = useLocalStorage<Supplier[]>('suppliers', []);
-  const [customers, setCustomers] = useLocalStorage<Customer[]>('customers', []);
-  const [warehouses, setWarehouses] = useLocalStorage<Warehouse[]>('warehouses', []);
-  const [purchaseOrders, setPurchaseOrders] = useLocalStorage<PurchaseOrder[]>('purchaseOrders', []);
-  const [sellOrders, setSellOrders] = useLocalStorage<SellOrder[]>('sellOrders', []);
-  const [incomingPayments, setIncomingPayments] = useLocalStorage<Payment[]>('incomingPayments', []);
-  const [outgoingPayments, setOutgoingPayments] = useLocalStorage<Payment[]>('outgoingPayments', []);
-  const [productMovements, setProductMovements] = useLocalStorage<ProductMovement[]>('productMovements', []);
+  const [products, setProducts] = useLocalStorage<Product[]>('products', initialData.products);
+  const [suppliers, setSuppliers] = useLocalStorage<Supplier[]>('suppliers', initialData.suppliers);
+  const [customers, setCustomers] = useLocalStorage<Customer[]>('customers', initialData.customers);
+  const [warehouses, setWarehouses] = useLocalStorage<Warehouse[]>('warehouses', initialData.warehouses);
+  const [purchaseOrders, setPurchaseOrders] = useLocalStorage<PurchaseOrder[]>('purchaseOrders', initialData.purchaseOrders);
+  const [sellOrders, setSellOrders] = useLocalStorage<SellOrder[]>('sellOrders', initialData.sellOrders);
+  const [incomingPayments, setIncomingPayments] = useLocalStorage<Payment[]>('incomingPayments', initialData.incomingPayments);
+  const [outgoingPayments, setOutgoingPayments] = useLocalStorage<Payment[]>('outgoingPayments', initialData.outgoingPayments);
+  const [productMovements, setProductMovements] = useLocalStorage<ProductMovement[]>('productMovements', initialData.productMovements);
 
   const [settings, setSettings] = useLocalStorage<Settings>('settings', initialSettings);
-  const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', initialCurrencyRates);
+  const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', defaultCurrencyRates);
 
   // Internal state for next IDs, managed by DataProvider
   const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
@@ -258,7 +252,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // --- Initialization Logic ---
   useEffect(() => {
     if (!initialized) {
-      // Initialize with dummy data
+      // Initialize with empty data and default settings
       setWarehouses(initialData.warehouses);
       setProducts(initialData.products);
       setSuppliers(initialData.suppliers);
@@ -269,17 +263,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setOutgoingPayments(initialData.outgoingPayments);
       setProductMovements(initialData.productMovements);
       setSettings(initialSettings);
-      setCurrencyRates(initialCurrencyRates);
+      setCurrencyRates(defaultCurrencyRates);
 
-      // Initialize nextIds based on initial data
+      // Initialize nextIds based on initial data (which are now empty, so start from 1)
       const initialNextIds: { [key: string]: number } = {};
       (Object.keys(initialData) as (keyof typeof initialData)[]).forEach(key => {
-        const items = initialData[key];
-        if (Array.isArray(items) && items.length > 0) {
-          initialNextIds[key] = Math.max(...items.map((i: any) => i.id)) + 1;
-        } else {
-          initialNextIds[key] = 1;
-        }
+        initialNextIds[key] = 1; // Always start from 1 for empty collections
       });
       setNextIds(initialNextIds);
       setInitialized(true);
