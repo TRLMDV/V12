@@ -13,9 +13,9 @@ import { Product } from '@/context/DataContext';
 
 interface SellOrderItemState {
   productId: number | '';
-  qty: number;
-  price: number;
-  itemTotal: number; // Added itemTotal
+  qty: number | string; // Added string type
+  price: number | string; // Added string type
+  itemTotal: number | string; // Added string type
 }
 
 interface SellOrderItemsFieldProps {
@@ -46,7 +46,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
         <Label className="col-span-4">{t('product')}</Label>
         <Label className="col-span-2">{t('qty')}</Label>
         <Label className="col-span-2">{t('price')}</Label>
-        <Label className="col-span-2">{t('itemTotal')}</Label> {/* New Label */}
+        <Label className="col-span-2">{t('itemTotal')}</Label>
         <Label className="col-span-1"></Label>
       </div>
       <div id="order-items">
@@ -94,23 +94,23 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
               </PopoverContent>
             </Popover>
             <Input
-              type="text" // Changed to text
-              value={String(item.qty)}
-              onChange={(e) => handleOrderItemChange(index, 'qty', parseInt(e.target.value) || 0)}
+              type="text"
+              value={item.qty}
+              onChange={(e) => handleOrderItemChange(index, 'qty', e.target.value)}
               className="col-span-2"
             />
             <Input
-              type="text" // Changed to text
+              type="text"
               step="0.01"
-              value={String(item.price)}
-              onChange={(e) => handleOrderItemChange(index, 'price', parseFloat(e.target.value) || 0)}
+              value={item.price}
+              onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
               className="col-span-2"
             />
             <Input
-              type="text" // Changed to text
+              type="text"
               step="0.01"
-              value={String(item.itemTotal)}
-              onChange={(e) => handleOrderItemChange(index, 'itemTotal', parseFloat(e.target.value) || 0)} // Handle change to itemTotal
+              value={item.itemTotal}
+              onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
               className="col-span-2"
             />
             <Button
