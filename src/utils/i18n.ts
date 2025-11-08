@@ -149,6 +149,9 @@ const i18n = {
     itemsNotImportedWarning: 'Order/Movement items were not imported and must be added manually.',
     importErrorsFound: 'Import errors found',
     settings: 'Settings',
+    defaultWarehouse: 'Default Warehouse',
+    selectDefaultWarehouse: 'Select Default Warehouse',
+    none: 'None',
   }
 };
 

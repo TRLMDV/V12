@@ -28,6 +28,7 @@ export interface Customer {
   email: string;
   phone: string;
   address: string;
+  defaultWarehouseId?: number; // New field for default warehouse
 }
 
 export interface Warehouse {

@@ -98,6 +98,21 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     }
   }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized, productMap]); // Added productMap to dependencies
 
+  // Effect to set default warehouse when customer changes
+  useEffect(() => {
+    if (order.contactId) {
+      const selectedCustomer = customerMap[order.contactId];
+      if (selectedCustomer && selectedCustomer.defaultWarehouseId !== undefined) {
+        // Only set if the warehouse hasn't been manually selected or if it's a new order
+        // or if the current warehouse is not valid/set
+        if (!order.warehouseId || !warehouses.some(w => w.id === order.warehouseId)) {
+          setOrder(prev => ({ ...prev, warehouseId: selectedCustomer.defaultWarehouseId }));
+        }
+      }
+    }
+  }, [order.contactId, customerMap, order.warehouseId, warehouses]);
+
+
   const calculateOrderFinancials = useCallback(() => {
     let subtotal = 0;
     let totalCleanProfit = 0;

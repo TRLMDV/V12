@@ -11,18 +11,26 @@ import { PlusCircle } from 'lucide-react';
 import { Customer } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof Customer;
+  key: keyof Customer | 'defaultWarehouseName';
   direction: 'ascending' | 'descending';
 };
 
 const Customers: React.FC = () => {
-  const { customers, deleteItem } = useData();
+  const { customers, warehouses, deleteItem } = useData(); // Get warehouses for mapping
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomerId, setEditingCustomerId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
 
+  const warehouseMap = useMemo(() => {
+    return warehouses.reduce((acc, w) => ({ ...acc, [w.id]: w.name }), {} as { [key: number]: string });
+  }, [warehouses]);
+
   const sortedCustomers = useMemo(() => {
-    const sortableItems = [...customers];
+    const sortableItems = [...customers].map(c => ({
+      ...c,
+      defaultWarehouseName: c.defaultWarehouseId ? warehouseMap[c.defaultWarehouseId] : t('none'),
+    }));
+
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
         const key = sortConfig.key;
@@ -40,7 +48,7 @@ const Customers: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [customers, sortConfig]);
+  }, [customers, sortConfig, warehouseMap]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -69,7 +77,7 @@ const Customers: React.FC = () => {
     setEditingCustomerId(undefined);
   };
 
-  const getSortIndicator = (key: keyof Customer) => {
+  const getSortIndicator = (key: SortConfig['key']) => {
     if (sortConfig.key === key) {
       return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
     }
@@ -102,6 +110,9 @@ const Customers: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('phone')}>
                 {t('phone')} {getSortIndicator('phone')}
               </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('defaultWarehouseName')}>
+                {t('defaultWarehouse')} {getSortIndicator('defaultWarehouseName')}
+              </TableHead>
               <TableHead className="p-3">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
@@ -113,6 +124,7 @@ const Customers: React.FC = () => {
                   <TableCell className="p-3">{c.contact}</TableCell>
                   <TableCell className="p-3">{c.email}</TableCell>
                   <TableCell className="p-3">{c.phone}</TableCell>
+                  <TableCell className="p-3">{c.defaultWarehouseName}</TableCell>
                   <TableCell className="p-3">
                     <Button variant="link" onClick={() => handleEditCustomer(c.id)} className="mr-2 p-0 h-auto">
                       {t('edit')}
@@ -125,7 +137,7 @@ const Customers: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>
