@@ -4,8 +4,8 @@ const i18n = {
   en: {
     backupRestore: 'Backup & Restore', backupData: 'Backup Data', restoreData: 'Restore Data', restoreWarning: 'This will overwrite all current data. Are you sure you want to proceed?', restoreSuccess: 'Data restored successfully. The application will now reload.', restoreError: 'Invalid backup file.',
     theme: 'Theme', light: 'Light', dark: 'Dark', companyDetails: 'Company Details', companyName: 'Company Name', companyLogo: 'Company Logo', changeLogo: 'Change Logo', saveCompanyDetails: 'Save Company Details', success: 'Success', detailsUpdated: 'Company details updated.',
-    dashboard: 'Dashboard', products: 'Products', purchaseOrders: 'Purchase Orders', sellOrders: 'SellOrders', suppliers: 'Suppliers', customers: 'Customers', incomingPayments: 'Incoming Payments', outgoingPayments: 'Outgoing Payments', warehouses: 'Warehouses', productMovement: 'Product Movement', finance: 'Finance', profitability: 'Profitability', dataImportExport: 'Data Import/Export', settings: 'Settings', totalRevenueShipped: 'Total Revenue (Shipped)', cogs: 'Cost of Goods Sold (COGS)', grossProfitShipped: 'Gross Profit (Shipped)', liveCurrencyRates: 'Live Currency Rates (to AZN)', overduePaymentAlerts: 'Overdue Payment Alerts', orderId: 'Order ID', customer: 'Customer', orderDate: 'Order Date', daysOverdue: 'Days Overdue', amountDue: 'Amount Due', noOverduePayments: 'No overdue payments. All accounts are settled!', lowStockAlerts: 'Low Stock Alerts', product: 'Product', sku: 'SKU', totalStock: 'Total Stock', minStock: 'Min. Stock', noLowStockProducts: 'No products are low on stock. Great job!', addProduct: 'Add Product', image: 'Image', name: 'Name', category: 'Category', avgLandedCost: 'Avg. Landed Cost', landedCostPlusMarkup: 'Avg LC + Markup (Excl VAT)',
-    edit: 'Edit', delete: 'Delete', noItemsFound: 'No items found.', editProduct: 'Edit Product', createProduct: 'Create Product', productName: 'Product Name', productImage: 'Product Image', chooseFile: 'Choose File', minimumStockLevel: 'Minimum Stock Level', saveProduct: 'Save Product', editSellOrder: 'Edit Sell Order', createSellOrder: 'Create Sell Order', editPurchaseOrder: 'Edit Purchase Order', createPurchaseOrder: 'Create Purchase Order', supplier: 'Supplier', sourceWarehouse: 'Source Warehouse', destinationWarehouse: 'Destination Warehouse', status: 'Status', draft: 'Draft', confirmed: 'Confirmed', ordered: 'Ordered', shipped: 'Shipped', received: 'Received', orderItems: 'Order Items', selectProduct: 'Select Product', qty: 'Qty', price: 'Price', addItem: 'Add Item', exchangeRateToAZN: 'Exchange Rate to AZN', exchangeRatePlaceholder: 'e.g., 2.00 for EUR', exchangeRateHelpText: 'Enter the value of 1 unit of the foreign currency in AZN.', transportationFees: 'Transportation Fees', customFees: 'Custom Fees', additionalFees: 'Additional Fees', vatPercent: 'VAT (%)', total: 'Total', saveOrder: 'Save Order', stockError: 'Stock Error', notEnoughStock: 'Not enough stock for', available: 'Available', requested: 'Requested', language: 'Language', addWarehouse: 'Add Warehouse', productsInThisWarehouse: 'Products in this Warehouse', noProductsStored: 'No products currently stored here.', addPO: 'Add PO', addSO: 'Add SO', filterByWarehouse: 'Filter by Warehouse:', allWarehouses: 'All Warehouses', noOrdersForWarehouse: 'No orders found for this warehouse.', orderStatus: 'Order Status', paymentStatus: 'Payment Status', paid: 'Paid', partiallyPaid: 'Partially Paid', unpaid: 'Unpaid', addPayment: 'Add Payment', paymentId: 'Payment ID', linkedOrder: 'Linked Order', amount: 'Amount', method: 'Method', newMovement: 'New Movement', from: 'From', to: 'To', totalItems: 'Total Items', view: 'View', detailsForMovement: 'Details for Movement', financeTitle: 'Finance - Profit & Loss', period: 'Period:', allTime: 'All Time', thisYear: 'This Year', thisYear: 'This Year', thisMonth: 'This Month', thisWeek: 'This Week', today: 'Today', keyMetrics: 'Key Metrics', totalRevenue: 'Total Revenue', grossProfit: 'Gross Profit', totalVatCollected: 'Total VAT Collected', cashFlow: 'Cash Flow', totalIncomingPayments: 'Total Incoming Payments', totalOutgoingPayments: 'Total Outgoing Payments', netCashFlow: 'Net Cash Flow', profitabilityAnalysis: 'Profitability Analysis', startDate: 'Start Date', endDate: 'End Date', filter: 'Filter', salesPercentage: 'Sales Percentage (by Qty)', daysInStock: 'Days in Stock', totalSales: 'Total Sales (Markup-Based)', cleanProfit: 'Clean Profit (Markup-Based)',
+    dashboard: 'Dashboard', products: 'Products', purchaseOrders: 'Purchase Orders', sellOrders: 'SellOrders', suppliers: 'Suppliers', customers: 'Customers', incomingPayments: 'Incoming Payments', outgoingPayments: 'Outgoing Payments', warehouses: 'Warehouses', productMovement: 'Product Movement', finance: 'Finance', profitability: 'Profitability', dataImportExport: 'Data Import/Export', totalRevenueShipped: 'Total Revenue (Shipped)', cogs: 'Cost of Goods Sold (COGS)', grossProfitShipped: 'Gross Profit (Shipped)', liveCurrencyRates: 'Live Currency Rates (to AZN)', overduePaymentAlerts: 'Overdue Payment Alerts', orderId: 'Order ID', customer: 'Customer', orderDate: 'Order Date', daysOverdue: 'Days Overdue', amountDue: 'Amount Due', noOverduePayments: 'No overdue payments. All accounts are settled!', lowStockAlerts: 'Low Stock Alerts', product: 'Product', sku: 'SKU', totalStock: 'Total Stock', minStock: 'Min. Stock', noLowStockProducts: 'No products are low on stock. Great job!', addProduct: 'Add Product', image: 'Image', name: 'Name', category: 'Category', avgLandedCost: 'Avg. Landed Cost', landedCostPlusMarkup: 'Avg LC + Markup (Excl VAT)',
+    edit: 'Edit', delete: 'Delete', noItemsFound: 'No items found.', editProduct: 'Edit Product', createProduct: 'Create Product', productName: 'Product Name', productImage: 'Product Image', chooseFile: 'Choose File', minimumStockLevel: 'Minimum Stock Level', saveProduct: 'Save Product', editSellOrder: 'Edit Sell Order', createSellOrder: 'Create Sell Order', editPurchaseOrder: 'Edit Purchase Order', 'createPurchaseOrder': 'Create Purchase Order', supplier: 'Supplier', sourceWarehouse: 'Source Warehouse', destinationWarehouse: 'Destination Warehouse', status: 'Status', draft: 'Draft', confirmed: 'Confirmed', ordered: 'Ordered', shipped: 'Shipped', received: 'Received', orderItems: 'Order Items', selectProduct: 'Select Product', qty: 'Qty', price: 'Price', addItem: 'Add Item', exchangeRateToAZN: 'Exchange Rate to AZN', exchangeRatePlaceholder: 'e.g., 2.00 for EUR', exchangeRateHelpText: 'Enter the value of 1 unit of the foreign currency in AZN.', transportationFees: 'Transportation Fees', customFees: 'Custom Fees', additionalFees: 'Additional Fees', vatPercent: 'VAT (%)', total: 'Total', saveOrder: 'Save Order', stockError: 'Stock Error', notEnoughStock: 'Not enough stock for', available: 'Available', requested: 'Requested', language: 'Language', addWarehouse: 'Add Warehouse', productsInThisWarehouse: 'Products in this Warehouse', noProductsStored: 'No products currently stored here.', addPO: 'Add PO', addSO: 'Add SO', filterByWarehouse: 'Filter by Warehouse:', allWarehouses: 'All Warehouses', noOrdersForWarehouse: 'No orders found for this warehouse.', orderStatus: 'Order Status', paymentStatus: 'Payment Status', paid: 'Paid', partiallyPaid: 'Partially Paid', unpaid: 'Unpaid', addPayment: 'Add Payment', paymentId: 'Payment ID', linkedOrder: 'Linked Order', amount: 'Amount', method: 'Method', newMovement: 'New Movement', from: 'From', to: 'To', totalItems: 'Total Items', view: 'View', detailsForMovement: 'Details for Movement', financeTitle: 'Finance - Profit & Loss', period: 'Period:', allTime: 'All Time', thisYear: 'This Year', thisYear: 'This Year', thisMonth: 'This Month', thisWeek: 'This Week', today: 'Today', keyMetrics: 'Key Metrics', totalRevenue: 'Total Revenue', grossProfit: 'Gross Profit', totalVatCollected: 'Total VAT Collected', cashFlow: 'Cash Flow', totalIncomingPayments: 'Total Incoming Payments', totalOutgoingPayments: 'Total Outgoing Payments', netCashFlow: 'Net Cash Flow', profitabilityAnalysis: 'Profitability Analysis', startDate: 'Start Date', endDate: 'End Date', filter: 'Filter', salesPercentage: 'Sales Percentage (by Qty)', daysInStock: 'Days in Stock', totalSales: 'Total Sales (Markup-Based)', cleanProfit: 'Clean Profit (Markup-Based)',
     currencyRatesSettings: 'Currency Rates (to AZN)', usdToAzn: 'USD to AZN', eurToAzn: 'EUR to AZN', rubToAzn: 'RUB to AZN', saveCurrencyRates: 'Save Currency Rates', ratesUpdated: 'Currency rates updated.', invalidRates: 'Please enter valid numbers for currency rates.',
     defaultVat: 'Default VAT (%)', saveDefaultVat: 'Save VAT', vatUpdated: 'Default VAT updated.',
     defaultMarkup: 'Default Sales Markup (%)',
@@ -116,15 +116,6 @@ const i18n = {
     excelImportInfo: 'Excel Import Info',
     duplicateProductsSkipped: 'Some products were skipped because their SKUs already exist.',
     duplicateCustomersSkipped: 'Some customers were skipped because their emails already exist.',
-    // New translations for Excel Export
-    exportProductsToExcel: 'Export Products to Excel',
-    exportProductsDescription: 'Download your current product list as an Excel file.',
-    exportCustomersToExcel: 'Export Customers to Excel',
-    exportCustomersDescription: 'Download your current customer list as an Excel file.',
-    exportExcelFile: 'Export Excel File',
-    noDataToExport: 'No data available to export.',
-    exportJsonFile: 'Export JSON File',
-    importJsonFile: 'Import JSON File',
     // New translations for Erase All Data
     eraseAllData: 'Erase All Data',
     eraseAllDataDescription: 'This action will permanently delete ALL application data stored locally and reset the application to its initial state. This cannot be undone.',
@@ -152,6 +143,41 @@ const i18n = {
     exportError: 'Export Error',
     totalRevenueExVat: 'Total Revenue (Excl. VAT)',
     fullyPaid: 'Fully Paid', // New translation
+    // New translations for additional Excel import/export options
+    exportSuppliersToExcel: 'Export Suppliers to Excel',
+    exportSuppliersDescription: 'Download your current supplier list as an Excel file.',
+    importSuppliersFromExcel: 'Import Suppliers from Excel',
+    importSuppliersDescription: 'Upload an Excel file (.xlsx or .xls) to import your supplier list. The file should have columns like "Supplier Name", "Contact Person", "Email", "Phone", "Address". Existing suppliers with the same email will be skipped.',
+    duplicateSuppliersSkipped: 'Some suppliers were skipped because their emails already exist.',
+
+    exportPurchaseOrdersToExcel: 'Export Purchase Orders to Excel',
+    exportPurchaseOrdersDescription: 'Download your current purchase orders as an Excel file. Items are summarized in a single column.',
+    importPurchaseOrdersFromExcel: 'Import Purchase Orders from Excel',
+    importPurchaseOrdersDescription: 'Upload an Excel file (.xlsx or .xls) to import purchase orders. Required columns: "Supplier Name", "Warehouse Name", "Order Date", "Status", "Currency", "Total (AZN)". Note: Order items cannot be imported via this method and must be added manually after import.',
+
+    exportSellOrdersToExcel: 'Export Sell Orders to Excel',
+    exportSellOrdersDescription: 'Download your current sell orders as an Excel file. Items are summarized in a single column.',
+    importSellOrdersFromExcel: 'Import Sell Orders from Excel',
+    importSellOrdersDescription: 'Upload an Excel file (.xlsx or .xls) to import sell orders. Required columns: "Customer Name", "Warehouse Name", "Order Date", "Status", "VAT (%)", "Total (AZN)". Note: Order items cannot be imported via this method and must be added manually after import.',
+
+    exportIncomingPaymentsToExcel: 'Export Incoming Payments to Excel',
+    exportIncomingPaymentsDescription: 'Download your current incoming payments as an Excel file.',
+    importIncomingPaymentsFromExcel: 'Import Incoming Payments from Excel',
+    importIncomingPaymentsDescription: 'Upload an Excel file (.xlsx or .xls) to import incoming payments. Required columns: "Payment Date", "Amount Paid", "Method", "Payment Currency". Optionally include "Linked Order ID", "Payment Category", "Manual Description", "Exchange Rate to AZN".',
+
+    exportOutgoingPaymentsToExcel: 'Export Outgoing Payments to Excel',
+    exportOutgoingPaymentsDescription: 'Download your current outgoing payments as an Excel file.',
+    importOutgoingPaymentsFromExcel: 'Import Outgoing Payments from Excel',
+    importOutgoingPaymentsDescription: 'Upload an Excel file (.xlsx or .xls) to import outgoing payments. Required columns: "Payment Date", "Amount Paid", "Method", "Payment Currency". Optionally include "Linked Order ID", "Payment Category", "Manual Description", "Exchange Rate to AZN".',
+
+    exportProductMovementsToExcel: 'Export Product Movements to Excel',
+    exportProductMovementsDescription: 'Download your current product movements as an Excel file. Items are summarized in a single column.',
+    importProductMovementsFromExcel: 'Import Product Movements from Excel',
+    importProductMovementsDescription: 'Upload an Excel file (.xlsx or .xls) to import product movements. Required columns: "Source Warehouse Name", "Destination Warehouse Name", "Movement Date". Note: Movement items cannot be imported via this method and must be added manually after import.',
+
+    itemsNotImportedWarning: 'Order/Movement items were not imported and must be added manually.',
+    importErrorsFound: 'Import errors found',
+    settings: 'Settings',
   }
 };
 
