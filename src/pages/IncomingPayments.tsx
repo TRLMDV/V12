@@ -183,9 +183,9 @@ const IncomingPayments: React.FC = () => {
 
                   if (isFullyPaid) {
                     rowClass += ' bg-green-100 dark:bg-green-900/50';
-                    remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(Fully Paid)</span>`;
+                    remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(${t('fullyPaid')})</span>`;
                   } else {
-                    rowClass += ' bg-yellow-100 dark:bg-yellow-900/50';
+                    rowClass += ' bg-red-100 dark:bg-red-900/50'; // Changed to red
                     remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${t('remaining')}: ${remainingIfReversed.toFixed(2)} AZN)</span>`;
                   }
                 }

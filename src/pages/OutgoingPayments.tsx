@@ -108,7 +108,7 @@ const OutgoingPayments: React.FC = () => {
           const isFullyPaid = remainingIfReversed <= 0.001;
 
           if (isFullyPaid) {
-            remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(Fully Paid)</span>`;
+            remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(${t('fullyPaid')})</span>`;
           } else {
             remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${t('remaining')}: ${remainingIfReversed.toFixed(2)} AZN)</span>`;
           }
@@ -232,13 +232,11 @@ const OutgoingPayments: React.FC = () => {
               filteredAndSortedPayments.map(p => {
                 let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
                 // Determine row class based on payment status (fully paid or partially paid)
-                // This logic is now handled within filteredAndSortedPayments map for remainingAmountText
-                // We can use the presence of remainingAmountText to infer partial/full payment status
                 if (p.orderId !== 0) {
-                  if (p.remainingAmountText?.includes('Fully Paid')) {
+                  if (p.remainingAmountText?.includes(t('fullyPaid'))) { // Use translation key
                     rowClass += ' bg-green-100 dark:bg-green-900/50';
-                  } else if (p.remainingAmountText?.includes('Remaining')) {
-                    rowClass += ' bg-yellow-100 dark:bg-yellow-900/50';
+                  } else if (p.remainingAmountText?.includes(t('remaining'))) { // Use translation key
+                    rowClass += ' bg-red-100 dark:bg-red-900/50'; // Changed to red
                   }
                 }
 

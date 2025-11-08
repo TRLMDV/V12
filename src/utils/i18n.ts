@@ -151,6 +151,7 @@ const i18n = {
     exportedSuccessfully: 'exported successfully',
     exportError: 'Export Error',
     totalRevenueExVat: 'Total Revenue (Excl. VAT)',
+    fullyPaid: 'Fully Paid', // New translation
   }
 };
 
