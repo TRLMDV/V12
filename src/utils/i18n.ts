@@ -161,6 +161,8 @@ const i18n = {
     exportSellOrdersDescription: 'Download your current sell orders as an Excel file. Items are summarized in a single column.',
     importSellOrdersFromExcel: 'Import Sell Orders from Excel',
     importSellOrdersDescription: 'Upload an Excel file (.xlsx or .xls) to import sell orders. Required columns: "Customer Name", "Warehouse Name", "Order Date", "Status", "VAT (%)", "Total (AZN)". Note: Order items cannot be imported via this method and must be added manually after import.',
+    exportSellOrdersToExcelMultiSheet: 'Export Sell Orders to Excel (Detailed)', // New translation
+    exportSellOrdersDescriptionMultiSheet: 'Download your current sell orders as an Excel file, with each order on a separate sheet containing detailed summary and items.', // New translation
 
     exportIncomingPaymentsToExcel: 'Export Incoming Payments to Excel',
     exportIncomingPaymentsDescription: 'Download your current incoming payments as an Excel file.',

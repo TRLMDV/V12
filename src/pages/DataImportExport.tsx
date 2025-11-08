@@ -11,6 +11,7 @@ import { Download, UploadCloud } from 'lucide-react'; // Add UploadCloud icon
 import ExcelImportButton from '@/components/ExcelImportButton'; // Import the new component
 import ExcelExportButton from '@/components/ExcelExportButton'; // Import the new ExcelExportButton
 import PurchaseOrdersMultiSheetExportButton from '@/components/PurchaseOrdersMultiSheetExportButton'; // Import new component
+import SellOrdersMultiSheetExportButton from '@/components/SellOrdersMultiSheetExportButton'; // Import new component
 import { Product, Customer, Supplier, PurchaseOrder, SellOrder, Payment, ProductMovement } from '@/types'; // Import all necessary types
 
 const DataImportExport: React.FC = () => {
@@ -602,27 +603,11 @@ const DataImportExport: React.FC = () => {
         currencyRates={currencyRates}
       />
 
-      <ExcelExportButton
-        label={t('exportSellOrdersToExcel')}
-        description={t('exportSellOrdersDescription')}
-        data={sellOrders.map(so => ({
-          ...so,
-          customerName: customerMap[so.contactId]?.name || 'N/A',
-          warehouseName: warehouseMap[so.warehouseId]?.name || 'N/A',
-          itemsString: formatOrderItems(so.items, productMap, 'AZN'),
-        }))}
-        fileName="sell_orders_export"
-        sheetName="Sell Orders"
-        columns={[
-          { header: 'ID', accessor: 'id' },
-          { header: 'Customer Name', accessor: 'customerName' },
-          { header: 'Order Date', accessor: 'orderDate' },
-          { header: 'Warehouse Name', accessor: 'warehouseName' },
-          { header: 'Status', accessor: 'status' },
-          { header: 'VAT (%)', accessor: 'vatPercent' },
-          { header: 'Total (AZN)', accessor: 'total' },
-          { header: 'Items', accessor: 'itemsString' },
-        ]}
+      <SellOrdersMultiSheetExportButton
+        sellOrders={sellOrders}
+        productMap={productMap}
+        customerMap={customerMap}
+        warehouseMap={warehouseMap}
       />
 
       <ExcelExportButton
