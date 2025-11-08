@@ -12,6 +12,7 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Product, SellOrder, PurchaseOrder } from '@/types'; // Import types from types file
+import { Button } from '@/components/ui/button'; // Import Button component
 
 type SortConfig = {
   key: 'productName' | 'sku' | 'qtySold' | 'totalSales' | 'totalCOGS' | 'cleanProfit' | 'salesPercentage' | 'daysInStock';
@@ -287,7 +288,7 @@ const Profitability: React.FC = () => {
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('qtySold')}>
                   {t('qtySold')} {getSortIndicator('qtySold')}
                 </TableHead>
-                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalSales')}>
+                <TableHead className className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalSales')}>
                   {t('totalSales')} (Excl. VAT) {getSortIndicator('totalSales')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalCOGS')}>
