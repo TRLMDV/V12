@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Download, UploadCloud } from 'lucide-react'; // Add UploadCloud icon
 import ExcelImportButton from '@/components/ExcelImportButton'; // Import the new component
 import ExcelExportButton from '@/components/ExcelExportButton'; // Import the new ExcelExportButton
+import PurchaseOrdersMultiSheetExportButton from '@/components/PurchaseOrdersMultiSheetExportButton'; // Import new component
 import { Product, Customer, Supplier, PurchaseOrder, SellOrder, Payment, ProductMovement } from '@/types'; // Import all necessary types
 
 const DataImportExport: React.FC = () => {
@@ -593,34 +594,12 @@ const DataImportExport: React.FC = () => {
         ]}
       />
 
-      <ExcelExportButton
-        label={t('exportPurchaseOrdersToExcel')}
-        description={t('exportPurchaseOrdersDescription')}
-        data={purchaseOrders.map(po => ({
-          ...po,
-          supplierName: supplierMap[po.contactId]?.name || 'N/A',
-          warehouseName: warehouseMap[po.warehouseId]?.name || 'N/A',
-          itemsString: formatOrderItems(po.items, productMap, po.currency, true),
-        }))}
-        fileName="purchase_orders_export"
-        sheetName="Purchase Orders"
-        columns={[
-          { header: 'ID', accessor: 'id' },
-          { header: 'Supplier Name', accessor: 'supplierName' },
-          { header: 'Order Date', accessor: 'orderDate' },
-          { header: 'Warehouse Name', accessor: 'warehouseName' },
-          { header: 'Status', accessor: 'status' },
-          { header: 'Currency', accessor: 'currency' },
-          { header: 'Exchange Rate to AZN', accessor: 'exchangeRate' },
-          { header: 'Transportation Fees', accessor: 'transportationFees' },
-          { header: 'Transportation Fees Currency', accessor: 'transportationFeesCurrency' },
-          { header: 'Custom Fees', accessor: 'customFees' },
-          { header: 'Custom Fees Currency', accessor: 'customFeesCurrency' },
-          { header: 'Additional Fees', accessor: 'additionalFees' },
-          { header: 'Additional Fees Currency', accessor: 'additionalFeesCurrency' },
-          { header: 'Total (AZN)', accessor: 'total' },
-          { header: 'Items', accessor: 'itemsString' },
-        ]}
+      <PurchaseOrdersMultiSheetExportButton
+        purchaseOrders={purchaseOrders}
+        productMap={productMap}
+        supplierMap={supplierMap}
+        warehouseMap={warehouseMap}
+        currencyRates={currencyRates}
       />
 
       <ExcelExportButton
