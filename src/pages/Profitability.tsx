@@ -8,6 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MOCK_CURRENT_DATE } from '@/context/DataContext';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type SortConfig = {
   key: 'productName' | 'sku' | 'qtySold' | 'totalSales' | 'totalCOGS' | 'cleanProfit' | 'salesPercentage' | 'daysInStock';
@@ -20,6 +24,14 @@ const Profitability: React.FC = () => {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'cleanProfit', direction: 'descending' });
+
+  // New states for product filter
+  const [productFilterId, setProductFilterId] = useState<number | 'all'>('all');
+  const [isProductComboboxOpen, setIsProductComboboxOpen] = useState(false);
+
+  const productMap = useMemo(() => {
+    return products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product });
+  }, [products]);
 
   const getPeriodDates = useCallback(() => {
     const now = MOCK_CURRENT_DATE;
@@ -71,8 +83,10 @@ const Profitability: React.FC = () => {
       };
     } = {};
 
-    // Initialize product stats
-    products.forEach(p => {
+    // Initialize product stats for all products or just the filtered one
+    const productsToConsider = productFilterId === 'all' ? products : products.filter(p => p.id === productFilterId);
+
+    productsToConsider.forEach(p => {
       productStats[p.id] = {
         product: p,
         qtySold: 0,
@@ -87,8 +101,9 @@ const Profitability: React.FC = () => {
       const orderDate = new Date(order.orderDate);
       if (order.status === 'Shipped' && orderDate >= effectiveStartDate && orderDate <= effectiveEndDate) {
         order.items.forEach(item => {
-          const product = productStats[item.productId];
-          if (product) {
+          // Only process if the item's product is in our consideration set
+          if (productStats[item.productId]) {
+            const product = productStats[item.productId];
             const itemRevenueExVat = (item.price * item.qty) / (1 + order.vatPercent / 100);
             product.qtySold += item.qty;
             product.totalSales += itemRevenueExVat;
@@ -136,7 +151,7 @@ const Profitability: React.FC = () => {
     }
 
     return finalData;
-  }, [products, sellOrders, purchaseOrders, effectiveStartDate, effectiveEndDate, sortConfig]);
+  }, [products, sellOrders, purchaseOrders, effectiveStartDate, effectiveEndDate, sortConfig, productFilterId]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -158,7 +173,7 @@ const Profitability: React.FC = () => {
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('profitabilityAnalysis')}</h1>
 
       <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
             <Label htmlFor="period-select" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('period')}</Label>
             <Select onValueChange={(value: typeof period) => { setPeriod(value); setStartDate(''); setEndDate(''); }} value={period}>
@@ -173,6 +188,67 @@ const Profitability: React.FC = () => {
                 <SelectItem value="today">{t('today')}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="product-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('filterByProduct')}
+            </Label>
+            <Popover open={isProductComboboxOpen} onOpenChange={setIsProductComboboxOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isProductComboboxOpen}
+                  className="w-full justify-between mt-1"
+                >
+                  {productFilterId !== 'all'
+                    ? productMap[productFilterId as number]?.name || t('allProducts')
+                    : t('allProducts')}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command>
+                  <CommandInput placeholder={t('searchProductBySku')} />
+                  <CommandEmpty>{t('noProductFound')}</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all-products"
+                      onSelect={() => {
+                        setProductFilterId('all');
+                        setIsProductComboboxOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          productFilterId === 'all' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {t('allProducts')}
+                    </CommandItem>
+                    {products.map((product) => (
+                      <CommandItem
+                        key={product.id}
+                        value={`${product.name} ${product.sku}`}
+                        onSelect={() => {
+                          setProductFilterId(product.id);
+                          setIsProductComboboxOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            productFilterId === product.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {product.name} ({product.sku})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <Label htmlFor="start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
