@@ -18,7 +18,7 @@ import { PurchaseOrder, Product, Supplier, Warehouse } from '@/types'; // Import
 import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportButton'; // Import new component
 
 type SortConfig = {
-  key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'totalItems' | 'totalValueNative';
+  key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'totalValueNative';
   direction: 'ascending' | 'descending';
 };
 
@@ -71,8 +71,6 @@ const PurchaseOrders: React.FC = () => {
     }
 
     const sortableItems = filteredOrders.map(order => {
-      const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 0), 0) || 0;
-
       // Calculate products subtotal in native currency
       const productsSubtotalNative = order.items?.reduce((sum, item) => sum + (item.qty * item.price), 0) || 0;
 
@@ -98,7 +96,6 @@ const PurchaseOrders: React.FC = () => {
         ...order,
         supplierName: supplierMap[order.contactId] || 'N/A',
         warehouseName: warehouseMap[order.warehouseId] || 'N/A',
-        totalItems,
         totalValueNative, // Add this calculated field
         productsSubtotalNative, // Add for details modal
         totalFeesNative, // Add for details modal
@@ -112,14 +109,13 @@ const PurchaseOrders: React.FC = () => {
         let valB: any = b[key];
 
         // Handle undefined/null values by treating them as empty strings or 0 for numbers
-        if (valA === undefined || valA === null) valA = (key === 'id' || key === 'totalItems' || key === 'totalValueNative') ? 0 : '';
-        if (valB === undefined || valB === null) valB = (key === 'id' || key === 'totalItems' || key === 'totalValueNative') ? 0 : '';
+        if (valA === undefined || valA === null) valA = (key === 'id' || key === 'totalValueNative') ? 0 : '';
+        if (valB === undefined || valB === null) valB = (key === 'id' || key === 'totalValueNative') ? 0 : '';
 
         let comparison = 0;
 
         switch (key) {
           case 'id':
-          case 'totalItems':
           case 'totalValueNative':
             comparison = (valA as number) - (valB as number);
             break;
@@ -327,9 +323,6 @@ const PurchaseOrders: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('status')}>
                 {t('status')} {getSortIndicator('status')}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalItems')}>
-                {t('totalItems')} {getSortIndicator('totalItems')}
-              </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalValueNative')}>
                 {t('totalValue')} {getSortIndicator('totalValueNative')}
               </TableHead>
@@ -353,7 +346,6 @@ const PurchaseOrders: React.FC = () => {
                       {t(order.status.toLowerCase() as keyof typeof t)}
                     </span>
                   </TableCell>
-                  <TableCell className="p-3 font-bold">{order.totalItems}</TableCell>
                   <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalValueNative.toFixed(2)} {order.currency}</TableCell>
                   <TableCell className="p-3">
                     <Button variant="link" onClick={() => viewOrderDetails(order.id)} className="mr-2 p-0 h-auto">
@@ -370,7 +362,7 @@ const PurchaseOrders: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={7} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {filterWarehouseId !== 'all' || startDateFilter || endDateFilter || productFilterId !== 'all' ? t('noItemsFound') : t('noItemsFound')}
                 </TableCell>
               </TableRow>
