@@ -161,7 +161,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         const customerName = customerMap[sellOrder.contactId] || 'Unknown Customer';
         const totalOrderValueAZN = sellOrder.total;
 
-        const remainingTotalAZN = totalOrderPaymentsAZN - adjustedProductsPaidAZN;
+        // BUG FIX: Changed `totalOrderPaymentsAZN` to `totalOrderValueAZN`
+        const remainingTotalAZN = totalOrderValueAZN - adjustedProductsPaidAZN;
 
         if (remainingTotalAZN > 0.001) {
           list.push({
