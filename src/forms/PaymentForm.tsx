@@ -82,7 +82,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
     const additionalFeesAZN = convertFeeToAzn(order.additionalFees, order.additionalFeesCurrency);
     const totalFeesAZN = transportationFeesAZN + customFeesAZN + additionalFeesAZN;
 
-    return { productsSubtotalAZN, totalFeesAZN, orderNativeToAznRate };
+    const uniqueFeeCurrencies = new Set<string>();
+    if (order.transportationFees > 0) uniqueFeeCurrencies.add(order.transportationFeesCurrency);
+    if (order.customFees > 0) uniqueFeeCurrencies.add(order.customFeesCurrency);
+    if (order.additionalFees > 0) uniqueFeeCurrencies.add(order.additionalFeesCurrency);
+
+    const feeCurrenciesString = uniqueFeeCurrencies.size > 0 ? ` (${Array.from(uniqueFeeCurrencies).join(', ')})` : '';
+
+    return { productsSubtotalAZN, totalFeesAZN, orderNativeToAznRate, feeCurrenciesString };
   }, [currencyRates]);
 
   useEffect(() => {
@@ -161,7 +168,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         const customerName = customerMap[sellOrder.contactId] || 'Unknown Customer';
         const totalOrderValueAZN = sellOrder.total;
 
-        // BUG FIX: Changed `totalOrderPaymentsAZN` to `totalOrderValueAZN`
         const remainingTotalAZN = totalOrderValueAZN - adjustedProductsPaidAZN;
 
         if (remainingTotalAZN > 0.001) {
@@ -178,7 +184,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       } else { // Outgoing Payments for Purchase Orders
         const purchaseOrder = order as PurchaseOrder;
         const supplierName = supplierMap[purchaseOrder.contactId] || 'Unknown Supplier';
-        const { productsSubtotalAZN, totalFeesAZN, orderNativeToAznRate } = calculatePurchaseOrderBreakdown(purchaseOrder);
+        const { productsSubtotalAZN, totalFeesAZN, orderNativeToAznRate, feeCurrenciesString } = calculatePurchaseOrderBreakdown(purchaseOrder);
 
         const remainingProductsBalanceAZN = productsSubtotalAZN - adjustedProductsPaidAZN;
         const remainingFeesBalanceAZN = totalFeesAZN - adjustedFeesPaidAZN;
@@ -200,7 +206,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         if (remainingFeesBalanceNative > 0.001) {
           list.push({
             id: purchaseOrder.id,
-            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('feesTotal')} - ${t('remaining')}: ${remainingFeesBalanceNative.toFixed(2)} ${purchaseOrder.currency}`,
+            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('feesTotal')}${feeCurrenciesString} - ${t('remaining')}: ${remainingFeesBalanceNative.toFixed(2)} ${purchaseOrder.currency}`,
             remainingAmount: remainingFeesBalanceNative,
             category: 'fees',
             orderType: 'purchase',
