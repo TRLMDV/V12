@@ -165,7 +165,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         if (remainingTotalAZN > 0.001) {
           list.push({
             id: sellOrder.id,
-            display: `${t('orderId')} #${sellOrder.id} (${customerName}) - ${t('remaining')}: ${remainingTotalAZN.toFixed(2)} AZN`,
+            display: `${t('orderId')} #${sellOrder.id} (${customerName}) - ${sellOrder.orderDate} - ${t('remaining')}: ${remainingTotalAZN.toFixed(2)} AZN`,
             remainingAmount: remainingTotalAZN,
             category: 'products',
             orderType: 'sell',
@@ -186,7 +186,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         if (remainingProductsBalanceNative > 0.001) {
           list.push({
             id: purchaseOrder.id,
-            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${t('productsTotal')} - ${t('remaining')}: ${remainingProductsBalanceNative.toFixed(2)} ${purchaseOrder.currency}`,
+            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('productsTotal')} - ${t('remaining')}: ${remainingProductsBalanceNative.toFixed(2)} ${purchaseOrder.currency}`,
             remainingAmount: remainingProductsBalanceNative,
             category: 'products',
             orderType: 'purchase',
@@ -196,7 +196,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         if (remainingFeesBalanceNative > 0.001) {
           list.push({
             id: purchaseOrder.id,
-            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${t('feesTotal')} - ${t('remaining')}: ${remainingFeesBalanceNative.toFixed(2)} ${purchaseOrder.currency}`,
+            display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('feesTotal')} - ${t('remaining')}: ${remainingFeesBalanceNative.toFixed(2)} ${purchaseOrder.currency}`,
             remainingAmount: remainingFeesBalanceNative,
             category: 'fees',
             orderType: 'purchase',
