@@ -161,7 +161,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         const customerName = customerMap[sellOrder.contactId] || 'Unknown Customer';
         const totalOrderValueAZN = sellOrder.total;
 
-        const remainingTotalAZN = totalOrderValueAZN - adjustedProductsPaidAZN;
+        const remainingTotalAZN = totalOrderPaymentsAZN - adjustedProductsPaidAZN;
 
         if (remainingTotalAZN > 0.001) {
           list.push({
@@ -247,17 +247,38 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         paymentCategory: 'manual',
         manualDescription: prev?.manualDescription || '',
         date: MOCK_CURRENT_DATE.toISOString().slice(0, 10), // Reset date for manual
+        amount: 0, // Reset amount for manual
+        paymentCurrency: 'AZN', // Reset currency for manual
+        paymentExchangeRate: undefined, // Reset exchange rate
       }));
+      setSelectedPaymentCurrency('AZN');
+      setManualExchangeRate(undefined);
+      setManualExchangeRateInput('');
     } else {
       const [orderIdStr, category] = value.split('-');
-      const selectedOrder = ordersWithBalance.find(o => `${o.id}-${o.category}` === value);
-      setPayment(prev => ({
-        ...prev,
-        orderId: parseInt(orderIdStr),
-        paymentCategory: category as 'products' | 'fees',
-        manualDescription: undefined,
-        date: selectedOrder?.orderDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10), // Set date from order
-      }));
+      const selectedOrderOption = ordersWithBalance.find(o => `${o.id}-${o.category}` === value);
+      
+      if (selectedOrderOption) {
+        setPayment(prev => ({
+          ...prev,
+          orderId: parseInt(orderIdStr),
+          paymentCategory: category as 'products' | 'fees',
+          manualDescription: undefined,
+          date: selectedOrderOption.orderDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10), // Set date from order
+          amount: parseFloat(selectedOrderOption.remainingAmount.toFixed(2)), // Set amount to remaining balance
+          paymentCurrency: selectedOrderOption.currency, // Set payment currency to order's currency
+        }));
+        setSelectedPaymentCurrency(selectedOrderOption.currency); // Update local state for currency select
+        
+        if (selectedOrderOption.currency !== 'AZN') {
+          const rate = currencyRates[selectedOrderOption.currency];
+          setManualExchangeRate(rate);
+          setManualExchangeRateInput(String(rate));
+        } else {
+          setManualExchangeRate(undefined);
+          setManualExchangeRateInput('');
+        }
+      }
     }
   };
 
