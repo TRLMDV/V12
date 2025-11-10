@@ -180,6 +180,10 @@ const i18n = {
     additionalCosts: 'Additional Costs',
     filterBySupplier: 'Filter by Supplier', // New translation
     filterByCustomer: 'Filter by Customer', // New translation
+    searchBySupplierName: 'Search by Supplier Name', // New translation
+    enterSupplierName: 'Enter supplier name...', // New translation
+    searchByCustomerName: 'Search by Customer Name', // New translation
+    enterCustomerName: 'Enter customer name...', // New translation
   }
 };
 

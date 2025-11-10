@@ -29,6 +29,7 @@ const SellOrders: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
   const [filterWarehouseId, setFilterWarehouseId] = useState<number | 'all'>('all');
   const [filterCustomerId, setFilterCustomerId] = useState<number | 'all'>('all'); // New state for customer filter
+  const [searchCustomerName, setSearchCustomerName] = useState<string>(''); // New state for manual customer search
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<SellOrder | null>(null);
 
@@ -151,10 +152,18 @@ const SellOrders: React.FC = () => {
         customerName: customerMap[order.contactId] || 'N/A',
         warehouseName: warehouseMap[order.warehouseId] || 'N/A',
         totalItems,
-        totalValueAZN,
+        // totalValueAZN, // Already exists in order object
         paymentStatus,
       };
     });
+
+    // Apply manual customer name search filter
+    if (searchCustomerName) {
+      const lowercasedSearch = searchCustomerName.toLowerCase();
+      return sortableItems.filter(order =>
+        order.customerName.toLowerCase().includes(lowercasedSearch)
+      );
+    }
 
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
@@ -200,7 +209,7 @@ const SellOrders: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [sellOrders, customerMap, warehouseMap, productMap, sortConfig, filterWarehouseId, filterCustomerId, startDateFilter, endDateFilter, productFilterId, getPaymentStatus]);
+  }, [sellOrders, customerMap, warehouseMap, productMap, sortConfig, filterWarehouseId, filterCustomerId, searchCustomerName, startDateFilter, endDateFilter, productFilterId, getPaymentStatus]);
 
   return (
     <div className="container mx-auto p-4">
@@ -213,10 +222,10 @@ const SellOrders: React.FC = () => {
       </div>
 
       <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"> {/* Changed to 5 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end"> {/* Changed to 6 columns */}
           <div>
             <Label htmlFor="customer-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
-              {t('filterByCustomer')} {/* New Label */}
+              {t('filterByCustomer')}
             </Label>
             <Select onValueChange={(value) => setFilterCustomerId(value === 'all' ? 'all' : parseInt(value))} value={String(filterCustomerId)}>
               <SelectTrigger className="w-full mt-1">
@@ -231,6 +240,19 @@ const SellOrders: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="search-customer-name" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('searchByCustomerName')}
+            </Label>
+            <Input
+              id="search-customer-name"
+              type="text"
+              placeholder={t('enterCustomerName')}
+              value={searchCustomerName}
+              onChange={(e) => setSearchCustomerName(e.target.value)}
+              className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+            />
           </div>
           <div>
             <Label htmlFor="warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
@@ -405,7 +427,7 @@ const SellOrders: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400">
-                  {filterWarehouseId !== 'all' || startDateFilter || endDateFilter || productFilterId !== 'all' || filterCustomerId !== 'all' ? t('noItemsFound') : t('noItemsFound')}
+                  {filterWarehouseId !== 'all' || startDateFilter || endDateFilter || productFilterId !== 'all' || filterCustomerId !== 'all' || searchCustomerName ? t('noItemsFound') : t('noItemsFound')}
                 </TableCell>
               </TableRow>
             )}
@@ -468,7 +490,7 @@ const SellOrders: React.FC = () => {
                 </TableRow>
                 <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">
                   <TableCell colSpan={3} className="p-2 text-right">{t('total')}:</TableCell>
-                  <TableCell className="p-2 text-sky-600 dark:text-sky-400">{selectedOrderDetails.total.toFixed(2)} AZN</TableCell>
+                  <TableCell className="p-2 text-sky-600 dark:text-sky-400">{selectedOrderDetails.total.toFixed(2)} AZN}</TableCell>
                 </TableRow>
               </TableFooter>
             </Table>
