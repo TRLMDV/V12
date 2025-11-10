@@ -512,7 +512,7 @@ const SellOrders: React.FC = () => {
                       <TableCell className="p-2">{product?.name || 'N/A'}</TableCell>
                       <TableCell className="p-2">{item.qty}</TableCell>
                       <TableCell className="p-2">{item.price?.toFixed(2)} AZN</TableCell>
-                      <TableCell className="p-2">{itemTotal.toFixed(2)} AZN}</TableCell>
+                      <TableCell className="p-2">{itemTotal.toFixed(2)} AZN</TableCell>
                     </TableRow>
                   );
                 })}
@@ -528,7 +528,7 @@ const SellOrders: React.FC = () => {
                 </TableRow>
                 <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">
                   <TableCell colSpan={3} className="p-2 text-right">{t('total')}:</TableCell>
-                  <TableCell className="p-2 text-sky-600 dark:text-sky-400">{selectedOrderDetails.total.toFixed(2)} AZN}</TableCell>
+                  <TableCell className="p-2 text-sky-600 dark:text-sky-400">{selectedOrderDetails.total.toFixed(2)} AZN</TableCell>
                 </TableRow>
               </TableFooter>
             </Table>
