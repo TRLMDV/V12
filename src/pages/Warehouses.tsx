@@ -215,7 +215,7 @@ const Warehouses: React.FC = () => {
                             <TableCell className="p-2">{p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : 'N/A'}</TableCell>
                             <TableCell className="p-2">{p.priceWithMarkupPlusVat > 0 ? `${p.priceWithMarkupPlusVat.toFixed(2)} AZN` : 'N/A'}</TableCell>
                             <TableCell className="p-2 font-semibold">{(p.priceWithMarkupCalc * p.quantity).toFixed(2)} AZN</TableCell>
-                            <TableCell className="p-2 font-semibold text-sky-600 dark:text-sky-400">{(p.priceWithMarkupPlusVat * p.quantity).toFixed(2)} AZN}</TableCell>
+                            <TableCell className="p-2 font-semibold text-sky-600 dark:text-sky-400">{(p.priceWithMarkupPlusVat * p.quantity).toFixed(2)} AZN</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -223,7 +223,7 @@ const Warehouses: React.FC = () => {
                         <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
                           <TableCell colSpan={6} className="p-2 text-right">{t('totals')}:</TableCell>
                           <TableCell className="p-2">{warehouseTotalValue.toFixed(2)} AZN</TableCell>
-                          <TableCell className="p-2 text-sky-600 dark:text-sky-400">{warehouseTotalValueInclVat.toFixed(2)} AZN}</TableCell>
+                          <TableCell className="p-2 text-sky-600 dark:text-sky-400">{warehouseTotalValueInclVat.toFixed(2)} AZN</TableCell>
                         </TableRow>
                       </TableFooter>
                     </Table>
