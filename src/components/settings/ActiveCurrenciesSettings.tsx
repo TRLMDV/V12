@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Settings, Currency } from '@/types';
+import { currencyToCountryCodeMap, getFlagEmoji } from '@/utils/currencyFlags'; // Import new utilities
 
 interface ActiveCurrenciesSettingsProps {
   settings: Settings;
@@ -65,19 +66,24 @@ const ActiveCurrenciesSettings: React.FC<ActiveCurrenciesSettingsProps> = ({
       {isCurrenciesListOpen && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
-            {ALL_CURRENCIES.map(c => (
-              <div key={c} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`currency-${c}`}
-                  checked={activeCurrencies.includes(c)}
-                  onCheckedChange={(checked) => handleToggleActiveCurrency(c, checked as boolean)}
-                  disabled={c === mainCurrency}
-                />
-                <Label htmlFor={`currency-${c}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  {c} {c === mainCurrency && `(${t('mainCurrency')})`}
-                </Label>
-              </div>
-            ))}
+            {ALL_CURRENCIES.map(c => {
+              const countryCode = currencyToCountryCodeMap[c];
+              const flagEmoji = countryCode ? getFlagEmoji(countryCode) : '';
+              return (
+                <div key={c} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`currency-${c}`}
+                    checked={activeCurrencies.includes(c)}
+                    onCheckedChange={(checked) => handleToggleActiveCurrency(c, checked as boolean)}
+                    disabled={c === mainCurrency}
+                  />
+                  <Label htmlFor={`currency-${c}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    {flagEmoji && <span className="mr-2">{flagEmoji}</span>}
+                    {c} {c === mainCurrency && `(${t('mainCurrency')})`}
+                  </Label>
+                </div>
+              );
+            })}
           </div>
           <div className="flex justify-end">
             <Button onClick={handleSaveActiveCurrencies}>{t('saveActiveCurrencies')}</Button>
