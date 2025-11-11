@@ -40,7 +40,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
   // selectedOrderId will now be a composite string: '0' for manual, or 'orderId-category' (e.g., '123-products', '123-transportationFees')
   const [selectedOrderIdentifier, setSelectedOrderIdentifier] = useState<string>('0');
-  const [selectedManualCategory, setSelectedManualCategory] = useState<string>(''); // New state for manual category
+  const [selectedManualCategory, setSelectedManualCategory] = useState<string>('none-selected'); // Default to 'none-selected'
 
   const allOrders = isIncoming ? sellOrders : purchaseOrders;
   const allPayments = isIncoming ? incomingPayments : outgoingPayments;
@@ -90,13 +90,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
         if (existingPayment.orderId === 0) {
           setSelectedOrderIdentifier('0');
-          // If paymentCategory is 'manual' and manualDescription is present, use manualDescription as category
-          // Otherwise, use paymentCategory directly (which would be a custom category name)
-          setSelectedManualCategory(existingPayment.paymentCategory === 'manual' ? existingPayment.manualDescription || '' : existingPayment.paymentCategory || '');
+          // Map existing empty/manual category to 'none-selected' for the dropdown
+          setSelectedManualCategory(existingPayment.paymentCategory === 'manual' || !existingPayment.paymentCategory ? 'none-selected' : existingPayment.paymentCategory);
         } else {
           const category = existingPayment.paymentCategory || 'products'; // Default for old data
           setSelectedOrderIdentifier(`${existingPayment.orderId}-${category}`);
-          setSelectedManualCategory(''); // Clear manual category if linked to order
+          setSelectedManualCategory('none-selected'); // Clear manual category if linked to order
         }
       }
     } else {
@@ -113,7 +112,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
       setSelectedOrderIdentifier('0');
-      setSelectedManualCategory(''); // Reset for new payments
+      setSelectedManualCategory('none-selected'); // Reset for new payments
     }
   }, [paymentId, isEdit, allPayments, currencyRates]);
 
@@ -282,7 +281,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setPayment(prev => ({
         ...prev,
         orderId: 0,
-        paymentCategory: selectedManualCategory || 'manual', // Keep current manual category or default to 'manual'
+        paymentCategory: selectedManualCategory === 'none-selected' ? undefined : selectedManualCategory, // Use selected manual category
         manualDescription: prev?.manualDescription || '',
         date: MOCK_CURRENT_DATE.toISOString().slice(0, 10), // Reset date for manual
         amount: 0, // Reset amount for manual
@@ -292,7 +291,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setSelectedPaymentCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
-      // selectedManualCategory is intentionally NOT reset here, as it's managed by its own dropdown
+      setSelectedManualCategory('none-selected'); // Reset manual category
     } else {
       const [orderIdStr, category] = value.split('-');
       const selectedOrderOption = ordersWithBalance.find(o => `${o.id}-${o.category}` === value);
@@ -317,14 +316,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
           setManualExchangeRate(undefined);
           setManualExchangeRateInput('');
         }
-        setSelectedManualCategory(''); // Clear manual category if linked to order
+        setSelectedManualCategory('none-selected'); // Clear manual category if linked to order
       }
     }
   };
 
   const handleManualCategoryChange = (value: string) => {
     setSelectedManualCategory(value);
-    setPayment(prev => ({ ...prev, paymentCategory: value === "" ? undefined : value })); // Set to undefined if "None" is selected
+    setPayment(prev => ({ ...prev, paymentCategory: value === "none-selected" ? undefined : value })); // Set to undefined if "None" is selected
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -354,7 +353,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
     if (selectedOrderIdentifier === '0') {
       paymentToSave.orderId = 0;
-      paymentToSave.paymentCategory = selectedManualCategory === "" ? undefined : selectedManualCategory; // Save as undefined if "None"
+      paymentToSave.paymentCategory = selectedManualCategory === "none-selected" ? undefined : selectedManualCategory; // Save as undefined if "None"
       if (!paymentToSave.manualDescription?.trim()) {
         showAlertModal('Error', 'Manual Expense requires a description.');
         return;
@@ -461,12 +460,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
               <Label htmlFor="manualCategory" className="text-right">
                 {t('category')}
               </Label>
-              <Select onValueChange={handleManualCategoryChange} value={selectedManualCategory}>
+              <Select onValueChange={handleManualCategoryChange} value={selectedManualCategory || 'none-selected'}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder={t('selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">{t('none')}</SelectItem> {/* Added 'None' option */}
+                  <SelectItem value="none-selected">{t('none')}</SelectItem> {/* Changed value to non-empty string */}
                   {(settings.paymentCategories || []).map(cat => (
                     <SelectItem key={cat.id} value={cat.name}>
                       {cat.name}
