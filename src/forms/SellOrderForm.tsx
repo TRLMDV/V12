@@ -51,6 +51,54 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
   // Log activeCurrencies directly in the component before rendering
   console.log("SellOrderForm: activeCurrencies before map", activeCurrencies);
 
+  // Defensive check for activeCurrencies
+  if (!Array.isArray(activeCurrencies)) {
+    console.error("SellOrderForm: activeCurrencies is not an array!", activeCurrencies);
+    // Fallback to just mainCurrency if activeCurrencies is not an array
+    return (
+      <form onSubmit={handleSubmit}>
+        <div className="grid gap-4 py-4">
+          {/* ... (rest of your form structure, excluding the problematic SelectContent for currencies) */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="currency" className="text-right">{t('orderCurrency')}</Label>
+            <Select onValueChange={handleCurrencyChange} value={selectedCurrency}>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder={mainCurrency} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem key={mainCurrency} value={mainCurrency}>{mainCurrency}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* ... (rest of your form structure) */}
+        </div>
+        <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700 space-x-2">
+          <Button 
+            type="button" 
+            onClick={handleGenerateIncomingPayment} 
+            variant="secondary" 
+            className="flex items-center"
+            disabled={isGeneratePaymentDisabled}
+          >
+            <DollarSign className="w-4 h-4 mr-2" />
+            {t('generateIncomingPayment')}
+          </Button>
+          <Button 
+            type="button" 
+            onClick={handleGenerateProductMovement} 
+            variant="secondary" 
+            className="flex items-center"
+            disabled={isGenerateMovementDisabled}
+          >
+            <ArrowRight className="w-4 h-4 mr-2" />
+            {t('generateProductMovement')}
+          </Button>
+          <Button type="submit">{t('saveOrder')}</Button>
+        </div>
+      </form>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
@@ -115,8 +163,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
               <SelectValue placeholder={mainCurrency} />
             </SelectTrigger>
             <SelectContent>
-              {/* Defensive check: Ensure activeCurrencies is an array before mapping */}
-              {(activeCurrencies && activeCurrencies.length > 0 ? activeCurrencies : [mainCurrency]).map(c => (
+              {activeCurrencies.map(c => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>

@@ -18,21 +18,21 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T
       const parsedItem = JSON.parse(item);
 
       // If initialValue is an object, ensure we always return an object.
-      // Merge initialValue with parsedItem, prioritizing parsedItem's non-undefined values.
+      // Start with initialValue to guarantee all default properties are present.
       if (typeof initialValue === 'object' && initialValue !== null) {
-        const mergedObject = { ...initialValue }; // Start with all initial properties
+        const mergedObject = { ...initialValue };
+        // If parsedItem is also an object, overlay its non-undefined properties.
         if (typeof parsedItem === 'object' && parsedItem !== null) {
           for (const prop in parsedItem) {
             if (Object.prototype.hasOwnProperty.call(parsedItem, prop) && parsedItem[prop] !== undefined) {
-              mergedObject[prop] = parsedItem[prop]; // Overlay with non-undefined stored properties
+              mergedObject[prop] = parsedItem[prop];
             }
           }
         }
-        return mergedObject as T;
+        return mergedObject as T; // Always return a merged object if initialValue was an object
       }
 
-      // If initialValue is not an object, just return the parsed item or initialValue if parsed is invalid.
-      // This path is less likely for 'settings' but handles primitives.
+      // If initialValue was not an object (e.g., a primitive), just return the parsed item.
       return parsedItem;
     } catch (error) {
       console.error(`Error reading or parsing localStorage key "${key}":`, error);
