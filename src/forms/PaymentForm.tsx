@@ -90,6 +90,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
         if (existingPayment.orderId === 0) {
           setSelectedOrderIdentifier('0');
+          // If paymentCategory is 'manual' and manualDescription is present, use manualDescription as category
+          // Otherwise, use paymentCategory directly (which would be a custom category name)
           setSelectedManualCategory(existingPayment.paymentCategory === 'manual' ? existingPayment.manualDescription || '' : existingPayment.paymentCategory || '');
         } else {
           const category = existingPayment.paymentCategory || 'products'; // Default for old data
@@ -280,7 +282,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setPayment(prev => ({
         ...prev,
         orderId: 0,
-        paymentCategory: 'manual', // Default to 'manual' for manual payments
+        paymentCategory: selectedManualCategory || 'manual', // Keep current manual category or default to 'manual'
         manualDescription: prev?.manualDescription || '',
         date: MOCK_CURRENT_DATE.toISOString().slice(0, 10), // Reset date for manual
         amount: 0, // Reset amount for manual
@@ -290,7 +292,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setSelectedPaymentCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
-      setSelectedManualCategory(''); // Reset manual category
+      // selectedManualCategory is intentionally NOT reset here, as it's managed by its own dropdown
     } else {
       const [orderIdStr, category] = value.split('-');
       const selectedOrderOption = ordersWithBalance.find(o => `${o.id}-${o.category}` === value);
@@ -322,7 +324,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
   const handleManualCategoryChange = (value: string) => {
     setSelectedManualCategory(value);
-    setPayment(prev => ({ ...prev, paymentCategory: value })); // Update paymentCategory with custom string
+    setPayment(prev => ({ ...prev, paymentCategory: value === "" ? undefined : value })); // Set to undefined if "None" is selected
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -352,15 +354,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
     if (selectedOrderIdentifier === '0') {
       paymentToSave.orderId = 0;
-      paymentToSave.paymentCategory = selectedManualCategory || 'manual'; // Use selected manual category
+      paymentToSave.paymentCategory = selectedManualCategory === "" ? undefined : selectedManualCategory; // Save as undefined if "None"
       if (!paymentToSave.manualDescription?.trim()) {
         showAlertModal('Error', 'Manual Expense requires a description.');
         return;
       }
-      if (!selectedManualCategory) {
-        showAlertModal('Error', 'Please select a category for the manual expense.');
-        return;
-      }
+      // No longer require a category for manual expense, it can be 'None'
     } else {
       const [orderIdStr, category] = selectedOrderIdentifier.split('-');
       paymentToSave.orderId = parseInt(orderIdStr);
@@ -467,6 +466,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
                   <SelectValue placeholder={t('selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="">{t('none')}</SelectItem> {/* Added 'None' option */}
                   {(settings.paymentCategories || []).map(cat => (
                     <SelectItem key={cat.id} value={cat.name}>
                       {cat.name}
