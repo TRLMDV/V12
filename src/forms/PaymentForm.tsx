@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { t } from '@/utils/i18n';
-import { Payment, SellOrder, PurchaseOrder } from '@/types'; // Import types from types file
+import { Payment, SellOrder, PurchaseOrder, Currency } from '@/types'; // Import types from types file
 
 interface PaymentFormProps {
   paymentId?: number;
@@ -27,14 +27,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
     currencyRates,
     customers, // Added customers
     suppliers, // Added suppliers
-    settings, // Added settings to access payment categories
+    settings, // Added settings to access payment categories and activeCurrencies
   }
     = useData();
 
   const isIncoming = type === 'incoming';
   const isEdit = paymentId !== undefined;
   const [payment, setPayment] = useState<Partial<Payment>>({});
-  const [selectedPaymentCurrency, setSelectedPaymentCurrency] = useState<'AZN' | 'USD' | 'EUR' | 'RUB'>('AZN');
+  const [selectedPaymentCurrency, setSelectedPaymentCurrency] = useState<Currency>('AZN');
   const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>('');
   const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
 
@@ -50,6 +50,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
   const sellOrderMap = useMemo(() => sellOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: SellOrder }), [sellOrders]);
   const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string }), [customers]); // Added customerMap
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as { [key: number]: string }), [suppliers]); // Added supplierMap
+
+  const activeCurrencies = useMemo(() => settings.activeCurrencies || ['AZN'], [settings.activeCurrencies]);
 
   // Aggregate payments by order ID and specific category (products/transportationFees/customFees/additionalFees) in AZN
   const paymentsByOrderAndCategoryAZN = useMemo(() => {
@@ -128,7 +130,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       remainingAmount: number; // This will be in the specific category's native currency
       category: Payment['paymentCategory']; // More specific categories
       orderType: 'sell' | 'purchase';
-      currency: 'AZN' | 'USD' | 'EUR' | 'RUB'; // Native currency of the remaining amount
+      currency: Currency; // Native currency of the remaining amount
       orderDate: string; // Added orderDate
     }[] = [];
 
@@ -254,7 +256,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
     setPayment(prev => ({ ...prev, [id]: id === 'amount' ? parseFloat(value) || 0 : value }));
   };
 
-  const handlePaymentCurrencyChange = (value: 'AZN' | 'USD' | 'EUR' | 'RUB') => {
+  const handlePaymentCurrencyChange = (value: Currency) => {
     setSelectedPaymentCurrency(value);
     if (value === 'AZN') {
       setManualExchangeRate(undefined);
@@ -510,10 +512,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
               <SelectValue placeholder="AZN" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="AZN">AZN</SelectItem>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="EUR">EUR</SelectItem>
-              <SelectItem value="RUB">RUB</SelectItem>
+              {activeCurrencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

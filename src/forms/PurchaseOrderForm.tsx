@@ -12,7 +12,7 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { toast } from 'sonner';
-import { PurchaseOrder, Product, Supplier, Warehouse, OrderItem } from '@/types'; // Import types from types file
+import { PurchaseOrder, Product, Supplier, Warehouse, OrderItem, Currency } from '@/types'; // Import types from types file
 
 interface PurchaseOrderFormProps {
   orderId?: number;
@@ -24,7 +24,7 @@ interface PurchaseOrderItemState {
   qty: number | string; // Allow string for intermediate input
   price: number | string; // Allow string for intermediate input
   itemTotal: number | string; // Allow string for intermediate input
-  currency?: 'AZN' | 'USD' | 'EUR' | 'RUB';
+  currency?: Currency;
   landedCostPerUnit?: number;
 }
 
@@ -39,18 +39,21 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     updateStockFromOrder,
     updateAverageCosts,
     showAlertModal,
+    settings, // Import settings to get activeCurrencies
   } = useData();
   const isEdit = orderId !== undefined;
 
   const [order, setOrder] = useState<Partial<PurchaseOrder>>({});
   const [orderItems, setOrderItems] = useState<PurchaseOrderItemState[]>([{ productId: '', qty: '', price: '', itemTotal: '' }]);
-  const [selectedCurrency, setSelectedCurrency] = useState<'AZN' | 'USD' | 'EUR' | 'RUB'>('AZN');
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>('AZN');
   const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
   const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>(''); // New state for input string
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
 
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s }), {} as { [key: number]: Supplier }), [suppliers]);
   const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]);
+
+  const activeCurrencies = useMemo(() => settings.activeCurrencies || ['AZN'], [settings.activeCurrencies]);
 
   useEffect(() => {
     if (isEdit) {
@@ -173,7 +176,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
       if (calculatedItem) {
         return {
           ...prevItem, // Keep productId, qty, price, itemTotal as they are the source of truth for user input
-          currency: calculatedItem.currency as 'AZN' | 'USD' | 'EUR' | 'RUB',
+          currency: calculatedItem.currency as Currency,
           landedCostPerUnit: calculatedItem.landedCostPerUnit,
         };
       }
@@ -197,7 +200,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     setOrder(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleCurrencyChange = (value: 'AZN' | 'USD' | 'EUR' | 'RUB') => {
+  const handleCurrencyChange = (value: Currency) => {
     setSelectedCurrency(value);
     setOrder(prev => ({ ...prev, currency: value }));
     if (value === 'AZN') {
@@ -383,10 +386,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
               <SelectValue placeholder="AZN" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="AZN">AZN</SelectItem>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="EUR">EUR</SelectItem>
-              <SelectItem value="RUB">RUB</SelectItem>
+              {activeCurrencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -516,15 +518,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             className="col-span-2"
             min="0"
           />
-          <Select onValueChange={(value) => handleSelectChange('transportationFeesCurrency', value)} value={order.transportationFeesCurrency || 'AZN'}>
+          <Select onValueChange={(value: Currency) => handleSelectChange('transportationFeesCurrency', value)} value={order.transportationFeesCurrency || 'AZN'}>
             <SelectTrigger className="col-span-1">
               <SelectValue placeholder="AZN" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="AZN">AZN</SelectItem>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="EUR">EUR</SelectItem>
-              <SelectItem value="RUB">RUB</SelectItem>
+              {activeCurrencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -539,15 +540,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             className="col-span-2"
             min="0"
           />
-          <Select onValueChange={(value) => handleSelectChange('customFeesCurrency', value)} value={order.customFeesCurrency || 'AZN'}>
+          <Select onValueChange={(value: Currency) => handleSelectChange('customFeesCurrency', value)} value={order.customFeesCurrency || 'AZN'}>
             <SelectTrigger className="col-span-1">
               <SelectValue placeholder="AZN" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="AZN">AZN</SelectItem>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="EUR">EUR</SelectItem>
-              <SelectItem value="RUB">RUB</SelectItem>
+              {activeCurrencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -562,15 +562,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             className="col-span-2"
             min="0"
           />
-          <Select onValueChange={(value) => handleSelectChange('additionalFeesCurrency', value)} value={order.additionalFeesCurrency || 'AZN'}>
+          <Select onValueChange={(value: Currency) => handleSelectChange('additionalFeesCurrency', value)} value={order.additionalFeesCurrency || 'AZN'}>
             <SelectTrigger className="col-span-1">
               <SelectValue placeholder="AZN" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="AZN">AZN</SelectItem>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="EUR">EUR</SelectItem>
-              <SelectItem value="RUB">RUB</SelectItem>
+              {activeCurrencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -604,7 +603,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
           <Input
             id="total"
             type="text"
-            value={`${order.total?.toFixed(2) || '0.00'} ${selectedCurrency}`}
+            value={`${order.total?.toFixed(2) || '0.00'} ${settings.mainCurrency}`}
             readOnly
             className="col-span-3 font-bold text-lg bg-gray-50 dark:bg-slate-700"
           />
