@@ -6,7 +6,7 @@ import { t } from '@/utils/i18n';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Check, ChevronsUpDown } from 'lucide-react';
@@ -153,6 +153,10 @@ const Profitability: React.FC = () => {
 
     return finalData;
   }, [products, sellOrders, purchaseOrders, effectiveStartDate, effectiveEndDate, sortConfig, productFilterId]);
+
+  const totalCleanProfit = useMemo(() => {
+    return profitabilityData.reduce((sum, item) => sum + item.cleanProfit, 0);
+  }, [profitabilityData]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -321,6 +325,15 @@ const Profitability: React.FC = () => {
                 </TableRow>
               ))}
             </TableBody>
+            <TableFooter>
+              <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
+                <TableCell colSpan={5} className="p-3 text-right text-lg">{t('totalCleanProfit')}:</TableCell>
+                <TableCell className={`p-3 text-lg ${totalCleanProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {totalCleanProfit.toFixed(2)} AZN
+                </TableCell>
+                <TableCell colSpan={2} className="p-3"></TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         ) : (
           <p className="p-4 text-center text-gray-500 dark:text-slate-400">
