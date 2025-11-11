@@ -35,6 +35,7 @@ const SellOrders: React.FC = () => {
     startDateFilter: '',
     endDateFilter: '',
     productFilterId: 'all' as number | 'all',
+    paymentStatusFilter: 'all' as 'all' | 'Paid' | 'Partially Paid' | 'Unpaid', // New filter state
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
@@ -159,6 +160,11 @@ const SellOrders: React.FC = () => {
         paymentStatus,
       };
     });
+
+    // Apply payment status filter
+    if (filters.paymentStatusFilter !== 'all') {
+      return sortableItems.filter(order => order.paymentStatus === filters.paymentStatusFilter);
+    }
 
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {

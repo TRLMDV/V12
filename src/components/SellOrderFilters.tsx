@@ -20,6 +20,7 @@ interface SellOrderFiltersProps {
     startDateFilter: string;
     endDateFilter: string;
     productFilterId: number | 'all';
+    paymentStatusFilter: 'all' | 'Paid' | 'Partially Paid' | 'Unpaid'; // New filter
   }) => void;
 }
 
@@ -31,6 +32,7 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
   const [productFilterId, setProductFilterId] = useState<number | 'all'>('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<'all' | 'Paid' | 'Partially Paid' | 'Unpaid'>('all'); // New state for payment status
 
   const [openCustomerCombobox, setOpenCustomerCombobox] = useState(false);
   const [isProductComboboxOpen, setIsProductComboboxOpen] = useState(false);
@@ -50,12 +52,13 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
       startDateFilter,
       endDateFilter,
       productFilterId,
+      paymentStatusFilter, // Include new filter
     });
-  }, [filterWarehouseId, filterCustomerValue, startDateFilter, endDateFilter, productFilterId, onFiltersChange]);
+  }, [filterWarehouseId, filterCustomerValue, startDateFilter, endDateFilter, productFilterId, paymentStatusFilter, onFiltersChange]);
 
   return (
     <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end"> {/* Adjusted grid columns */}
         <div>
           <Label htmlFor="customer-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
             {t('filterByCustomer')}
@@ -204,6 +207,22 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
               </Command>
             </PopoverContent>
           </Popover>
+        </div>
+        <div>
+          <Label htmlFor="payment-status-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
+            {t('paymentStatus')}
+          </Label>
+          <Select onValueChange={(value: typeof paymentStatusFilter) => setPaymentStatusFilter(value)} value={paymentStatusFilter}>
+            <SelectTrigger className="w-full mt-1">
+              <SelectValue placeholder={t('all')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('all')}</SelectItem>
+              <SelectItem value="Paid">{t('paid')}</SelectItem>
+              <SelectItem value="Partially Paid">{t('partiallyPaid')}</SelectItem>
+              <SelectItem value="Unpaid">{t('unpaid')}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label htmlFor="start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
