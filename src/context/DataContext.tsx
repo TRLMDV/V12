@@ -20,9 +20,6 @@ import {
 export const MOCK_CURRENT_DATE = new Date('2025-10-29T15:53:00');
 
 // --- Initial Data & Defaults ---
-const defaultCurrencyRates: CurrencyRates = { 'USD': 1.70, 'EUR': 2.00, 'RUB': 0.019, 'AZN': 1.00 };
-
-// Initial data for a truly blank slate
 export const initialData = {
   warehouses: [] as Warehouse[],
   products: [] as Product[],
@@ -34,6 +31,8 @@ export const initialData = {
   outgoingPayments: [] as Payment[],
   productMovements: [] as ProductMovement[],
 };
+
+const defaultCurrencyRates: CurrencyRates = { 'USD': 1.70, 'EUR': 2.00, 'RUB': 0.019, 'AZN': 1.00 };
 
 const initialSettings: Settings = {
   companyName: '',
@@ -216,19 +215,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveItem,
     deleteItem, // This deleteItem will now call addToRecycleBin
   } = useCrudOperations({
-    products, setProducts,
-    suppliers, setSuppliers,
-    customers, setCustomers,
-    warehouses, setWarehouses,
-    purchaseOrders, setPurchaseOrders,
-    sellOrders, setSellOrders,
-    incomingPayments, setIncomingPayments,
-    outgoingPayments, setOutgoingPayments,
-    productMovements, setProductMovements,
-    nextIds, setNextIds,
-    showAlertModal, showConfirmationModal,
+    // Pass setters (stable references)
+    setProducts,
+    setSuppliers,
+    setCustomers,
+    setWarehouses,
+    setPurchaseOrders,
+    setSellOrders,
+    setIncomingPayments,
+    setOutgoingPayments,
+    setProductMovements,
+    setNextIds,
+    // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
+    products,
+    suppliers,
+    customers,
+    warehouses,
+    purchaseOrders,
+    sellOrders,
+    incomingPayments,
+    outgoingPayments,
+    productMovements,
+    // Other stable dependencies
+    nextIds, // nextIds value for getNextId
+    showAlertModal,
+    showConfirmationModal,
     updateStockFromOrder,
-    addToRecycleBin, // Pass the new function
+    addToRecycleBin,
   });
 
   // --- Initialization Logic ---
@@ -265,7 +278,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   }, [products]);
 
-  const value = {
+  const value = useMemo(() => ({
     products: productsWithTotalStock, setProducts, // Provide products with totalStock
     suppliers, setSuppliers,
     customers, setCustomers,
@@ -282,7 +295,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateStockFromOrder, updateAverageCosts,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
-  };
+  }), [
+    productsWithTotalStock, setProducts,
+    suppliers, setSuppliers,
+    customers, setCustomers,
+    warehouses, setWarehouses,
+    purchaseOrders, setPurchaseOrders,
+    sellOrders, setSellOrders,
+    incomingPayments, setIncomingPayments,
+    outgoingPayments, setOutgoingPayments,
+    productMovements, setProductMovements,
+    settings, setSettings,
+    currencyRates, setCurrencyRates,
+    recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin,
+    saveItem, deleteItem, getNextId, setNextIdForCollection,
+    updateStockFromOrder, updateAverageCosts,
+    showAlertModal, showConfirmationModal,
+    isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
+  ]);
 
   return (
     <DataContext.Provider value={value}>

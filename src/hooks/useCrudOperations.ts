@@ -5,131 +5,136 @@ import { toast as sonnerToast } from 'sonner';
 import { t } from '@/utils/i18n';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  initialData, CollectionKey, RecycleBinItem // Import all types from types file
+  CollectionKey
 } from '@/types';
 
 interface UseCrudOperationsProps {
-  products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
-  suppliers: Supplier[];
   setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
-  customers: Customer[];
   setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
-  warehouses: Warehouse[];
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
-  purchaseOrders: PurchaseOrder[];
   setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
-  sellOrders: SellOrder[];
   setSellOrders: React.Dispatch<React.SetStateAction<SellOrder[]>>;
-  incomingPayments: Payment[];
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
-  outgoingPayments: Payment[];
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
-  productMovements: ProductMovement[];
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
-  nextIds: { [key: string]: number };
+  nextIds: { [key: string]: number }; // Still need nextIds value for getNextId
   setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
   showAlertModal: (title: string, message: string) => void;
   showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
-  addToRecycleBin: (item: any, collectionKey: CollectionKey) => void; // New prop
+  addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
+  // Pass current state values for validation checks where needed, but not as dependencies for useCallback
+  products: Product[];
+  suppliers: Supplier[];
+  customers: Customer[];
+  warehouses: Warehouse[];
+  purchaseOrders: PurchaseOrder[];
+  sellOrders: SellOrder[];
+  incomingPayments: Payment[];
+  outgoingPayments: Payment[];
+  productMovements: ProductMovement[];
 }
 
 export function useCrudOperations({
-  products, setProducts,
-  suppliers, setSuppliers,
-  customers, setCustomers,
-  warehouses, setWarehouses,
-  purchaseOrders, setPurchaseOrders,
-  sellOrders, setSellOrders,
-  incomingPayments, setIncomingPayments,
-  outgoingPayments, setOutgoingPayments,
-  productMovements, setProductMovements,
+  setProducts,
+  setSuppliers,
+  setCustomers,
+  setWarehouses,
+  setPurchaseOrders,
+  setSellOrders,
+  setIncomingPayments,
+  setOutgoingPayments,
+  setProductMovements,
   nextIds, setNextIds,
   showAlertModal, showConfirmationModal,
   updateStockFromOrder,
-  addToRecycleBin, // Destructure new prop
+  addToRecycleBin,
+  // Current state values for validation, not for useCallback dependencies
+  products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements,
 }: UseCrudOperationsProps) {
 
   const getNextId = useCallback((key: CollectionKey) => {
     return nextIds[key] || 1;
-  }, [nextIds]);
+  }, [nextIds]); // nextIds is a dependency here, which is fine as it's a single object.
 
   const setNextIdForCollection = useCallback((key: CollectionKey, newNextId: number) => {
     setNextIds(prev => ({ ...prev, [key]: newNextId }));
-  }, [setNextIds]);
+  }, [setNextIds]); // setNextIds is stable.
 
   const saveItem = useCallback((key: CollectionKey, item: any) => {
-    let currentItems: any[] = [];
     let setter: React.Dispatch<React.SetStateAction<any[]>>;
+    let currentCollection: any[] = []; // To be populated for validation
 
     switch (key) {
-      case 'products': currentItems = products; setter = setProducts; break;
-      case 'suppliers': currentItems = suppliers; setter = setSuppliers; break;
-      case 'customers': currentItems = customers; setter = setCustomers; break;
-      case 'warehouses': currentItems = warehouses; setter = setWarehouses; break;
-      case 'purchaseOrders': currentItems = purchaseOrders; setter = setPurchaseOrders; break;
-      case 'sellOrders': currentItems = sellOrders; setter = setSellOrders; break;
-      case 'incomingPayments': currentItems = incomingPayments; setter = setIncomingPayments; break;
-      case 'outgoingPayments': currentItems = outgoingPayments; setter = setOutgoingPayments; break;
-      case 'productMovements': currentItems = productMovements; setter = setProductMovements; break;
+      case 'products': setter = setProducts; currentCollection = products; break;
+      case 'suppliers': setter = setSuppliers; currentCollection = suppliers; break;
+      case 'customers': setter = setCustomers; currentCollection = customers; break;
+      case 'warehouses': setter = setWarehouses; currentCollection = warehouses; break;
+      case 'purchaseOrders': setter = setPurchaseOrders; currentCollection = purchaseOrders; break;
+      case 'sellOrders': setter = setSellOrders; currentCollection = sellOrders; break;
+      case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
+      case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
+      case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
       default: return;
     }
 
-    // Specific validation for warehouses
+    // Specific validation for warehouses (needs currentCollection)
     if (key === 'warehouses' && item.type === 'Main') {
-      const existingMainWarehouse = currentItems.find((w: Warehouse) => w.type === 'Main' && w.id !== item.id);
+      const existingMainWarehouse = currentCollection.find((w: Warehouse) => w.type === 'Main' && w.id !== item.id);
       if (existingMainWarehouse) {
         showAlertModal(t('validationError'), t('onlyOneMainWarehouse'));
         return;
       }
     }
 
-    let updatedItems;
-    const existingItemIndex = currentItems.findIndex(i => i.id === item.id);
+    setter(prevItems => {
+      const existingItemIndex = prevItems.findIndex(i => i.id === item.id);
+      let updatedItems;
 
-    if (item.id === 0 || existingItemIndex === -1) { // New item (either id is 0 or id doesn't exist in currentItems)
-      const newItemId = getNextId(key);
-      updatedItems = [...currentItems, { ...item, id: newItemId }];
-      setNextIdForCollection(key, newItemId + 1); // Increment next ID for this collection
-    } else { // Existing item, update it
-      updatedItems = currentItems.map(i => i.id === item.id ? item : i);
-    }
-    
-    if (key === 'productMovements') {
-      console.log(`[DataContext] Saving product movement. Before:`, currentItems.length, `After:`, updatedItems.length, `New item ID:`, item.id || getNextId(key));
-      console.log(`[DataContext] Updated productMovements array:`, updatedItems);
-    }
-
-    setter(updatedItems);
+      if (item.id === 0 || existingItemIndex === -1) { // New item
+        const newItemId = getNextId(key);
+        updatedItems = [...prevItems, { ...item, id: newItemId }];
+        setNextIdForCollection(key, newItemId + 1); // Increment next ID for this collection
+      } else { // Existing item, update it
+        updatedItems = prevItems.map(i => i.id === item.id ? item : i);
+      }
+      return updatedItems;
+    });
     sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
-  }, [products, setProducts, suppliers, setSuppliers, customers, setCustomers, warehouses, setWarehouses, purchaseOrders, setPurchaseOrders, sellOrders, setSellOrders, incomingPayments, setIncomingPayments, outgoingPayments, setOutgoingPayments, productMovements, setProductMovements, getNextId, setNextIdForCollection, showAlertModal]);
+  }, [
+    setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
+    setIncomingPayments, setOutgoingPayments, setProductMovements,
+    getNextId, setNextIdForCollection, showAlertModal,
+    // Include current state values for validation, but not as dependencies for useCallback
+    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements,
+  ]);
 
   const deleteItem = useCallback((key: CollectionKey, id: number) => {
     const onConfirmDelete = () => {
-      let currentItems: any[] = [];
       let setter: React.Dispatch<React.SetStateAction<any[]>>;
+      let currentCollection: any[] = []; // To be populated for validation
 
       switch (key) {
-        case 'products': currentItems = products; setter = setProducts; break;
-        case 'suppliers': currentItems = suppliers; setter = setSuppliers; break;
-        case 'customers': currentItems = customers; setter = setCustomers; break;
-        case 'warehouses': currentItems = warehouses; setter = setWarehouses; break;
-        case 'purchaseOrders': currentItems = purchaseOrders; setter = setPurchaseOrders; break;
-        case 'sellOrders': currentItems = sellOrders; setter = setSellOrders; break;
-        case 'incomingPayments': currentItems = incomingPayments; setter = setIncomingPayments; break;
-        case 'outgoingPayments': currentItems = outgoingPayments; setter = setOutgoingPayments; break;
-        case 'productMovements': currentItems = productMovements; setter = setProductMovements; break;
+        case 'products': setter = setProducts; currentCollection = products; break;
+        case 'suppliers': setter = setSuppliers; currentCollection = suppliers; break;
+        case 'customers': setter = setCustomers; currentCollection = customers; break;
+        case 'warehouses': setter = setWarehouses; currentCollection = warehouses; break;
+        case 'purchaseOrders': setter = setPurchaseOrders; currentCollection = purchaseOrders; break;
+        case 'sellOrders': setter = setSellOrders; currentCollection = sellOrders; break;
+        case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
+        case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
+        case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
         default: return;
       }
 
-      const itemToDelete = currentItems.find(i => i.id === id);
+      const itemToDelete = currentCollection.find(i => i.id === id);
       if (!itemToDelete) {
         showAlertModal(t('error'), t('itemNotFound'));
         return;
       }
 
-      // --- Deletion validation checks ---
+      // --- Deletion validation checks (need current state values) ---
       if (key === 'products') {
         const hasOrders = sellOrders.some(o => o.items?.some(i => i.productId === id)) || purchaseOrders.some(o => o.items?.some(i => i.productId === id));
         if (hasOrders) { showAlertModal('Deletion Failed', 'Cannot delete this product because it is used in existing purchase or sell orders.'); return; }
@@ -144,7 +149,7 @@ export function useCrudOperations({
         }
       }
       if (key === 'warehouses') {
-        const warehouseToDelete = currentItems.find((w: Warehouse) => w.id === id);
+        const warehouseToDelete = currentCollection.find((w: Warehouse) => w.id === id);
         if (warehouseToDelete && warehouseToDelete.type === 'Main') {
           showAlertModal('Deletion Failed', 'Cannot delete the Main Warehouse. Please designate another warehouse as Main first.');
           return;
@@ -159,25 +164,24 @@ export function useCrudOperations({
         if (hasOrders) { showAlertModal('Deletion Failed', 'Cannot delete this warehouse. It is used in existing orders or movements.'); return; }
       }
       if (key === 'suppliers' || key === 'customers') {
-        const orderKey = key === 'suppliers' ? purchaseOrders : sellOrders;
-        if (orderKey.some(o => o.contactId === id)) { showAlertModal('Deletion Failed', `Cannot delete this ${key.slice(0, -1)} because they are linked to existing orders.`); return; }
+        const orderCollection = key === 'suppliers' ? purchaseOrders : sellOrders;
+        if (orderCollection.some(o => o.contactId === id)) { showAlertModal('Deletion Failed', `Cannot delete this ${key.slice(0, -1)} because they are linked to existing orders.`); return; }
       }
 
       // Reverse stock change if deleting a completed order/movement
       if (key === 'purchaseOrders' || key === 'sellOrders') {
-        const orderToDelete = currentItems.find(o => o.id === id);
+        const orderToDelete = currentCollection.find(o => o.id === id);
         if (orderToDelete) updateStockFromOrder(null, orderToDelete);
       } else if (key === 'productMovements') {
-        const movementToDelete = currentItems.find(m => m.id === id);
+        const movementToDelete = currentCollection.find(m => m.id === id);
         if (movementToDelete) {
-          // Find the linked sell order and clear its productMovementId
-          setSellOrders(prevSellOrders => prevSellOrders.map(so => 
-            so.productMovementId === movementToDelete.id 
-              ? { ...so, productMovementId: undefined } 
+          setSellOrders(prevSellOrders => prevSellOrders.map(so =>
+            so.productMovementId === movementToDelete.id
+              ? { ...so, productMovementId: undefined }
               : so
           ));
 
-          const updatedProducts = products.map(p => {
+          setProducts(prevProducts => prevProducts.map(p => {
             if (p.stock && movementToDelete.items?.some(item => item.productId === p.id)) {
               const newP = { ...p, stock: { ...p.stock } };
               movementToDelete.items.forEach(item => {
@@ -189,10 +193,9 @@ export function useCrudOperations({
               return newP;
             }
             return p;
-          });
-          setProducts(updatedProducts);
+          }));
         }
-      } else if (key === 'incomingPayments') { // New logic for incoming payments
+      } else if (key === 'incomingPayments') {
         const paymentToDelete = itemToDelete as Payment;
         if (paymentToDelete.orderId !== 0) {
           setSellOrders(prevSellOrders => prevSellOrders.map(so =>
@@ -203,13 +206,18 @@ export function useCrudOperations({
         }
       }
 
-
       // Move to recycle bin instead of permanent deletion
       addToRecycleBin(itemToDelete, key);
-      setter(currentItems.filter(i => i.id !== id)); // Remove from active data
+      setter(prevItems => prevItems.filter(i => i.id !== id)); // Remove from active data
     };
     showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete);
-  }, [products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, showAlertModal, showConfirmationModal, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, updateStockFromOrder, addToRecycleBin]);
+  }, [
+    setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
+    setIncomingPayments, setOutgoingPayments, setProductMovements,
+    showAlertModal, showConfirmationModal, updateStockFromOrder, addToRecycleBin,
+    // Include current state values for validation, but not as dependencies for useCallback
+    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements,
+  ]);
 
   return {
     getNextId,
