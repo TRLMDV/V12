@@ -23,28 +23,28 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     customerMap,
     warehouseMap,
     isGenerateMovementDisabled,
-    isGeneratePaymentDisabled, // New return value
+    isGeneratePaymentDisabled,
     handleChange,
     handleNumericChange,
     handleSelectChange,
-    handleCurrencyChange, // New return value
-    handleExchangeRateChange, // New return value
+    handleCurrencyChange,
+    handleExchangeRateChange,
     addOrderItem,
     removeOrderItem,
     handleOrderItemChange,
     handleGenerateProductMovement,
-    handleGenerateIncomingPayment, // New return value
+    handleGenerateIncomingPayment,
     handleSubmit,
-    products, // Passed to SellOrderItemsField
-    customers, // Passed to Select
-    warehouses, // Passed to Select
-    productMap, // <--- Added productMap here
-    totalVatAmount, // New return value
-    totalCleanProfit, // New return value
-    selectedCurrency, // New return value
-    manualExchangeRateInput, // New return value
-    mainCurrency, // New return value
-    subtotalInOrderCurrency, // New return value
+    products,
+    customers,
+    warehouses,
+    productMap,
+    totalVatAmount,
+    totalCleanProfit,
+    selectedCurrency,
+    manualExchangeRateInput,
+    mainCurrency,
+    subtotalInOrderCurrency,
   } = useSellOrderForm({ orderId, onSuccess });
 
   return (
