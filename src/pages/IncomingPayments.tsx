@@ -146,6 +146,13 @@ const IncomingPayments: React.FC = () => {
     return Array.from(categories).sort();
   }, [incomingPayments, t]);
 
+  // Apply pagination to the filtered and sorted payments
+  const paginatedPayments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAndSortedPayments.slice(startIndex, endIndex);
+  }, [filteredAndSortedPayments, currentPage, itemsPerPage]);
+
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
