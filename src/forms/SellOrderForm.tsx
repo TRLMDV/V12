@@ -115,7 +115,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
               <SelectValue placeholder={mainCurrency} />
             </SelectTrigger>
             <SelectContent>
-              {(activeCurrencies || []).map(c => (
+              {/* Defensive check: Ensure activeCurrencies is an array before mapping */}
+              {(activeCurrencies && activeCurrencies.length > 0 ? activeCurrencies : [mainCurrency]).map(c => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
