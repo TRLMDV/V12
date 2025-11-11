@@ -10,6 +10,7 @@ import PaymentForm from '@/forms/PaymentForm';
 import { PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label'; // Ensuring this import is present
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { Payment, SellOrder } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -24,6 +25,10 @@ const IncomingPayments: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100; // User requested 100 items per page
 
   const sellOrderMap = sellOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: SellOrder });
   const customerMap = customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
@@ -75,6 +80,13 @@ const IncomingPayments: React.FC = () => {
     }
     return sortableItems;
   }, [incomingPayments, sellOrders, customers, sortConfig, startDateFilter, endDateFilter, paymentsByOrder]);
+
+  // Apply pagination to the filtered and sorted payments
+  const paginatedPayments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAndSortedPayments.slice(startIndex, endIndex);
+  }, [filteredAndSortedPayments, currentPage, itemsPerPage]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -128,7 +140,10 @@ const IncomingPayments: React.FC = () => {
               type="date"
               id="incoming-start-date-filter"
               value={startDateFilter}
-              onChange={(e) => setStartDateFilter(e.target.value)}
+              onChange={(e) => {
+                setStartDateFilter(e.target.value);
+                setCurrentPage(1); // Reset to first page on filter change
+              }}
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
@@ -138,7 +153,10 @@ const IncomingPayments: React.FC = () => {
               type="date"
               id="incoming-end-date-filter"
               value={endDateFilter}
-              onChange={(e) => setEndDateFilter(e.target.value)}
+              onChange={(e) => {
+                setEndDateFilter(e.target.value);
+                setCurrentPage(1); // Reset to first page on filter change
+              }}
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
@@ -168,8 +186,8 @@ const IncomingPayments: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedPayments.length > 0 ? (
-              filteredAndSortedPayments.map(p => {
+            {paginatedPayments.length > 0 ? (
+              paginatedPayments.map(p => {
                 const order = sellOrderMap[p.orderId];
                 let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
                 let remainingAmountText = '';
@@ -186,7 +204,7 @@ const IncomingPayments: React.FC = () => {
                     remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(${t('fullyPaid')})</span>`;
                   } else {
                     rowClass += ' bg-red-100 dark:bg-red-900/50';
-                    remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${t('remaining')}: ${currentRemainingBalanceInAZN.toFixed(2)} AZN)</span>`;
+                    remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${currentRemainingBalanceInAZN.toFixed(2)} AZN ${t('remaining')})</span>`;
                   }
                 }
 
@@ -222,6 +240,12 @@ const IncomingPayments: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls
+        totalItems={filteredAndSortedPayments.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
 
       <FormModal
         isOpen={isModalOpen}

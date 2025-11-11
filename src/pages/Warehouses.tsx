@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import { Product, Warehouse } from '@/types'; // Import types from types file
 import { Input } from '@/components/ui/input'; // Import Input component
 import { Label } from '@/components/ui/label'; // Import Label component
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 
 type SortConfig = {
   key: keyof Product | 'quantity' | 'priceWithMarkupCalc' | 'priceWithMarkupPlusVat';
@@ -25,6 +26,10 @@ const Warehouses: React.FC = () => {
   const [expandedWarehouseId, setExpandedWarehouseId] = useState<number | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
   const [productSearchSku, setProductSearchSku] = useState<string>(''); // New state for product search by SKU
+
+  // Pagination states for the main warehouse list
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100; // User requested 100 items per page
 
   const defaultMarkup = settings.defaultMarkup / 100;
   const defaultVat = settings.defaultVat / 100;
@@ -144,6 +149,13 @@ const Warehouses: React.FC = () => {
     return { [expandedWarehouseId]: sortableItems };
   }, [products, expandedWarehouseId, sortConfig, defaultMarkup, defaultVat, productSearchSku]);
 
+  // Apply pagination to the main warehouses list
+  const paginatedWarehouses = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return warehouses.slice(startIndex, endIndex);
+  }, [warehouses, currentPage, itemsPerPage]);
+
 
   return (
     <div className="container mx-auto p-4">
@@ -156,8 +168,8 @@ const Warehouses: React.FC = () => {
       </div>
 
       <div>
-        {warehouses.length > 0 ? (
-          warehouses.map(w => {
+        {paginatedWarehouses.length > 0 ? (
+          paginatedWarehouses.map(w => {
             const warehouseProducts = sortedWarehouseProducts[w.id] || [];
             let warehouseTotalValue = 0; // Excl. VAT
             let warehouseTotalValueInclVat = 0; // Incl. VAT
@@ -201,8 +213,7 @@ const Warehouses: React.FC = () => {
                           type="text"
                           placeholder={t('searchBySku')}
                           value={productSearchSku}
-                          onChange={(e) => setProductSearchSku(e.target.value)}
-                          onClick={(e) => e.stopPropagation()} // Prevent collapsing when clicking search
+                          onChange={(e) => e.stopPropagation() || setProductSearchSku(e.target.value)} // Prevent collapsing when clicking search
                           className="w-full"
                         />
                       </div>
@@ -275,6 +286,12 @@ const Warehouses: React.FC = () => {
           </div>
         )}
       </div>
+      <PaginationControls
+        totalItems={warehouses.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
 
       <FormModal
         isOpen={isModalOpen}

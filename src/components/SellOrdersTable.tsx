@@ -72,7 +72,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
           {orders.length > 0 ? (
             orders.map(order => (
               <TableRow key={order.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                <TableCell className="p-3 font-semibold">#{order.id} ({order.customerName})</TableCell>
+                <TableCell className="p-3 font-semibold">#{order.id}</TableCell>
                 <TableCell className="p-3">{order.customerName}</TableCell>
                 <TableCell className="p-3">{order.orderDate}</TableCell>
                 <TableCell className="p-3">{order.warehouseName}</TableCell>

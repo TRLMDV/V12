@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'; // Added Label
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'; // Added Popover components
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command'; // Added Command components
 import { cn } from '@/lib/utils'; // Added cn utility
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { ProductMovement, Product } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -36,6 +37,10 @@ const ProductMovement: React.FC = () => {
   const [endDateFilter, setEndDateFilter] = useState<string>('');
   const [productFilterId, setProductFilterId] = useState<number | 'all'>('all');
   const [isProductComboboxOpen, setIsProductComboboxOpen] = useState(false);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100; // User requested 100 items per page
 
   // Log productMovements whenever it changes
   useEffect(() => {
@@ -100,6 +105,13 @@ const ProductMovement: React.FC = () => {
     return sortableItems;
   }, [productMovements, warehouseMap, sortConfig, filterSourceWarehouseId, filterDestWarehouseId, startDateFilter, endDateFilter, productFilterId]);
 
+  // Apply pagination to the filtered and sorted movements
+  const paginatedMovements = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAndSortedMovements.slice(startIndex, endIndex);
+  }, [filteredAndSortedMovements, currentPage, itemsPerPage]);
+
   const handleAddMovement = () => {
     setEditingMovementId(undefined);
     setIsModalOpen(true);
@@ -160,7 +172,10 @@ const ProductMovement: React.FC = () => {
             <Label htmlFor="from-warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
               {t('fromWarehouse')}
             </Label>
-            <Select onValueChange={(value) => setFilterSourceWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterSourceWarehouseId)}>
+            <Select onValueChange={(value) => {
+              setFilterSourceWarehouseId(value === 'all' ? 'all' : parseInt(value));
+              setCurrentPage(1); // Reset to first page on filter change
+            }} value={String(filterSourceWarehouseId)}>
               <SelectTrigger className="w-full mt-1">
                 <SelectValue placeholder={t('allWarehouses')} />
               </SelectTrigger>
@@ -178,7 +193,10 @@ const ProductMovement: React.FC = () => {
             <Label htmlFor="to-warehouse-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
               {t('toWarehouse')}
             </Label>
-            <Select onValueChange={(value) => setFilterDestWarehouseId(value === 'all' ? 'all' : parseInt(value))} value={String(filterDestWarehouseId)}>
+            <Select onValueChange={(value) => {
+              setFilterDestWarehouseId(value === 'all' ? 'all' : parseInt(value));
+              setCurrentPage(1); // Reset to first page on filter change
+            }} value={String(filterDestWarehouseId)}>
               <SelectTrigger className="w-full mt-1">
                 <SelectValue placeholder={t('allWarehouses')} />
               </SelectTrigger>
@@ -220,6 +238,7 @@ const ProductMovement: React.FC = () => {
                       onSelect={() => {
                         setProductFilterId('all');
                         setIsProductComboboxOpen(false);
+                        setCurrentPage(1); // Reset to first page on filter change
                       }}
                     >
                       <Check
@@ -237,6 +256,7 @@ const ProductMovement: React.FC = () => {
                         onSelect={() => {
                           setProductFilterId(product.id);
                           setIsProductComboboxOpen(false);
+                          setCurrentPage(1); // Reset to first page on filter change
                         }}
                       >
                         <Check
@@ -259,7 +279,10 @@ const ProductMovement: React.FC = () => {
               type="date"
               id="start-date-filter"
               value={startDateFilter}
-              onChange={(e) => setStartDateFilter(e.target.value)}
+              onChange={(e) => {
+                setStartDateFilter(e.target.value);
+                setCurrentPage(1); // Reset to first page on filter change
+              }}
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
@@ -269,7 +292,10 @@ const ProductMovement: React.FC = () => {
               type="date"
               id="end-date-filter"
               value={endDateFilter}
-              onChange={(e) => setEndDateFilter(e.target.value)}
+              onChange={(e) => {
+                setEndDateFilter(e.target.value);
+                setCurrentPage(1); // Reset to first page on filter change
+              }}
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
@@ -299,8 +325,8 @@ const ProductMovement: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedMovements.length > 0 ? (
-              filteredAndSortedMovements.map(m => (
+            {paginatedMovements.length > 0 ? (
+              paginatedMovements.map(m => (
                 <TableRow key={m.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">#{m.id}</TableCell>
                   <TableCell className="p-3">{m.sourceWarehouseName}</TableCell>
@@ -330,6 +356,12 @@ const ProductMovement: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls
+        totalItems={filteredAndSortedMovements.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
 
       <FormModal
         isOpen={isModalOpen}

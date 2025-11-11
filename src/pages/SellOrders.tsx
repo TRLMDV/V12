@@ -12,6 +12,7 @@ import { PlusCircle } from 'lucide-react';
 import SellOrderFilters from '@/components/SellOrderFilters';
 import SellOrdersTable from '@/components/SellOrdersTable';
 import SellOrderDetails from '@/components/SellOrderDetails';
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 
 import { SellOrder, Product, Customer, Warehouse } from '@/types'; // Import types from types file
 
@@ -39,6 +40,10 @@ const SellOrders: React.FC = () => {
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100; // User requested 100 items per page
 
   const requestSort = useCallback((key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -214,6 +219,13 @@ const SellOrders: React.FC = () => {
     return sortableItems;
   }, [sellOrders, customerMap, warehouseMap, productMap, sortConfig, filters, getPaymentStatus]);
 
+  // Apply pagination to the filtered and sorted orders
+  const paginatedOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAndSortedOrders.slice(startIndex, endIndex);
+  }, [filteredAndSortedOrders, currentPage, itemsPerPage]);
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -224,16 +236,25 @@ const SellOrders: React.FC = () => {
         </Button>
       </div>
 
-      <SellOrderFilters onFiltersChange={setFilters} />
+      <SellOrderFilters onFiltersChange={(newFilters) => {
+        setFilters(newFilters);
+        setCurrentPage(1); // Reset to first page on filter change
+      }} />
 
       <SellOrdersTable
-        orders={filteredAndSortedOrders}
+        orders={paginatedOrders} // Pass paginated orders
         handleEditOrder={handleEditOrder}
         handleDeleteOrder={handleDeleteOrder}
         viewOrderDetails={viewOrderDetails}
         sortConfig={sortConfig}
         handleSortClick={handleSortClick}
         getSortIndicator={getSortIndicator}
+      />
+      <PaginationControls
+        totalItems={filteredAndSortedOrders.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
       />
 
       <FormModal

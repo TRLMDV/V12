@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import FormModal from '@/components/FormModal';
 import CustomerForm from '@/forms/CustomerForm';
 import { PlusCircle } from 'lucide-react';
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { Customer } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -20,6 +21,10 @@ const Customers: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomerId, setEditingCustomerId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100; // User requested 100 items per page
 
   const warehouseMap = useMemo(() => {
     return warehouses.reduce((acc, w) => ({ ...acc, [w.id]: w.name }), {} as { [key: number]: string });
@@ -49,6 +54,13 @@ const Customers: React.FC = () => {
     }
     return sortableItems;
   }, [customers, sortConfig, warehouseMap]);
+
+  // Apply pagination to the filtered and sorted customers
+  const paginatedCustomers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sortedCustomers.slice(startIndex, endIndex);
+  }, [sortedCustomers, currentPage, itemsPerPage]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -117,8 +129,8 @@ const Customers: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedCustomers.length > 0 ? (
-              sortedCustomers.map(c => (
+            {paginatedCustomers.length > 0 ? (
+              paginatedCustomers.map(c => (
                 <TableRow key={c.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3">{c.name}</TableCell>
                   <TableCell className="p-3">{c.contact}</TableCell>
@@ -145,6 +157,12 @@ const Customers: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls
+        totalItems={sortedCustomers.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
 
       <FormModal
         isOpen={isModalOpen}

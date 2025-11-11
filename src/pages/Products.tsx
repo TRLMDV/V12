@@ -11,6 +11,7 @@ import { ArrowUpDown, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input'; // Import Input component
 import { Label } from '@/components/ui/label'; // Import Label component
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { Product } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -24,6 +25,10 @@ const Products: React.FC = () => {
   const [editingProductId, setEditingProductId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'sku', direction: 'ascending' });
   const [searchSku, setSearchSku] = useState<string>(''); // New state for SKU search
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100; // User requested 100 items per page
 
   const defaultMarkup = settings.defaultMarkup / 100;
   const defaultVat = settings.defaultVat / 100;
@@ -64,6 +69,13 @@ const Products: React.FC = () => {
     }
     return sortableItems;
   }, [products, sortConfig, defaultMarkup, defaultVat, searchSku]);
+
+  // Apply pagination to the filtered and sorted products
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAndSortedProducts.slice(startIndex, endIndex);
+  }, [filteredAndSortedProducts, currentPage, itemsPerPage]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -135,7 +147,10 @@ const Products: React.FC = () => {
               type="text"
               placeholder={t('enterSku')}
               value={searchSku}
-              onChange={(e) => setSearchSku(e.target.value)}
+              onChange={(e) => {
+                setSearchSku(e.target.value);
+                setCurrentPage(1); // Reset to first page on search
+              }}
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
@@ -172,8 +187,8 @@ const Products: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedProducts.length > 0 ? (
-              filteredAndSortedProducts.map(p => {
+            {paginatedProducts.length > 0 ? (
+              paginatedProducts.map(p => {
                 const stockIsLow = p.totalStock < p.minStock;
                 const landedCostDisplay = p.averageLandedCost > 0 ? `${p.averageLandedCost.toFixed(2)} AZN` : 'N/A';
                 const priceWithMarkupDisplay = p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : 'N/A';
@@ -228,6 +243,12 @@ const Products: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls
+        totalItems={filteredAndSortedProducts.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
 
       <FormModal
         isOpen={isModalOpen}

@@ -10,6 +10,7 @@ import PaymentForm from '@/forms/PaymentForm';
 import { PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label'; // Added missing import
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { Payment, PurchaseOrder } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -24,6 +25,10 @@ const OutgoingPayments: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100; // User requested 100 items per page
 
   const purchaseOrderMap = useMemo(() => purchaseOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: PurchaseOrder }), [purchaseOrders]);
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as { [key: number]: string }), [suppliers]);
@@ -115,7 +120,7 @@ const OutgoingPayments: React.FC = () => {
             remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(${t('fullyPaid')})</span>`;
           } else {
             rowClass += ' bg-red-100 dark:bg-red-900/50';
-            remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${t('remaining')}: ${currentRemainingBalanceNative.toFixed(2)} ${categoryCurrency})</span>`;
+            remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${currentRemainingBalanceNative.toFixed(2)} ${categoryCurrency} ${t('remaining')})</span>`;
           }
         }
       }
@@ -140,6 +145,13 @@ const OutgoingPayments: React.FC = () => {
     }
     return sortableItems;
   }, [outgoingPayments, purchaseOrders, suppliers, sortConfig, startDateFilter, endDateFilter, paymentsByOrderAndCategoryAZN, currencyRates]);
+
+  // Apply pagination to the filtered and sorted payments
+  const paginatedPayments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAndSortedPayments.slice(startIndex, endIndex);
+  }, [filteredAndSortedPayments, currentPage, itemsPerPage]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -193,7 +205,10 @@ const OutgoingPayments: React.FC = () => {
               type="date"
               id="outgoing-start-date-filter"
               value={startDateFilter}
-              onChange={(e) => setStartDateFilter(e.target.value)}
+              onChange={(e) => {
+                setStartDateFilter(e.target.value);
+                setCurrentPage(1); // Reset to first page on filter change
+              }}
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
@@ -203,7 +218,10 @@ const OutgoingPayments: React.FC = () => {
               type="date"
               id="outgoing-end-date-filter"
               value={endDateFilter}
-              onChange={(e) => setEndDateFilter(e.target.value)}
+              onChange={(e) => {
+                setEndDateFilter(e.target.value);
+                setCurrentPage(1); // Reset to first page on filter change
+              }}
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
@@ -233,8 +251,8 @@ const OutgoingPayments: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedPayments.length > 0 ? (
-              filteredAndSortedPayments.map(p => {
+            {paginatedPayments.length > 0 ? (
+              paginatedPayments.map(p => {
                 return (
                   <TableRow key={p.id} className={p.rowClass}>
                     <TableCell className="p-3 font-semibold">
@@ -267,6 +285,12 @@ const OutgoingPayments: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls
+        totalItems={filteredAndSortedPayments.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
 
       <FormModal
         isOpen={isModalOpen}
