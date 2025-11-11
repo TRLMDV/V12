@@ -48,6 +48,9 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
 
+  // Log activeCurrencies directly in the component before rendering
+  console.log("SellOrderForm: activeCurrencies before map", activeCurrencies);
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">

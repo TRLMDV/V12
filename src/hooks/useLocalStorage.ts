@@ -17,10 +17,17 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T
       // Parse stored json or if none return initialValue
       if (item) {
         const parsedItem = JSON.parse(item);
-        // If both initialValue and parsedItem are objects, merge initialValue's properties into parsedItem
-        // This ensures new properties from initialValue are present if missing from parsedItem
+        // If both initialValue and parsedItem are objects, merge them carefully.
+        // Start with initialValue's properties, then overlay parsedItem's properties
+        // but only if parsedItem's property is not undefined.
         if (typeof initialValue === 'object' && initialValue !== null && typeof parsedItem === 'object' && parsedItem !== null) {
-          return { ...initialValue, ...parsedItem } as T;
+          const mergedObject = { ...initialValue };
+          for (const prop in parsedItem) {
+            if (Object.prototype.hasOwnProperty.call(parsedItem, prop) && parsedItem[prop] !== undefined) {
+              mergedObject[prop] = parsedItem[prop];
+            }
+          }
+          return mergedObject as T;
         }
         return parsedItem;
       }
