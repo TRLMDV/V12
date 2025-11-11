@@ -192,7 +192,17 @@ export function useCrudOperations({
           });
           setProducts(updatedProducts);
         }
+      } else if (key === 'incomingPayments') { // New logic for incoming payments
+        const paymentToDelete = itemToDelete as Payment;
+        if (paymentToDelete.orderId !== 0) {
+          setSellOrders(prevSellOrders => prevSellOrders.map(so =>
+            so.incomingPaymentId === paymentToDelete.id
+              ? { ...so, incomingPaymentId: undefined }
+              : so
+          ));
+        }
       }
+
 
       // Move to recycle bin instead of permanent deletion
       addToRecycleBin(itemToDelete, key);
