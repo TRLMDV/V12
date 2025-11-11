@@ -123,5 +123,6 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     mainCurrency,
     currentExchangeRateToMainCurrency,
     subtotalInOrderCurrency,
+    activeCurrencies: settings.activeCurrencies, // <--- Added this line
   };
 };
