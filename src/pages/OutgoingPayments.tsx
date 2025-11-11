@@ -19,7 +19,7 @@ type SortConfig = {
 };
 
 const OutgoingPayments: React.FC = () => {
-  const { outgoingPayments, purchaseOrders, suppliers, deleteItem, currencyRates } = useData();
+  const { outgoingPayments, purchaseOrders, suppliers, deleteItem, currencyRates, settings } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaymentId, setEditingPaymentId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -32,6 +32,8 @@ const OutgoingPayments: React.FC = () => {
 
   const purchaseOrderMap = useMemo(() => purchaseOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: PurchaseOrder }), [purchaseOrders]);
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as { [key: number]: string }), [suppliers]);
+  const paymentCategoryMap = useMemo(() => (settings.paymentCategories || []).reduce((acc, cat) => ({ ...acc, [cat.name]: cat.name }), {} as { [key: string]: string }), [settings.paymentCategories]);
+
 
   // Aggregate payments by order ID and specific category (products/transportationFees/customFees/additionalFees) in AZN
   const paymentsByOrderAndCategoryAZN = useMemo(() => {
@@ -50,7 +52,7 @@ const OutgoingPayments: React.FC = () => {
           result[p.orderId] = { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
         }
         const amountInAZN = p.amount * (p.paymentCurrency === 'AZN' ? 1 : (p.paymentExchangeRate || currencyRates[p.paymentCurrency] || 1));
-        result[p.orderId][p.paymentCategory] += amountInAZN;
+        result[p.orderId][p.paymentCategory as keyof typeof result[number]] += amountInAZN;
       }
     });
     return result;
@@ -72,7 +74,9 @@ const OutgoingPayments: React.FC = () => {
       let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
 
       if (p.orderId === 0) {
-        linkedOrderDisplay = t('manualExpense');
+        // For manual expenses, display the custom category if available, otherwise manualDescription
+        const categoryName = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
+        linkedOrderDisplay = `${categoryName} ${p.manualDescription ? `- ${p.manualDescription}` : ''}`;
       } else {
         const order = purchaseOrderMap[p.orderId];
         const supplierName = order ? supplierMap[order.contactId] || 'Unknown' : 'N/A';
@@ -144,7 +148,7 @@ const OutgoingPayments: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [outgoingPayments, purchaseOrders, suppliers, sortConfig, startDateFilter, endDateFilter, paymentsByOrderAndCategoryAZN, currencyRates]);
+  }, [outgoingPayments, purchaseOrders, suppliers, sortConfig, startDateFilter, endDateFilter, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap]);
 
   // Apply pagination to the filtered and sorted payments
   const paginatedPayments = useMemo(() => {
@@ -256,7 +260,7 @@ const OutgoingPayments: React.FC = () => {
                 return (
                   <TableRow key={p.id} className={p.rowClass}>
                     <TableCell className="p-3 font-semibold">
-                      #{p.id} {p.orderId === 0 && p.manualDescription ? `- ${p.manualDescription}` : ''}
+                      #{p.id}
                     </TableCell>
                     <TableCell className="p-3">{p.linkedOrderDisplay}</TableCell>
                     <TableCell className="p-3">{p.date}</TableCell>

@@ -77,10 +77,15 @@ export interface SellOrder {
   incomingPaymentId?: number; // New field to link to a generated incoming payment
 }
 
+export interface PaymentCategorySetting {
+  id: number;
+  name: string;
+}
+
 export interface Payment {
   id: number;
   orderId: number; // Linked order ID, 0 for manual expense
-  paymentCategory?: 'products' | 'transportationFees' | 'customFees' | 'additionalFees' | 'manual'; // Updated field to be more specific
+  paymentCategory?: 'products' | 'transportationFees' | 'customFees' | 'additionalFees' | 'manual' | string; // Updated to allow custom string categories
   manualDescription?: string; // For manual expenses
   date: string;
   amount: number; // Amount in paymentCurrency
@@ -112,6 +117,7 @@ export interface Settings {
   defaultMarkup: number;
   currencyRates: CurrencyRates;
   displayScale: number; // New: Program display scaling percentage
+  paymentCategories: PaymentCategorySetting[]; // New: Custom payment categories
 }
 
 // --- Recycle Bin Types ---

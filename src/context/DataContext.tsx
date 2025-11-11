@@ -13,7 +13,7 @@ import { useCrudOperations } from '@/hooks/useCrudOperations';
 // Import all data types from the new types file
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -42,6 +42,16 @@ const initialSettings: Settings = {
   defaultMarkup: 70,
   currencyRates: defaultCurrencyRates,
   displayScale: 100, // New: Default display scale
+  paymentCategories: [ // Default payment categories
+    { id: 1, name: 'Rent' },
+    { id: 2, name: 'Utilities' },
+    { id: 3, name: 'Salaries' },
+    { id: 4, name: 'Office Supplies' },
+    { id: 5, name: 'Marketing' },
+    { id: 6, name: 'Travel' },
+    { id: 7, name: 'Maintenance' },
+    { id: 8, name: 'Software Subscriptions' },
+  ],
 };
 
 // --- Context Definition ---
@@ -114,7 +124,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Internal state for next IDs, managed by DataProvider
   const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
-    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1
+    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1,
+    paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
   });
 
   // Use the new modals hook
@@ -266,6 +277,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (Object.keys(initialData) as (keyof typeof initialData)[]).forEach(key => {
         initialNextIds[key] = 1; // Always start from 1 for empty collections
       });
+      initialNextIds.paymentCategories = initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1;
       setNextIds(initialNextIds);
       setInitialized(true);
     }

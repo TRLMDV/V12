@@ -27,6 +27,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
     currencyRates,
     customers, // Added customers
     suppliers, // Added suppliers
+    settings, // Added settings to access payment categories
   }
     = useData();
 
@@ -39,6 +40,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
   // selectedOrderId will now be a composite string: '0' for manual, or 'orderId-category' (e.g., '123-products', '123-transportationFees')
   const [selectedOrderIdentifier, setSelectedOrderIdentifier] = useState<string>('0');
+  const [selectedManualCategory, setSelectedManualCategory] = useState<string>(''); // New state for manual category
 
   const allOrders = isIncoming ? sellOrders : purchaseOrders;
   const allPayments = isIncoming ? incomingPayments : outgoingPayments;
@@ -66,7 +68,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
           result[p.orderId] = { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
         }
         const amountInAZN = p.amount * (p.paymentCurrency === 'AZN' ? 1 : (p.paymentExchangeRate || currencyRates[p.paymentCurrency] || 1));
-        result[p.orderId][p.paymentCategory] += amountInAZN;
+        result[p.orderId][p.paymentCategory as keyof typeof result[number]] += amountInAZN; // Cast to specific keys
       }
     });
     return result;
@@ -88,9 +90,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
         if (existingPayment.orderId === 0) {
           setSelectedOrderIdentifier('0');
+          setSelectedManualCategory(existingPayment.paymentCategory === 'manual' ? existingPayment.manualDescription || '' : existingPayment.paymentCategory || '');
         } else {
           const category = existingPayment.paymentCategory || 'products'; // Default for old data
           setSelectedOrderIdentifier(`${existingPayment.orderId}-${category}`);
+          setSelectedManualCategory(''); // Clear manual category if linked to order
         }
       }
     } else {
@@ -99,7 +103,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         amount: 0,
         method: '',
         orderId: 0,
-        paymentCategory: 'manual',
+        paymentCategory: 'manual', // Default to manual
         manualDescription: '',
         paymentCurrency: 'AZN', // Default for new payments
       });
@@ -107,6 +111,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
       setSelectedOrderIdentifier('0');
+      setSelectedManualCategory(''); // Reset for new payments
     }
   }, [paymentId, isEdit, allPayments, currencyRates]);
 
@@ -133,7 +138,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       let adjustedPaymentsAZN = { ...currentOrderPayments };
       if (isEdit && payment.orderId === order.id && payment.paymentCategory !== 'manual') {
         const existingPaymentAmountInAZN = (payment.amount || 0) * (payment.paymentCurrency === 'AZN' ? 1 : (payment.paymentExchangeRate || currencyRates[payment.paymentCurrency || 'AZN'] || 1));
-        adjustedPaymentsAZN[payment.paymentCategory] -= existingPaymentAmountInAZN;
+        adjustedPaymentsAZN[payment.paymentCategory as keyof typeof adjustedPaymentsAZN] -= existingPaymentAmountInAZN;
       }
 
       if (isIncoming) { // Sell Orders (always in AZN in current model)
@@ -275,7 +280,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setPayment(prev => ({
         ...prev,
         orderId: 0,
-        paymentCategory: 'manual',
+        paymentCategory: 'manual', // Default to 'manual' for manual payments
         manualDescription: prev?.manualDescription || '',
         date: MOCK_CURRENT_DATE.toISOString().slice(0, 10), // Reset date for manual
         amount: 0, // Reset amount for manual
@@ -285,6 +290,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       setSelectedPaymentCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
+      setSelectedManualCategory(''); // Reset manual category
     } else {
       const [orderIdStr, category] = value.split('-');
       const selectedOrderOption = ordersWithBalance.find(o => `${o.id}-${o.category}` === value);
@@ -309,8 +315,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
           setManualExchangeRate(undefined);
           setManualExchangeRateInput('');
         }
+        setSelectedManualCategory(''); // Clear manual category if linked to order
       }
     }
+  };
+
+  const handleManualCategoryChange = (value: string) => {
+    setSelectedManualCategory(value);
+    setPayment(prev => ({ ...prev, paymentCategory: value })); // Update paymentCategory with custom string
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -340,9 +352,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
 
     if (selectedOrderIdentifier === '0') {
       paymentToSave.orderId = 0;
-      paymentToSave.paymentCategory = 'manual';
+      paymentToSave.paymentCategory = selectedManualCategory || 'manual'; // Use selected manual category
       if (!paymentToSave.manualDescription?.trim()) {
         showAlertModal('Error', 'Manual Expense requires a description.');
+        return;
+      }
+      if (!selectedManualCategory) {
+        showAlertModal('Error', 'Please select a category for the manual expense.');
         return;
       }
     } else {
@@ -381,10 +397,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         let adjustedPaymentsAZN = { ...currentOrderPayments };
         if (isEdit && paymentId === paymentToSave.id && paymentToSave.paymentCategory !== 'manual') {
           const existingPaymentAmountInAZN = (payment.amount || 0) * (payment.paymentCurrency === 'AZN' ? 1 : (payment.paymentExchangeRate || currencyRates[payment.paymentCurrency || 'AZN'] || 1));
-          adjustedPaymentsAZN[paymentToSave.paymentCategory] -= existingPaymentAmountInAZN;
+          adjustedPaymentsAZN[paymentToSave.paymentCategory as keyof typeof adjustedPaymentsAZN] -= existingPaymentAmountInAZN;
         }
 
-        const currentPaymentsForCategoryAZN = adjustedPaymentsAZN[selectedOrderOption.category] || 0;
+        const currentPaymentsForCategoryAZN = adjustedPaymentsAZN[selectedOrderOption.category as keyof typeof adjustedPaymentsAZN] || 0;
         const remainingAmountForCategoryAZN = totalCategoryValueAZN - currentPaymentsForCategoryAZN;
 
         if (amountInAZN > remainingAmountForCategoryAZN + 0.001) {
@@ -429,18 +445,37 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
         </div>
 
         {isManualExpense && (
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="manualDescription" className="text-right">
-              {t('description')}
-            </Label>
-            <Input
-              id="manualDescription"
-              placeholder="e.g., A4 Paper, Fuel, Coffee, Office Supplies"
-              value={payment.manualDescription || ''}
-              onChange={handleChange}
-              className="col-span-3"
-            />
-          </div>
+          <>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="manualDescription" className="text-right">
+                {t('description')}
+              </Label>
+              <Input
+                id="manualDescription"
+                placeholder="e.g., A4 Paper, Fuel, Coffee, Office Supplies"
+                value={payment.manualDescription || ''}
+                onChange={handleChange}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="manualCategory" className="text-right">
+                {t('category')}
+              </Label>
+              <Select onValueChange={handleManualCategoryChange} value={selectedManualCategory}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder={t('selectCategory')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(settings.paymentCategories || []).map(cat => (
+                    <SelectItem key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
         )}
 
         <div className="grid grid-cols-4 items-center gap-4">
