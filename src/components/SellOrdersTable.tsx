@@ -13,6 +13,8 @@ interface SellOrdersTableProps {
     totalItems: number;
     totalValueAZN: number;
     paymentStatus: 'Paid' | 'Partially Paid' | 'Unpaid';
+    totalInclVat: number; // New prop
+    totalExclVat: number; // New prop
   })[];
   handleEditOrder: (id: number) => void;
   handleDeleteOrder: (id: number) => void;
@@ -54,8 +56,11 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('paymentStatus')}>
               {t('paymentStatus')} {getSortIndicator('paymentStatus')}
             </TableHead>
-            <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalValueAZN')}>
-              {t('total')} (AZN) {getSortIndicator('totalValueAZN')}
+            <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalExclVat')}>
+              {t('total')} (Excl. VAT) {getSortIndicator('totalExclVat')}
+            </TableHead>
+            <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalInclVat')}>
+              {t('total')} (Incl. VAT) {getSortIndicator('totalInclVat')}
             </TableHead>
             <TableHead className="p-3">{t('actions')}</TableHead>
           </TableRow>
@@ -86,7 +91,8 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
                     {t(order.paymentStatus.toLowerCase().replace(' ', '') as keyof typeof t)}
                   </span>
                 </TableCell>
-                <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalValueAZN.toFixed(2)} AZN</TableCell>
+                <TableCell className="p-3 font-bold text-gray-700 dark:text-slate-300">{order.totalExclVat.toFixed(2)} AZN</TableCell>
+                <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalInclVat.toFixed(2)} AZN</TableCell>
                 <TableCell className="p-3">
                   <Button variant="link" onClick={() => viewOrderDetails(order.id)} className="mr-2 p-0 h-auto">
                     {t('view')}
@@ -102,7 +108,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400">
+              <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400">
                 {t('noItemsFound')}
               </TableCell>
             </TableRow>
