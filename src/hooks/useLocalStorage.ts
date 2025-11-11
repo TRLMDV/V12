@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 
 type SetValue<T> = (value: T | ((prevValue: T) => T)) => void;
@@ -13,10 +15,19 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or if none return initialValue
-      return item ? JSON.parse(item) : initialValue;
+      if (item) {
+        const parsedItem = JSON.parse(item);
+        // If both initialValue and parsedItem are objects, merge initialValue's properties into parsedItem
+        // This ensures new properties from initialValue are present if missing from parsedItem
+        if (typeof initialValue === 'object' && initialValue !== null && typeof parsedItem === 'object' && parsedItem !== null) {
+          return { ...initialValue, ...parsedItem } as T;
+        }
+        return parsedItem;
+      }
+      return initialValue;
     } catch (error) {
       // If error also return initialValue
-      console.error(error);
+      console.error(`Error reading or parsing localStorage key "${key}":`, error);
       return initialValue;
     }
   });
@@ -27,7 +38,7 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T
       try {
         window.localStorage.setItem(key, JSON.stringify(storedValue));
       } catch (error) {
-        console.error(error);
+        console.error(`Error writing to localStorage key "${key}":`, error);
       }
     }
   }, [key, storedValue]);
