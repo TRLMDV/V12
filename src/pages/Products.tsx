@@ -15,12 +15,12 @@ import PaginationControls from '@/components/PaginationControls'; // Import Pagi
 import { Product } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof Product | 'totalStock' | 'priceWithMarkupCalc' | 'priceWithMarkupAndVatCalc';
+  key: keyof Product | 'totalStock' | 'priceWithMarkupCalc' | 'priceWithMarkupAndVatCalc' | 'defaultPackingUnitName';
   direction: 'ascending' | 'descending';
 };
 
 const Products: React.FC = () => {
-  const { products, deleteItem, settings } = useData();
+  const { products, packingUnits, deleteItem, settings } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'sku', direction: 'ascending' });
@@ -32,6 +32,10 @@ const Products: React.FC = () => {
 
   const defaultMarkup = settings.defaultMarkup / 100;
   const defaultVat = settings.defaultVat / 100;
+
+  const packingUnitMap = useMemo(() => {
+    return packingUnits.reduce((acc, pu) => ({ ...acc, [pu.id]: pu }), {} as { [key: number]: typeof packingUnits[0] });
+  }, [packingUnits]);
 
   const filteredAndSortedProducts = useMemo(() => {
     let filteredItems = products;
@@ -49,6 +53,7 @@ const Products: React.FC = () => {
       totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
       priceWithMarkupCalc: (p.averageLandedCost || 0) * (1 + defaultMarkup),
       priceWithMarkupAndVatCalc: (p.averageLandedCost || 0) * (1 + defaultMarkup) * (1 + defaultVat),
+      defaultPackingUnitName: p.defaultPackingUnitId ? packingUnitMap[p.defaultPackingUnitId]?.name || t('none') : t('none'),
     }));
 
     if (sortConfig.key) {
@@ -68,7 +73,7 @@ const Products: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [products, sortConfig, defaultMarkup, defaultVat, searchSku]);
+  }, [products, sortConfig, defaultMarkup, defaultVat, searchSku, packingUnitMap]);
 
   // Apply pagination to the filtered and sorted products
   const paginatedProducts = useMemo(() => {
@@ -171,6 +176,9 @@ const Products: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('category')}>
                 {t('category')} {sortConfig.key === 'category' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('defaultPackingUnitName')}>
+                {t('defaultPacking')} {sortConfig.key === 'defaultPackingUnitName' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+              </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalStock')}>
                 {t('totalStock')} {sortConfig.key === 'totalStock' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
@@ -212,6 +220,7 @@ const Products: React.FC = () => {
                     <TableCell className="p-3">{p.name}</TableCell>
                     <TableCell className="p-3">{p.sku}</TableCell>
                     <TableCell className="p-3">{p.category}</TableCell>
+                    <TableCell className="p-3">{p.defaultPackingUnitName}</TableCell>
                     <TableCell className={`p-3 font-semibold ${stockIsLow ? 'text-red-500' : ''}`}>
                       {p.totalStock}
                     </TableCell>
@@ -235,7 +244,7 @@ const Products: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={10} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>

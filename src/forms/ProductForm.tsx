@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import ImageUpload from '@/components/ImageUpload';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import { t } from '@/utils/i18n';
 import { Product } from '@/types'; // Import types from types file
 
@@ -16,10 +17,11 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
-  const { products, saveItem } = useData();
+  const { products, packingUnits, saveItem } = useData();
   const isEdit = productId !== undefined;
   const [product, setProduct] = useState<Partial<Product>>({});
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [defaultPackingUnitId, setDefaultPackingUnitId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (isEdit) {
@@ -27,10 +29,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
       if (existingProduct) {
         setProduct(existingProduct);
         setImageUrl(existingProduct.imageUrl || null);
+        setDefaultPackingUnitId(existingProduct.defaultPackingUnitId);
       }
     } else {
       setProduct({});
       setImageUrl(null);
+      setDefaultPackingUnitId(undefined);
     }
   }, [productId, isEdit, products]);
 
@@ -43,11 +47,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
     setImageUrl(base64Image);
   };
 
+  const handleDefaultPackingUnitChange = (value: string) => {
+    setDefaultPackingUnitId(value === 'none-selected' ? undefined : parseInt(value));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!product.name || !product.sku) {
-      // This should ideally be handled by form validation library like react-hook-form
-      // For now, using a simple alert.
       alert('Product Name and SKU are required.');
       return;
     }
@@ -63,6 +69,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
       imageUrl: imageUrl || '',
       stock: product.stock || {}, // Preserve existing stock or initialize empty
       averageLandedCost: product.averageLandedCost || 0, // Preserve existing or initialize
+      defaultPackingUnitId: defaultPackingUnitId, // Save default packing unit
     };
 
     saveItem('products', productToSave);
@@ -131,6 +138,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
             min="0"
             required
           />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="defaultPackingUnit" className="text-right">
+            {t('defaultPacking')}
+          </Label>
+          <Select onValueChange={handleDefaultPackingUnitChange} value={defaultPackingUnitId === undefined ? 'none-selected' : String(defaultPackingUnitId)}>
+            <SelectTrigger id="defaultPackingUnit" className="col-span-3">
+              <SelectValue placeholder={t('selectPackingUnit')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none-selected">{t('none')}</SelectItem>
+              {packingUnits.map(pu => (
+                <SelectItem key={pu.id} value={String(pu.id)}>
+                  {pu.name} ({pu.conversionFactor} {t(pu.baseUnit)})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="grid grid-cols-4 items-start gap-4">
           <Label className="text-right">
