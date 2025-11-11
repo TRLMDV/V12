@@ -6,6 +6,7 @@ import { useSellOrderState } from './useSellOrderState';
 import { useSellOrderCalculations } from './useSellOrderCalculations';
 import { useSellOrderHandlers } from './useSellOrderHandlers';
 import { useSellOrderActions } from './useSellOrderActions';
+import { Currency } from '@/types'; // Import Currency type
 
 interface UseSellOrderFormProps {
   orderId?: number;
@@ -14,7 +15,11 @@ interface UseSellOrderFormProps {
 
 export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) => {
   const { settings } = useData();
-  const mainCurrency = settings.mainCurrency;
+
+  // Ensure settings and its properties are always valid, with fallbacks
+  const safeSettings = settings || {};
+  const mainCurrency: Currency = safeSettings.mainCurrency || 'AZN';
+  const activeCurrencies: Currency[] = Array.isArray(safeSettings.activeCurrencies) ? safeSettings.activeCurrencies : [mainCurrency];
 
   // 1. State Management
   const {
@@ -95,9 +100,6 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     isEdit,
   });
 
-  // Log activeCurrencies to debug
-  console.log("useSellOrderForm: settings.activeCurrencies", settings.activeCurrencies);
-
   return {
     order,
     setOrder, // Exposed for potential external updates if needed, though less likely with modularity
@@ -126,6 +128,6 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     mainCurrency,
     currentExchangeRateToMainCurrency,
     subtotalInOrderCurrency,
-    activeCurrencies: settings.activeCurrencies,
+    activeCurrencies, // Now guaranteed to be an array
   };
 };
