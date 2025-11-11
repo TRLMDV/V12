@@ -9,6 +9,8 @@ import { Product, SellOrder, Payment, CurrencyRates } from '@/types'; // Import 
 const Dashboard: React.FC = () => {
   const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
+  const activeCurrencies = settings.activeCurrencies || []; // Ensure it's an array
+  const showDashboardCurrencyRates = settings.showDashboardCurrencyRates; // New setting
 
   const getOverdueSellOrders = () => {
     const customers = useData().customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
@@ -85,22 +87,24 @@ const Dashboard: React.FC = () => {
           <p className="text-3xl font-bold text-blue-500 mt-2">{grossProfitInMainCurrency.toFixed(2)} {mainCurrency}</p>
         </div>
       </div>
-      <div className="mt-8 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('liveCurrencyRates', { mainCurrency })}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-          {Object.entries(currencyRates)
-            .filter(([currency]) => currency !== mainCurrency) // Don't show rate for main currency to itself
-            .map(([currency, rateToAZN]) => {
-              const rateToMainCurrency = convertCurrency(1, 'AZN', mainCurrency) / rateToAZN; // Convert 1 AZN to mainCurrency, then divide by rate of foreign to AZN
-              return (
-                <div key={currency} className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                  <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{currency} to {mainCurrency}</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(1 / rateToMainCurrency).toFixed(4)}</p> {/* Display 1 {mainCurrency} = X {foreignCurrency} */}
-                </div>
-              );
-            })}
+      {showDashboardCurrencyRates && ( // Conditionally render based on new setting
+        <div className="mt-8 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('liveCurrencyRates', { mainCurrency })}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            {Object.entries(currencyRates)
+              .filter(([currency]) => activeCurrencies.includes(currency as Currency) && currency !== mainCurrency) // Filter by activeCurrencies and exclude mainCurrency
+              .map(([currency, rateToAZN]) => {
+                const rateToMainCurrency = convertCurrency(1, 'AZN', mainCurrency) / rateToAZN; // Convert 1 AZN to mainCurrency, then divide by rate of foreign to AZN
+                return (
+                  <div key={currency} className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{currency} to {mainCurrency}</p>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(1 / rateToMainCurrency).toFixed(4)}</p> {/* Display 1 {mainCurrency} = X {foreignCurrency} */}
+                  </div>
+                );
+              })}
+          </div>
         </div>
-      </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         {/* Overdue Payments */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">

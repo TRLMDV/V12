@@ -254,6 +254,7 @@ export interface Settings {
   paymentCategories: PaymentCategorySetting[]; // New: Custom payment categories
   mainCurrency: Currency; // New: Main currency for the application
   activeCurrencies: Currency[]; // New: Currencies the user wants to actively use
+  showDashboardCurrencyRates: boolean; // New: Toggle for dashboard currency rates visibility
 }
 
 // --- Recycle Bin Types ---

@@ -223,6 +223,9 @@ const i18n = {
     saveActiveCurrencies: 'Save Active Currencies',
     activeCurrenciesUpdated: 'Active currencies updated.',
     mainCurrencyCannotBeDeactivated: 'The main currency cannot be deactivated.',
+    // New for dashboard currency rates toggle
+    dashboardCurrencyRates: 'Dashboard Currency Rates',
+    showCurrencyRatesOnDashboard: 'Show Currency Rates on Dashboard',
   }
 };
 
