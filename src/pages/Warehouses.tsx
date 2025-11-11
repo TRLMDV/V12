@@ -10,6 +10,8 @@ import WarehouseForm from '@/forms/WarehouseForm';
 import { ChevronRight, PlusCircle, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Product, Warehouse } from '@/types'; // Import types from types file
+import { Input } from '@/components/ui/input'; // Import Input component
+import { Label } from '@/components/ui/label'; // Import Label component
 
 type SortConfig = {
   key: keyof Product | 'quantity' | 'priceWithMarkupCalc' | 'priceWithMarkupPlusVat';
@@ -22,6 +24,7 @@ const Warehouses: React.FC = () => {
   const [editingWarehouseId, setEditingWarehouseId] = useState<number | undefined>(undefined);
   const [expandedWarehouseId, setExpandedWarehouseId] = useState<number | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
+  const [productSearchSku, setProductSearchSku] = useState<string>(''); // New state for product search by SKU
 
   const defaultMarkup = settings.defaultMarkup / 100;
   const defaultVat = settings.defaultVat / 100;
@@ -46,7 +49,15 @@ const Warehouses: React.FC = () => {
   };
 
   const toggleWarehouseDetails = (warehouseId: number) => {
-    setExpandedWarehouseId(prevId => (prevId === warehouseId ? null : warehouseId));
+    setExpandedWarehouseId(prevId => {
+      if (prevId === warehouseId) {
+        setProductSearchSku(''); // Clear search when collapsing
+        return null;
+      } else {
+        setProductSearchSku(''); // Clear search when expanding a new one
+        return warehouseId;
+      }
+    });
   };
 
   const requestSort = (key: SortConfig['key']) => {
@@ -90,8 +101,16 @@ const Warehouses: React.FC = () => {
   const sortedWarehouseProducts = useMemo(() => {
     if (!expandedWarehouseId) return {};
 
-    const productsInWarehouse = products
+    let productsInWarehouse = products
       .filter(p => p && p.stock && p.stock[expandedWarehouseId] && p.stock[expandedWarehouseId] > 0); // Defensive check for 'p'
+
+    // Apply product SKU search filter
+    if (productSearchSku) {
+      const lowercasedSearchSku = productSearchSku.trim().toLowerCase();
+      productsInWarehouse = productsInWarehouse.filter(p =>
+        String(p.sku).trim().toLowerCase().includes(lowercasedSearchSku)
+      );
+    }
 
     const sortableItems = productsInWarehouse.map(p => {
       const qty = p.stock[expandedWarehouseId];
@@ -123,7 +142,7 @@ const Warehouses: React.FC = () => {
       });
     }
     return { [expandedWarehouseId]: sortableItems };
-  }, [products, expandedWarehouseId, sortConfig, defaultMarkup, defaultVat]);
+  }, [products, expandedWarehouseId, sortConfig, defaultMarkup, defaultVat, productSearchSku]);
 
 
   return (
@@ -174,10 +193,24 @@ const Warehouses: React.FC = () => {
                 <div className={`px-6 pb-6 border-t pt-4 dark:border-slate-700 dark:text-slate-300 ${expandedWarehouseId === w.id ? '' : 'hidden'}`}>
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-semibold text-gray-700 dark:text-slate-300">{t('productsInThisWarehouse')}</h3>
-                    <Button onClick={() => exportWarehouseStock(w.id, w.name)} className="bg-sky-500 text-white px-3 py-1 rounded-md hover:bg-sky-600 text-sm shadow flex items-center">
-                      <Download className="w-4 h-4 mr-1" />
-                      Export Stock
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-48"> {/* Fixed width for search input */}
+                        <Label htmlFor={`product-search-sku-${w.id}`} className="sr-only">{t('searchBySku')}</Label>
+                        <Input
+                          id={`product-search-sku-${w.id}`}
+                          type="text"
+                          placeholder={t('searchBySku')}
+                          value={productSearchSku}
+                          onChange={(e) => setProductSearchSku(e.target.value)}
+                          onClick={(e) => e.stopPropagation()} // Prevent collapsing when clicking search
+                          className="w-full"
+                        />
+                      </div>
+                      <Button onClick={() => exportWarehouseStock(w.id, w.name)} className="bg-sky-500 text-white px-3 py-1 rounded-md hover:bg-sky-600 text-sm shadow flex items-center">
+                        <Download className="w-4 h-4 mr-1" />
+                        Export Stock
+                      </Button>
+                    </div>
                   </div>
                   {warehouseProducts.length > 0 ? (
                     <Table className="w-full text-left text-sm mt-4">
@@ -228,7 +261,9 @@ const Warehouses: React.FC = () => {
                       </TableFooter>
                     </Table>
                   ) : (
-                    <p className="text-gray-500 dark:text-slate-400 italic mt-4">{t('noProductsStored')}</p>
+                    <p className="text-gray-500 dark:text-slate-400 italic mt-4">
+                      {productSearchSku ? t('noItemsFound') : t('noProductsStored')}
+                    </p>
                   )}
                 </div>
               </div>
