@@ -9,12 +9,13 @@ import FormModal from '@/components/FormModal';
 import PaymentForm from '@/forms/PaymentForm';
 import { PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label'; // Added missing import
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { Payment, PurchaseOrder } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof Payment | 'linkedOrderDisplay';
+  key: keyof Payment | 'linkedOrderDisplay' | 'categoryDisplay'; // Added categoryDisplay
   direction: 'ascending' | 'descending';
 };
 
@@ -25,6 +26,7 @@ const OutgoingPayments: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | string>('all'); // New state for category filter
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,11 +74,12 @@ const OutgoingPayments: React.FC = () => {
       let linkedOrderDisplay = '';
       let remainingAmountText = '';
       let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
+      let categoryDisplay = ''; // New field for display
 
       if (p.orderId === 0) {
         // For manual expenses, display the custom category if available, otherwise manualDescription
-        const categoryName = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
-        linkedOrderDisplay = `${categoryName} ${p.manualDescription ? `- ${p.manualDescription}` : ''}`;
+        categoryDisplay = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
+        linkedOrderDisplay = `${categoryDisplay} ${p.manualDescription ? `- ${p.manualDescription}` : ''}`;
       } else {
         const order = purchaseOrderMap[p.orderId];
         const supplierName = order ? supplierMap[order.contactId] || 'Unknown' : 'N/A';
@@ -90,6 +93,7 @@ const OutgoingPayments: React.FC = () => {
           default: categoryText = ''; break;
         }
         linkedOrderDisplay = `${t('orderId')} #${p.orderId} (${supplierName}) ${categoryText}`;
+        categoryDisplay = categoryText; // Set category display for linked orders
 
         if (order) {
           // Calculate remaining balance for the specific category in its native currency
@@ -128,8 +132,13 @@ const OutgoingPayments: React.FC = () => {
           }
         }
       }
-      return { ...p, linkedOrderDisplay, remainingAmountText, rowClass };
+      return { ...p, linkedOrderDisplay, remainingAmountText, rowClass, categoryDisplay };
     });
+
+    // Apply category filter
+    if (categoryFilter !== 'all') {
+      filteredPayments = filteredPayments.filter(p => p.categoryDisplay === categoryFilter);
+    }
 
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
@@ -148,7 +157,7 @@ const OutgoingPayments: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [outgoingPayments, purchaseOrders, suppliers, sortConfig, startDateFilter, endDateFilter, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap]);
+  }, [outgoingPayments, purchaseOrders, suppliers, sortConfig, startDateFilter, endDateFilter, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, categoryFilter]);
 
   // Apply pagination to the filtered and sorted payments
   const paginatedPayments = useMemo(() => {
@@ -191,6 +200,28 @@ const OutgoingPayments: React.FC = () => {
     return '';
   };
 
+  // Get all unique categories for the filter dropdown
+  const allUniqueCategories = useMemo(() => {
+    const categories = new Set<string>();
+    outgoingPayments.forEach(p => {
+      if (p.orderId === 0 && p.paymentCategory && p.paymentCategory !== 'manual') {
+        categories.add(p.paymentCategory);
+      } else if (p.orderId !== 0 && p.paymentCategory) {
+        let categoryText = '';
+        switch (p.paymentCategory) {
+          case 'products': categoryText = t('paymentForProducts'); break;
+          case 'transportationFees': categoryText = t('paymentForTransportationFees'); break;
+          case 'customFees': categoryText = t('paymentForCustomFees'); break;
+          case 'additionalFees': categoryText = t('paymentForAdditionalFees'); break;
+          default: categoryText = ''; break;
+        }
+        if (categoryText) categories.add(categoryText);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [outgoingPayments, t]);
+
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -202,7 +233,7 @@ const OutgoingPayments: React.FC = () => {
       </div>
 
       <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> {/* Adjusted grid columns */}
           <div>
             <Label htmlFor="outgoing-start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
             <Input
@@ -229,6 +260,25 @@ const OutgoingPayments: React.FC = () => {
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
+          <div>
+            <Label htmlFor="category-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('filterByCategory')}</Label>
+            <Select onValueChange={(value) => {
+              setCategoryFilter(value);
+              setCurrentPage(1); // Reset to first page on filter change
+            }} value={categoryFilter}>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder={t('allCategories')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allCategories')}</SelectItem>
+                {allUniqueCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -241,6 +291,9 @@ const OutgoingPayments: React.FC = () => {
               </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('linkedOrderDisplay')}>
                 {t('linkedOrder')} / {t('manualExpense')} {getSortIndicator('linkedOrderDisplay')}
+              </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('categoryDisplay')}>
+                {t('category')} {getSortIndicator('categoryDisplay')} {/* New Category Header */}
               </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('date')}>
                 {t('paymentDate')} {getSortIndicator('date')}
@@ -263,6 +316,7 @@ const OutgoingPayments: React.FC = () => {
                       #{p.id}
                     </TableCell>
                     <TableCell className="p-3">{p.linkedOrderDisplay}</TableCell>
+                    <TableCell className="p-3">{p.categoryDisplay}</TableCell> {/* New Category Cell */}
                     <TableCell className="p-3">{p.date}</TableCell>
                     <TableCell className="p-3 font-bold">
                       {p.amount.toFixed(2)} {p.paymentCurrency} <span dangerouslySetInnerHTML={{ __html: p.remainingAmountText }} />
@@ -281,7 +335,7 @@ const OutgoingPayments: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={7} className="p-4 text-center text-gray-500 dark:text-slate-400"> {/* Adjusted colSpan */}
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>

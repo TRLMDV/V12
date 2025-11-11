@@ -209,6 +209,10 @@ const i18n = {
     categoryDeleted: 'Payment category deleted successfully.',
     deleteCategoryWarning: 'Are you sure you want to delete this payment category? This action cannot be undone.',
     selectCategory: 'Select Category',
+    // New for Outgoing Payments table and filter
+    category: 'Category',
+    filterByCategory: 'Filter by Category',
+    allCategories: 'All Categories',
   }
 };
 
