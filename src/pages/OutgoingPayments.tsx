@@ -61,23 +61,24 @@ const OutgoingPayments: React.FC = () => {
   }, [outgoingPayments, currencyRates]);
 
   const filteredAndSortedPayments = useMemo(() => {
-    let filteredPayments = outgoingPayments;
+    let currentPayments = outgoingPayments;
 
+    // 1. Apply date filters
     if (startDateFilter) {
-      filteredPayments = filteredPayments.filter(p => p.date >= startDateFilter);
+      currentPayments = currentPayments.filter(p => p.date >= startDateFilter);
     }
     if (endDateFilter) {
-      filteredPayments = filteredPayments.filter(p => p.date <= endDateFilter);
+      currentPayments = currentPayments.filter(p => p.date <= endDateFilter);
     }
 
-    const sortableItems = filteredPayments.map(p => {
+    // 2. Add derived properties like categoryDisplay and remainingAmountText
+    const paymentsWithDerivedProps = currentPayments.map(p => {
       let linkedOrderDisplay = '';
       let remainingAmountText = '';
       let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
-      let categoryDisplay = ''; // New field for display
+      let categoryDisplay = '';
 
       if (p.orderId === 0) {
-        // For manual expenses, display the custom category if available, otherwise manualDescription
         categoryDisplay = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
         linkedOrderDisplay = `${categoryDisplay} ${p.manualDescription ? `- ${p.manualDescription}` : ''}`;
       } else {
@@ -93,10 +94,9 @@ const OutgoingPayments: React.FC = () => {
           default: categoryText = ''; break;
         }
         linkedOrderDisplay = `${t('orderId')} #${p.orderId} (${supplierName}) ${categoryText}`;
-        categoryDisplay = categoryText; // Set category display for linked orders
+        categoryDisplay = categoryText;
 
         if (order) {
-          // Calculate remaining balance for the specific category in its native currency
           let totalCategoryValueNative = 0;
           let totalPaidForCategoryNative = 0;
           let categoryCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB' = 'AZN';
@@ -104,7 +104,6 @@ const OutgoingPayments: React.FC = () => {
           if (p.paymentCategory === 'products') {
             totalCategoryValueNative = order.items?.reduce((sum, item) => sum + (item.qty * item.price), 0) || 0;
             categoryCurrency = order.currency;
-            // Sum payments for 'products' category, converted to order.currency
             totalPaidForCategoryNative = (paymentsByOrderAndCategoryAZN[order.id]?.products || 0) / (order.currency === 'AZN' ? 1 : (order.exchangeRate || currencyRates[order.currency] || 1));
           } else if (p.paymentCategory === 'transportationFees') {
             totalCategoryValueNative = order.transportationFees;
@@ -135,13 +134,15 @@ const OutgoingPayments: React.FC = () => {
       return { ...p, linkedOrderDisplay, remainingAmountText, rowClass, categoryDisplay };
     });
 
-    // Apply category filter
+    // 3. Apply category filter to the processed payments
+    let finalFilteredPayments = paymentsWithDerivedProps;
     if (categoryFilter !== 'all') {
-      filteredPayments = filteredPayments.filter(p => p.categoryDisplay === categoryFilter);
+      finalFilteredPayments = finalFilteredPayments.filter(p => p.categoryDisplay === categoryFilter);
     }
 
+    // 4. Apply sorting
     if (sortConfig.key) {
-      sortableItems.sort((a, b) => {
+      finalFilteredPayments.sort((a, b) => {
         const key = sortConfig.key;
         const valA = a[key] === undefined ? '' : a[key];
         const valB = b[key] === undefined ? '' : b[key];
@@ -156,15 +157,32 @@ const OutgoingPayments: React.FC = () => {
         return sortConfig.direction === 'ascending' ? comparison : -comparison;
       });
     }
-    return sortableItems;
-  }, [outgoingPayments, purchaseOrders, suppliers, sortConfig, startDateFilter, endDateFilter, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, categoryFilter]);
+    return finalFilteredPayments;
+  }, [outgoingPayments, startDateFilter, endDateFilter, categoryFilter, purchaseOrderMap, supplierMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t]);
 
-  // Apply pagination to the filtered and sorted payments
-  const paginatedPayments = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredAndSortedPayments.slice(startIndex, endIndex);
-  }, [filteredAndSortedPayments, currentPage, itemsPerPage]);
+  // Get all unique categories for the filter dropdown
+  const allUniqueCategories = useMemo(() => {
+    const categories = new Set<string>();
+    outgoingPayments.forEach(p => {
+      if (p.orderId === 0) {
+        // For manual payments, use the custom category name or 'Manual Expense' if none
+        const manualCategoryName = p.paymentCategory && p.paymentCategory !== 'manual' ? p.paymentCategory : t('manualExpense');
+        categories.add(manualCategoryName);
+      } else if (p.paymentCategory) {
+        let categoryText = '';
+        switch (p.paymentCategory) {
+          case 'products': categoryText = t('paymentForProducts'); break;
+          case 'transportationFees': categoryText = t('paymentForTransportationFees'); break;
+          case 'customFees': categoryText = t('paymentForCustomFees'); break;
+          case 'additionalFees': categoryText = t('paymentForAdditionalFees'); break;
+          default: categoryText = ''; break;
+        }
+        if (categoryText) categories.add(categoryText);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [outgoingPayments, t]);
+
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -199,28 +217,6 @@ const OutgoingPayments: React.FC = () => {
     }
     return '';
   };
-
-  // Get all unique categories for the filter dropdown
-  const allUniqueCategories = useMemo(() => {
-    const categories = new Set<string>();
-    outgoingPayments.forEach(p => {
-      if (p.orderId === 0 && p.paymentCategory && p.paymentCategory !== 'manual') {
-        categories.add(p.paymentCategory);
-      } else if (p.orderId !== 0 && p.paymentCategory) {
-        let categoryText = '';
-        switch (p.paymentCategory) {
-          case 'products': categoryText = t('paymentForProducts'); break;
-          case 'transportationFees': categoryText = t('paymentForTransportationFees'); break;
-          case 'customFees': categoryText = t('paymentForCustomFees'); break;
-          case 'additionalFees': categoryText = t('paymentForAdditionalFees'); break;
-          default: categoryText = ''; break;
-        }
-        if (categoryText) categories.add(categoryText);
-      }
-    });
-    return Array.from(categories).sort();
-  }, [outgoingPayments, t]);
-
 
   return (
     <div className="container mx-auto p-4">
@@ -308,8 +304,8 @@ const OutgoingPayments: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedPayments.length > 0 ? (
-              paginatedPayments.map(p => {
+            {filteredAndSortedPayments.length > 0 ? (
+              filteredAndSortedPayments.map(p => {
                 return (
                   <TableRow key={p.id} className={p.rowClass}>
                     <TableCell className="p-3 font-semibold">
