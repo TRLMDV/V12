@@ -42,7 +42,7 @@ const i18n = {
     productsToMove: 'Products to Move',
     saveMovement: 'Save Movement',
     editProductMovement: 'Edit Product Movement',
-    createProductMovement: 'Create ProductMovement',
+    createProductMovement: 'Create Product Movement',
     totalValue: 'Total Value',
     landedCostPerUnit: 'Landed Cost / Unit ({mainCurrency})',
     remaining: 'Remaining',

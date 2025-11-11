@@ -77,6 +77,8 @@ export interface SellOrder {
   total: number; // Total in Main Currency (incl. VAT)
   productMovementId?: number; // New field to link to a generated product movement
   incomingPaymentId?: number; // New field to link to a generated incoming payment
+  currency: Currency; // New: Currency of the sell order
+  exchangeRate?: number; // New: Exchange rate to AZN if not AZN
 }
 
 export interface PaymentCategorySetting {

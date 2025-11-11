@@ -9,7 +9,7 @@ import { ArrowRight, DollarSign } from 'lucide-react'; // Added DollarSign icon
 import { t } from '@/utils/i18n';
 import { useSellOrderForm } from '@/hooks/useSellOrderForm';
 import SellOrderItemsField from '@/components/SellOrderItemsField';
-import { Product, Customer, Warehouse } from '@/types'; // Import types from types file
+import { Product, Customer, Warehouse, Currency } from '@/types'; // Import types from types file
 
 interface SellOrderFormProps {
   orderId?: number;
@@ -27,6 +27,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     handleChange,
     handleNumericChange,
     handleSelectChange,
+    handleCurrencyChange, // New return value
+    handleExchangeRateChange, // New return value
     addOrderItem,
     removeOrderItem,
     handleOrderItemChange,
@@ -39,6 +41,10 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     productMap, // <--- Added productMap here
     totalVatAmount, // New return value
     totalCleanProfit, // New return value
+    selectedCurrency, // New return value
+    manualExchangeRateInput, // New return value
+    mainCurrency, // New return value
+    subtotalInOrderCurrency, // New return value
   } = useSellOrderForm({ orderId, onSuccess });
 
   return (
@@ -99,6 +105,38 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="currency" className="text-right">{t('orderCurrency')}</Label>
+          <Select onValueChange={handleCurrencyChange} value={selectedCurrency}>
+            <SelectTrigger className="col-span-3">
+              <SelectValue placeholder={mainCurrency} />
+            </SelectTrigger>
+            <SelectContent>
+              {settings.activeCurrencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {selectedCurrency !== 'AZN' && (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="exchangeRate" className="text-right">{t('exchangeRateToAZN')}</Label>
+            <div className="col-span-3">
+              <Input
+                id="exchangeRate"
+                type="text"
+                value={manualExchangeRateInput}
+                onChange={handleExchangeRateChange}
+                placeholder={t('exchangeRatePlaceholder')}
+                className="mb-1"
+                required
+              />
+              <p className="text-xs text-gray-500 dark:text-slate-400">{t('exchangeRateHelpText')}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="vatPercent" className="text-right">{t('vatPercent')}</Label>
           <Input
             id="vatPercent"
@@ -123,11 +161,22 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
         />
 
         <div className="grid grid-cols-4 items-center gap-4 mt-6 border-t pt-4 dark:border-slate-700">
+          <Label className="text-right text-md font-semibold">{t('productsSubtotal')}</Label>
+          <Input
+            id="productsSubtotal"
+            type="text"
+            value={`${subtotalInOrderCurrency.toFixed(2)} ${selectedCurrency}`}
+            readOnly
+            className="col-span-3 font-semibold bg-gray-50 dark:bg-slate-700"
+          />
+        </div>
+
+        <div className="grid grid-cols-4 items-center gap-4">
           <Label className="text-right text-md font-semibold">{t('totalVat')}</Label>
           <Input
             id="totalVat"
-            type="number"
-            value={totalVatAmount.toFixed(2)}
+            type="text"
+            value={`${totalVatAmount.toFixed(2)} ${mainCurrency}`}
             readOnly
             className="col-span-3 font-semibold bg-gray-50 dark:bg-slate-700"
           />
@@ -137,8 +186,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           <Label className="text-right text-md font-semibold">{t('totalCleanProfit')}</Label>
           <Input
             id="totalCleanProfit"
-            type="number"
-            value={totalCleanProfit.toFixed(2)}
+            type="text"
+            value={`${totalCleanProfit.toFixed(2)} ${mainCurrency}`}
             readOnly
             className="col-span-3 font-semibold bg-gray-50 dark:bg-slate-700"
           />
@@ -148,8 +197,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           <Label className="text-right text-lg font-bold">{t('total')}</Label>
           <Input
             id="total"
-            type="number"
-            value={order.total?.toFixed(2) || '0.00'}
+            type="text"
+            value={`${order.total?.toFixed(2) || '0.00'} ${mainCurrency}`}
             readOnly
             className="col-span-3 font-bold text-lg bg-gray-50 dark:bg-slate-700"
           />

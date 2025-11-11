@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { toast } from 'sonner';
-import { SellOrder, Product, Customer, Warehouse, OrderItem, ProductMovement, Payment } from '@/types'; // Import types from types file
+import { SellOrder, Product, Customer, Warehouse, OrderItem, ProductMovement, Payment, Currency } from '@/types'; // Import types from types file
 
 interface SellOrderItemState {
   productId: number | '';
@@ -33,9 +33,12 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     setProducts,
     getNextId,
     incomingPayments, // Added to check for existing payments
+    currencyRates, // Added currencyRates
+    convertCurrency, // Added convertCurrency utility
   } = useData();
 
   const isEdit = orderId !== undefined;
+  const mainCurrency = settings.mainCurrency;
 
   const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c }), {} as { [key: number]: Customer }), [customers]);
   const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]);
@@ -53,6 +56,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       status: 'Draft',
       vatPercent: settings.defaultVat,
       total: 0,
+      currency: mainCurrency, // Default to main currency
     };
   });
 
@@ -70,6 +74,10 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     return [{ productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined }]; // Initialize itemTotal as string
   });
 
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(mainCurrency);
+  const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
+  const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>('');
+
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
   useEffect(() => {
@@ -84,6 +92,9 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
           itemTotal: String(item.qty * item.price),
           landedCost: productMap[item.productId]?.averageLandedCost, // Populate landed cost
         })));
+        setSelectedCurrency(existingOrder.currency);
+        setManualExchangeRate(existingOrder.exchangeRate);
+        setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? String(existingOrder.exchangeRate) : '');
         setIsFormInitialized(true);
       }
     } else if (!isEdit && !isFormInitialized) {
@@ -93,11 +104,15 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
         status: 'Draft',
         vatPercent: settings.defaultVat,
         total: 0,
+        currency: mainCurrency, // Default to main currency
       });
       setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined }]);
+      setSelectedCurrency(mainCurrency);
+      setManualExchangeRate(undefined);
+      setManualExchangeRateInput('');
       setIsFormInitialized(true);
     }
-  }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized, productMap]); // Added productMap to dependencies
+  }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized, productMap, mainCurrency]);
 
   // Effect to set default warehouse when customer changes
   useEffect(() => {
@@ -113,10 +128,23 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     }
   }, [order.contactId, customerMap, order.warehouseId, warehouses]);
 
+  const currentExchangeRateToAZN = useMemo(() => {
+    if (selectedCurrency === 'AZN') return 1;
+    return manualExchangeRate !== undefined ? manualExchangeRate : currencyRates[selectedCurrency];
+  }, [selectedCurrency, manualExchangeRate, currencyRates]);
+
+  const currentExchangeRateToMainCurrency = useMemo(() => {
+    if (selectedCurrency === mainCurrency) return 1;
+    // Convert selectedCurrency to AZN, then AZN to mainCurrency
+    const rateSelectedToAZN = currentExchangeRateToAZN;
+    const rateAZNToMain = 1 / (currencyRates[mainCurrency] || 1); // Rate of 1 AZN to mainCurrency
+    return rateSelectedToAZN * rateAZNToMain;
+  }, [selectedCurrency, mainCurrency, currentExchangeRateToAZN, currencyRates]);
+
 
   const calculateOrderFinancials = useCallback(() => {
-    let subtotal = 0;
-    let totalCleanProfit = 0;
+    let subtotalInOrderCurrency = 0;
+    let totalCleanProfitInMainCurrency = 0;
     const updatedOrderItemsWithProfit: SellOrderItemState[] = [];
 
     orderItems.forEach(item => {
@@ -127,34 +155,46 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       let itemCleanProfit = 0;
 
       if (item.productId && qtyNum > 0 && priceNum > 0) {
-        subtotal += itemTotalNum;
+        subtotalInOrderCurrency += itemTotalNum;
         const product = productMap[item.productId as number];
         if (product) {
-          itemCleanProfit = (priceNum - (product.averageLandedCost || 0)) * qtyNum;
+          // Convert item price from order currency to main currency for profit calculation
+          const itemPriceInMainCurrency = convertCurrency(priceNum, selectedCurrency, mainCurrency);
+          itemCleanProfit = (itemPriceInMainCurrency - (product.averageLandedCost || 0)) * qtyNum;
         }
       }
       updatedOrderItemsWithProfit.push({ ...item, cleanProfit: itemCleanProfit });
-      totalCleanProfit += itemCleanProfit;
+      totalCleanProfitInMainCurrency += itemCleanProfit;
     });
 
-    const vatAmount = subtotal * ((order.vatPercent || 0) / 100);
-    const totalWithVat = parseFloat((subtotal + vatAmount).toFixed(2));
+    // Convert subtotal from order currency to main currency before applying VAT
+    const subtotalInMainCurrency = convertCurrency(subtotalInOrderCurrency, selectedCurrency, mainCurrency);
+    const vatAmountInMainCurrency = subtotalInMainCurrency * ((order.vatPercent || 0) / 100);
+    const totalWithVatInMainCurrency = parseFloat((subtotalInMainCurrency + vatAmountInMainCurrency).toFixed(2));
 
     return {
-      subtotal,
-      totalVatAmount: parseFloat(vatAmount.toFixed(2)),
-      totalWithVat,
-      totalCleanProfit: parseFloat(totalCleanProfit.toFixed(2)),
+      subtotalInOrderCurrency,
+      subtotalInMainCurrency,
+      totalVatAmountInMainCurrency: parseFloat(vatAmountInMainCurrency.toFixed(2)),
+      totalWithVatInMainCurrency,
+      totalCleanProfitInMainCurrency: parseFloat(totalCleanProfitInMainCurrency.toFixed(2)),
       updatedOrderItemsWithProfit,
     };
-  }, [orderItems, order.vatPercent, productMap]);
+  }, [orderItems, order.vatPercent, productMap, selectedCurrency, mainCurrency, convertCurrency]);
 
-  const { subtotal, totalVatAmount, totalWithVat, totalCleanProfit, updatedOrderItemsWithProfit } = calculateOrderFinancials();
+  const {
+    subtotalInOrderCurrency,
+    subtotalInMainCurrency,
+    totalVatAmountInMainCurrency,
+    totalWithVatInMainCurrency,
+    totalCleanProfitInMainCurrency,
+    updatedOrderItemsWithProfit
+  } = calculateOrderFinancials();
 
   useEffect(() => {
-    setOrder(prev => ({ ...prev, total: totalWithVat }));
+    setOrder(prev => ({ ...prev, total: totalWithVatInMainCurrency }));
     setOrderItems(updatedOrderItemsWithProfit); // Update order items with calculated clean profit
-  }, [totalWithVat, updatedOrderItemsWithProfit]);
+  }, [totalWithVatInMainCurrency, updatedOrderItemsWithProfit]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -167,6 +207,28 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
 
   const handleSelectChange = useCallback((id: keyof SellOrder, value: string) => {
     setOrder(prev => ({ ...prev, [id]: value }));
+  }, []);
+
+  const handleCurrencyChange = useCallback((value: Currency) => {
+    setSelectedCurrency(value);
+    setOrder(prev => ({ ...prev, currency: value }));
+    if (value === 'AZN') {
+      setManualExchangeRate(undefined);
+      setManualExchangeRateInput('');
+    } else {
+      const defaultRate = currencyRates[value];
+      setManualExchangeRate(defaultRate);
+      setManualExchangeRateInput(String(defaultRate));
+    }
+  }, [currencyRates]);
+
+  const handleExchangeRateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    if (inputValue === '' || /^-?\d*\.?\d*$/.test(inputValue)) {
+      setManualExchangeRateInput(inputValue);
+      const parsedValue = parseFloat(inputValue);
+      setManualExchangeRate(isNaN(parsedValue) ? undefined : parsedValue);
+    }
   }, []);
 
   const addOrderItem = useCallback(() => {
@@ -226,6 +288,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       })),
       vatPercent: order.vatPercent || 0,
       total: order.total || 0,
+      currency: selectedCurrency,
+      exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRateToAZN,
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -311,7 +375,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
 
     toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[orderToSave.warehouseId as number]?.name}.` });
 
-  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders]);
+  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN]);
 
   const handleGenerateIncomingPayment = useCallback(() => {
     const orderToSave: SellOrder = {
@@ -328,6 +392,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       })),
       vatPercent: order.vatPercent || 0,
       total: order.total || 0,
+      currency: selectedCurrency,
+      exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRateToAZN,
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -370,8 +436,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       orderId: orderToSave.id as number,
       paymentCategory: 'products',
       date: orderToSave.orderDate,
-      amount: orderToSave.total,
-      paymentCurrency: 'AZN', // Sell orders are always in AZN
+      amount: orderToSave.total, // Amount is in mainCurrency
+      paymentCurrency: mainCurrency, // Payment currency is mainCurrency
       method: t('autoGenerated'), // Default method
     };
 
@@ -385,7 +451,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
 
     toast.success(t('success'), { description: `${t('incomingPayment')} #${newPaymentId} ${t('generatedSuccessfully')}.` });
 
-  }, [order, orderItems, showAlertModal, getNextId, saveItem, incomingPayments, sellOrders]);
+  }, [order, orderItems, showAlertModal, getNextId, saveItem, incomingPayments, sellOrders, selectedCurrency, currentExchangeRateToAZN, mainCurrency]);
 
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -399,6 +465,11 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.qty)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
       showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
+      return;
+    }
+
+    if (selectedCurrency !== 'AZN' && (!manualExchangeRate || manualExchangeRate <= 0)) {
+      showAlertModal('Validation Error', 'Please enter a valid exchange rate for the selected currency.');
       return;
     }
 
@@ -456,6 +527,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
       items: finalOrderItems,
       vatPercent: order.vatPercent || 0,
       total: order.total || 0,
+      currency: selectedCurrency,
+      exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRateToAZN,
     };
 
     const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
@@ -464,7 +537,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     updateStockFromOrder(orderToSave, oldOrder);
     onSuccess();
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
-  }, [order, orderItems, products, isEdit, orderId, sellOrders, showAlertModal, productMap, getNextId, saveItem, updateStockFromOrder, onSuccess]);
+  }, [order, orderItems, products, isEdit, orderId, sellOrders, showAlertModal, productMap, getNextId, saveItem, updateStockFromOrder, onSuccess, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN]);
 
   const isGenerateMovementDisabled = !!order.productMovementId;
   const isGeneratePaymentDisabled = !!order.incomingPaymentId || (order.total || 0) <= 0;
@@ -484,6 +557,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     handleChange,
     handleNumericChange,
     handleSelectChange,
+    handleCurrencyChange, // New return value
+    handleExchangeRateChange, // New return value
     addOrderItem,
     removeOrderItem,
     handleOrderItemChange,
@@ -494,7 +569,12 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     products,
     customers,
     warehouses,
-    totalVatAmount, // New return value
-    totalCleanProfit, // New return value
+    totalVatAmount: totalVatAmountInMainCurrency, // New return value
+    totalCleanProfit: totalCleanProfitInMainCurrency, // New return value
+    selectedCurrency, // New return value
+    manualExchangeRateInput, // New return value
+    mainCurrency, // New return value
+    currentExchangeRateToMainCurrency, // New return value
+    subtotalInOrderCurrency, // New return value
   };
 };
