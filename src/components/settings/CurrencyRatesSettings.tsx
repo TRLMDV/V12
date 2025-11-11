@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ChevronDown, ChevronUp } from 'lucide-react'; // Import Chevron icons
 import { toast } from 'sonner';
 import { CurrencyRates, Currency } from '@/types';
 
@@ -21,6 +22,7 @@ const CurrencyRatesSettings: React.FC<CurrencyRatesSettingsProps> = ({
   activeCurrencies,
 }) => {
   const [rates, setRates] = useState<CurrencyRates>(currencyRates);
+  const [isRatesListOpen, setIsRatesListOpen] = useState(false); // New state for collapsible rates
 
   useEffect(() => {
     setRates(currencyRates);
@@ -43,31 +45,44 @@ const CurrencyRatesSettings: React.FC<CurrencyRatesSettingsProps> = ({
 
     setCurrencyRates(prev => ({ ...prev, ...newRates }));
     toast.success(t('success'), { description: t('ratesUpdated') });
+    setIsRatesListOpen(false); // Collapse the list after saving
   };
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
-      <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('currencyRatesSettings')}</h2>
+      <button
+        type="button"
+        onClick={() => setIsRatesListOpen(!isRatesListOpen)}
+        className="flex justify-between items-center w-full text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4 focus:outline-none"
+      >
+        {t('currencyRatesSettings')}
+        {isRatesListOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+      </button>
       <p className="text-gray-600 dark:text-slate-400 mb-4">{t('currencyRatesDescription')}</p>
-      <div className="grid gap-4 py-4">
-        {activeCurrencies.filter(c => c !== 'AZN').map(c => (
-          <div key={c} className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor={`${c}-to-azn`} className="text-right">{c} {t('toAzn')}</Label>
-            <Input
-              id={`${c}-to-azn`}
-              type="number"
-              step="0.0001"
-              value={rates[c]}
-              onChange={(e) => setRates(prev => ({ ...prev, [c]: parseFloat(e.target.value) || 0 }))}
-              className="col-span-3"
-              min="0.0001"
-            />
+
+      {isRatesListOpen && (
+        <>
+          <div className="grid gap-4 py-4">
+            {activeCurrencies.filter(c => c !== 'AZN').map(c => (
+              <div key={c} className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor={`${c}-to-azn`} className="text-right">{c} {t('toAzn')}</Label>
+                <Input
+                  id={`${c}-to-azn`}
+                  type="number"
+                  step="0.0001"
+                  value={rates[c]}
+                  onChange={(e) => setRates(prev => ({ ...prev, [c]: parseFloat(e.target.value) || 0 }))}
+                  className="col-span-3"
+                  min="0.0001"
+                />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div className="flex justify-end">
-        <Button onClick={handleSaveCurrencyRates}>{t('saveCurrencyRates')}</Button>
-      </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSaveCurrencyRates}>{t('saveCurrencyRates')}</Button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

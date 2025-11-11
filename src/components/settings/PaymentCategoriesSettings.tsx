@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react'; // Import Chevron icons
 import { toast } from 'sonner';
 import FormModal from '@/components/FormModal';
 import PaymentCategoryForm from '@/forms/PaymentCategoryForm';
@@ -28,6 +28,7 @@ const PaymentCategoriesSettings: React.FC<PaymentCategoriesSettingsProps> = ({
 }) => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<PaymentCategorySetting | undefined>(undefined);
+  const [isCategoriesListOpen, setIsCategoriesListOpen] = useState(false); // New state for collapsible categories
 
   const handleAddCategory = () => {
     setEditingCategory(undefined);
@@ -76,46 +77,58 @@ const PaymentCategoriesSettings: React.FC<PaymentCategoriesSettingsProps> = ({
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('paymentCategories')}</h2>
-        <Button onClick={handleAddCategory}>
-          <PlusCircle className="w-4 h-4 mr-2" />
-          {t('addCategory')}
-        </Button>
-      </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-100 dark:bg-slate-700">
-              <TableHead className="p-3">{t('categoryName')}</TableHead>
-              <TableHead className="p-3 text-right">{t('actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {(settings.paymentCategories || []).length > 0 ? (
-              (settings.paymentCategories || []).map(category => (
-                <TableRow key={category.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                  <TableCell className="p-3">{category.name}</TableCell>
-                  <TableCell className="p-3 text-right">
-                    <Button variant="link" onClick={() => handleEditCategory(category)} className="mr-2 p-0 h-auto">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="link" onClick={() => handleDeleteCategory(category.id)} className="text-red-500 p-0 h-auto">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
+      <button
+        type="button"
+        onClick={() => setIsCategoriesListOpen(!isCategoriesListOpen)}
+        className="flex justify-between items-center w-full text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4 focus:outline-none"
+      >
+        {t('paymentCategories')}
+        {isCategoriesListOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+      </button>
+
+      {isCategoriesListOpen && (
+        <>
+          <div className="flex justify-end mb-4">
+            <Button onClick={handleAddCategory}>
+              <PlusCircle className="w-4 h-4 mr-2" />
+              {t('addCategory')}
+            </Button>
+          </div>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-100 dark:bg-slate-700">
+                  <TableHead className="p-3">{t('categoryName')}</TableHead>
+                  <TableHead className="p-3 text-right">{t('actions')}</TableHead>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={2} className="p-4 text-center text-gray-500 dark:text-slate-400">
-                  {t('noPaymentCategoriesFound')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {(settings.paymentCategories || []).length > 0 ? (
+                  (settings.paymentCategories || []).map(category => (
+                    <TableRow key={category.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                      <TableCell className="p-3">{category.name}</TableCell>
+                      <TableCell className="p-3 text-right">
+                        <Button variant="link" onClick={() => handleEditCategory(category)} className="mr-2 p-0 h-auto">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="link" onClick={() => handleDeleteCategory(category.id)} className="text-red-500 p-0 h-auto">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                      {t('noPaymentCategoriesFound')}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
 
       <FormModal
         isOpen={isCategoryModalOpen}
