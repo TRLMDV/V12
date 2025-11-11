@@ -3,7 +3,8 @@
 import React, { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useData } from '@/context/DataContext';
-import { MadeWithDyad } from '@/components/made-with-dyad';
+// Removed MadeWithDyad import
+// import { MadeWithDyad } from '@/components/made-with-dyad';
 import { Settings } from '@/types'; // Import types from types file
 
 interface MainLayoutProps {
@@ -45,7 +46,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <Sidebar />
       <div id="main-content" className="ml-64 p-8 flex-grow overflow-y-auto h-screen"> {/* Added h-screen and overflow-y-auto */}
         {children}
-        <MadeWithDyad />
+        {/* Removed MadeWithDyad component */}
       </div>
     </div>
   );
