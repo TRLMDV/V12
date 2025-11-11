@@ -15,7 +15,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PlusCircle, Edit, Trash2 } from 'lucide-react'; // Import icons
 import FormModal from '@/components/FormModal'; // Import FormModal
 import PaymentCategoryForm from '@/forms/PaymentCategoryForm'; // Import new form
-import { Settings, CurrencyRates, Product, Customer, PaymentCategorySetting } from '@/types'; // Import types from types file
+import { Settings, CurrencyRates, Product, Customer, PaymentCategorySetting, Currency } from '@/types'; // Import types from types file
+
+const ALL_CURRENCIES: Currency[] = [
+  'AZN', 'USD', 'EUR', 'RUB', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'CNY', 'KWD', 'BHD', 'OMR', 'JOD', 'GIP', 'KYD', 'KRW', 'SGD', 'INR', 'MXN', 'SEK', 'THB'
+];
 
 const SettingsPage: React.FC = () => {
   const { settings, setSettings, currencyRates, setCurrencyRates, showConfirmationModal, getNextId, setNextIdForCollection } = useData();
@@ -26,10 +30,10 @@ const SettingsPage: React.FC = () => {
   const [defaultVat, setDefaultVat] = useState(settings.defaultVat);
   const [defaultMarkup, setDefaultMarkup] = useState(settings.defaultMarkup);
   const [displayScale, setDisplayScale] = useState(settings.displayScale); // New state for display scale
+  const [mainCurrency, setMainCurrency] = useState<Currency>(settings.mainCurrency); // New state for main currency
 
-  const [usdRate, setUsdRate] = useState(currencyRates.USD);
-  const [eurRate, setEurRate] = useState(currencyRates.EUR);
-  const [rubRate, setRubRate] = useState(currencyRates.RUB);
+  // States for all currency rates
+  const [rates, setRates] = useState<CurrencyRates>(currencyRates);
 
   // States for Payment Categories
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -45,10 +49,9 @@ const SettingsPage: React.FC = () => {
     setTheme(settings.theme);
     setDefaultVat(settings.defaultVat);
     setDefaultMarkup(settings.defaultMarkup);
-    setDisplayScale(settings.displayScale); // Initialize display scale
-    setUsdRate(currencyRates.USD);
-    setEurRate(currencyRates.EUR);
-    setRubRate(currencyRates.RUB);
+    setDisplayScale(settings.displayScale);
+    setMainCurrency(settings.mainCurrency); // Initialize main currency
+    setRates(currencyRates); // Initialize all rates
   }, [settings, currencyRates]);
 
   const handleSaveCompanyDetails = () => {
@@ -57,11 +60,12 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleSaveCurrencyRates = () => {
-    if (isNaN(usdRate) || isNaN(eurRate) || isNaN(rubRate) || usdRate <= 0 || eurRate <= 0 || rubRate <= 0) {
-      toast.error(t('invalidRates'), { description: 'Please enter valid positive numbers for currency rates.' });
+    const invalidRates = ALL_CURRENCIES.filter(c => c !== 'AZN' && (isNaN(rates[c]) || rates[c] <= 0));
+    if (invalidRates.length > 0) {
+      toast.error(t('invalidRates'), { description: `Please enter valid positive numbers for: ${invalidRates.join(', ')}` });
       return;
     }
-    setCurrencyRates({ ...currencyRates, USD: usdRate, EUR: eurRate, RUB: rubRate });
+    setCurrencyRates(prev => ({ ...prev, ...rates, AZN: 1.00 })); // Ensure AZN is always 1.00
     toast.success(t('success'), { description: t('ratesUpdated') });
   };
 
@@ -90,6 +94,11 @@ const SettingsPage: React.FC = () => {
     }
     setSettings(prev => ({ ...prev, displayScale }));
     toast.success(t('success'), { description: t('displayScaleUpdated') });
+  };
+
+  const handleSaveMainCurrency = () => {
+    setSettings(prev => ({ ...prev, mainCurrency }));
+    toast.success(t('success'), { description: t('mainCurrencyUpdated') });
   };
 
   const handleThemeChange = (value: 'light' | 'dark') => {
@@ -317,46 +326,46 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Main Currency Selection */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('mainCurrencySettings')}</h2>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="mainCurrency-select" className="text-right">{t('mainCurrency')}</Label>
+          <Select onValueChange={(value: Currency) => setMainCurrency(value)} value={mainCurrency}>
+            <SelectTrigger id="mainCurrency-select" className="col-span-3">
+              <SelectValue placeholder="AZN" />
+            </SelectTrigger>
+            <SelectContent>
+              {ALL_CURRENCIES.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex justify-end mt-4">
+          <Button onClick={handleSaveMainCurrency}>{t('saveMainCurrency')}</Button>
+        </div>
+      </div>
+
       {/* Currency Rates */}
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('currencyRatesSettings')}</h2>
+        <p className="text-gray-600 dark:text-slate-400 mb-4">{t('currencyRatesDescription')}</p>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="usdToAzn" className="text-right">{t('usdToAzn')}</Label>
-            <Input
-              id="usdToAzn"
-              type="number"
-              step="0.0001"
-              value={usdRate}
-              onChange={(e) => setUsdRate(parseFloat(e.target.value) || 0)}
-              className="col-span-3"
-              min="0.0001"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="eurToAzn" className="text-right">{t('eurToAzn')}</Label>
-            <Input
-              id="eurToAzn"
-              type="number"
-              step="0.0001"
-              value={eurRate}
-              onChange={(e) => setEurRate(parseFloat(e.target.value) || 0)}
-              className="col-span-3"
-              min="0.0001"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="rubToAzn" className="text-right">{t('rubToAzn')}</Label>
-            <Input
-              id="rubToAzn"
-              type="number"
-              step="0.0001"
-              value={rubRate}
-              onChange={(e) => setRubRate(parseFloat(e.target.value) || 0)}
-              className="col-span-3"
-              min="0.0001"
-            />
-          </div>
+          {ALL_CURRENCIES.filter(c => c !== 'AZN').map(c => (
+            <div key={c} className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor={`${c}-to-azn`} className="text-right">{c} {t('toAzn')}</Label>
+              <Input
+                id={`${c}-to-azn`}
+                type="number"
+                step="0.0001"
+                value={rates[c]}
+                onChange={(e) => setRates(prev => ({ ...prev, [c]: parseFloat(e.target.value) || 0 }))}
+                className="col-span-3"
+                min="0.0001"
+              />
+            </div>
+          ))}
         </div>
         <div className="flex justify-end">
           <Button onClick={handleSaveCurrencyRates}>{t('saveCurrencyRates')}</Button>

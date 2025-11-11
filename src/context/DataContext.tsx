@@ -13,7 +13,7 @@ import { useCrudOperations } from '@/hooks/useCrudOperations';
 // Import all data types from the new types file
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -32,7 +32,12 @@ export const initialData = {
   productMovements: [] as ProductMovement[],
 };
 
-const defaultCurrencyRates: CurrencyRates = { 'USD': 1.70, 'EUR': 2.00, 'RUB': 0.019, 'AZN': 1.00 };
+const defaultCurrencyRates: CurrencyRates = {
+  'USD': 1.70, 'EUR': 2.00, 'RUB': 0.019, 'AZN': 1.00,
+  'JPY': 0.011, 'GBP': 2.15, 'AUD': 1.10, 'CAD': 1.25, 'CHF': 1.85, 'CNY': 0.24,
+  'KWD': 5.50, 'BHD': 4.50, 'OMR': 4.40, 'JOD': 2.40, 'GIP': 2.15, 'KYD': 2.05,
+  'KRW': 0.0013, 'SGD': 1.28, 'INR': 0.020, 'MXN': 0.095, 'SEK': 0.18, 'THB': 0.048,
+};
 
 const initialSettings: Settings = {
   companyName: '',
@@ -52,6 +57,7 @@ const initialSettings: Settings = {
     { id: 7, name: 'Maintenance' },
     { id: 8, name: 'Software Subscriptions' },
   ],
+  mainCurrency: 'AZN', // New: Default main currency
 };
 
 // --- Context Definition ---

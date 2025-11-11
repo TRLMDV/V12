@@ -38,11 +38,13 @@ export interface Warehouse {
   type: 'Main' | 'Secondary'; // Added type field
 }
 
+export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB';
+
 export interface OrderItem {
   productId: number;
   qty: number;
   price: number;
-  currency?: string; // For PO items
+  currency?: Currency; // For PO items
   landedCostPerUnit?: number; // For PO items (in AZN)
 }
 
@@ -53,14 +55,14 @@ export interface PurchaseOrder {
   warehouseId: number;
   status: 'Draft' | 'Ordered' | 'Received';
   items: OrderItem[];
-  currency: 'AZN' | 'USD' | 'EUR' | 'RUB';
+  currency: Currency;
   exchangeRate?: number; // Manual rate if entered
   transportationFees: number;
-  transportationFeesCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB';
+  transportationFeesCurrency: Currency;
   customFees: number;
-  customFeesCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB';
+  customFeesCurrency: Currency;
   additionalFees: number;
-  additionalFeesCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB';
+  additionalFeesCurrency: Currency;
   total: number; // Total Landed Cost in AZN
 }
 
@@ -72,7 +74,7 @@ export interface SellOrder {
   status: 'Draft' | 'Confirmed' | 'Shipped';
   items: OrderItem[];
   vatPercent: number;
-  total: number; // Total in AZN (incl. VAT)
+  total: number; // Total in Main Currency (incl. VAT)
   productMovementId?: number; // New field to link to a generated product movement
   incomingPaymentId?: number; // New field to link to a generated incoming payment
 }
@@ -89,24 +91,34 @@ export interface Payment {
   manualDescription?: string; // For manual expenses
   date: string;
   amount: number; // Amount in paymentCurrency
-  paymentCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB'; // New: Currency of the payment
+  paymentCurrency: Currency; // New: Currency of the payment
   paymentExchangeRate?: number; // New: Exchange rate to AZN if not AZN
   method: string;
-}
-
-export interface ProductMovement {
-  id: number;
-  sourceWarehouseId: number;
-  destWarehouseId: number;
-  items: { productId: number; quantity: number }[];
-  date: string;
 }
 
 export interface CurrencyRates {
   USD: number;
   EUR: number;
   RUB: number;
-  AZN: number;
+  JPY: number;
+  GBP: number;
+  AUD: number;
+  CAD: number;
+  CHF: number;
+  CNY: number;
+  KWD: number;
+  BHD: number;
+  OMR: number;
+  JOD: number;
+  GIP: number;
+  KYD: number;
+  KRW: number;
+  SGD: number;
+  INR: number;
+  MXN: number;
+  SEK: number;
+  THB: number;
+  AZN: number; // AZN is always 1.00, but included for consistency
 }
 
 export interface Settings {
@@ -118,6 +130,7 @@ export interface Settings {
   currencyRates: CurrencyRates;
   displayScale: number; // New: Program display scaling percentage
   paymentCategories: PaymentCategorySetting[]; // New: Custom payment categories
+  mainCurrency: Currency; // New: Main currency for the application
 }
 
 // --- Recycle Bin Types ---
