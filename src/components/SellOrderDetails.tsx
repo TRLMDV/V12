@@ -4,7 +4,8 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportButton';
 import { t } from '@/utils/i18n';
-import { SellOrder, Product, Customer, Warehouse, CurrencyRates } from '@/types';
+import { SellOrder, Product, Customer, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
+import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
 interface SellOrderDetailsProps {
   order: SellOrder;
@@ -21,6 +22,8 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
   productMap,
   currencyRates,
 }) => {
+  const { packingUnitMap } = useData(); // Access packingUnitMap
+
   return (
     <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
       <p><strong>{t('customer')}:</strong> {customerMap[order.contactId]?.name || 'N/A'}</p>
@@ -33,7 +36,7 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
         <TableHeader>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
             <TableHead className="p-2">{t('product')}</TableHead>
-            <TableHead className="p-2">{t('qty')}</TableHead>
+            <TableHead className="p-2">{t('qty')}</TableHead> {/* Now displays packing quantity */}
             <TableHead className="p-2">{t('price')}</TableHead>
             <TableHead className="p-2">{t('totalValue')}</TableHead>
           </TableRow>
@@ -42,10 +45,15 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
           {order.items?.map((item, index) => {
             const product = productMap[item.productId];
             const itemTotal = item.price * item.qty;
+            const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
+            const displayQty = packingUnit && item.packingQuantity !== undefined
+              ? `${item.packingQuantity} ${packingUnit.name}`
+              : `${item.qty} ${t('piece')}`; // Fallback to base unit
+
             return (
               <TableRow key={index} className="border-b dark:border-slate-600">
                 <TableCell className="p-2">{product?.name || 'N/A'}</TableCell>
-                <TableCell className="p-2">{item.qty}</TableCell>
+                <TableCell className="p-2">{displayQty}</TableCell>
                 <TableCell className="p-2">{item.price?.toFixed(2)} AZN</TableCell>
                 <TableCell className="p-2">{itemTotal.toFixed(2)} AZN</TableCell>
               </TableRow>

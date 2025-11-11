@@ -21,8 +21,12 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
   const {
     order,
     orderItems,
-    customerMap,
-    warehouseMap,
+    customers,
+    warehouses,
+    products,
+    productMap,
+    packingUnits, // New: packingUnits
+    packingUnitMap, // New: packingUnitMap
     isGenerateMovementDisabled,
     isGeneratePaymentDisabled,
     handleChange,
@@ -36,7 +40,6 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     handleGenerateProductMovement,
     handleGenerateIncomingPayment,
     handleSubmit,
-    productMap,
     totalVatAmount,
     totalCleanProfit,
     selectedCurrency,
@@ -45,9 +48,6 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     subtotalInOrderCurrency,
     activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
-
-  // Get customers, products, and warehouses directly from useData
-  const { customers, products, warehouses } = useData();
 
   return (
     <form onSubmit={handleSubmit}>
@@ -159,6 +159,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           addOrderItem={addOrderItem}
           products={products}
           productMap={productMap}
+          packingUnits={packingUnits} // Pass packingUnits
+          packingUnitMap={packingUnitMap} // Pass packingUnitMap
           warehouseId={order.warehouseId as number}
         />
 

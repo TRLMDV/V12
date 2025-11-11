@@ -2,15 +2,17 @@
 
 import { useCallback } from 'react';
 import { useData } from '@/context/DataContext';
-import { SellOrder, Product, Currency } from '@/types';
+import { SellOrder, Product, Currency, PackingUnit } from '@/types';
 
 interface SellOrderItemState {
   productId: number | '';
-  qty: number | string;
+  qty: number | string; // This will be the quantity in base units
   price: number | string;
   itemTotal: number | string;
   cleanProfit?: number;
   landedCost?: number;
+  packingUnitId?: number; // New: ID of the selected packing unit
+  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
 }
 
 interface UseSellOrderHandlersProps {
@@ -20,6 +22,7 @@ interface UseSellOrderHandlersProps {
   setManualExchangeRate: React.Dispatch<React.SetStateAction<number | undefined>>;
   setManualExchangeRateInput: React.Dispatch<React.SetStateAction<string>>;
   productMap: { [key: number]: Product };
+  packingUnitMap: { [key: number]: PackingUnit }; // New: Pass packingUnitMap
 }
 
 export const useSellOrderHandlers = ({
@@ -29,6 +32,7 @@ export const useSellOrderHandlers = ({
   setManualExchangeRate,
   setManualExchangeRateInput,
   productMap,
+  packingUnitMap, // Destructure new prop
 }: UseSellOrderHandlersProps) => {
   const { currencyRates } = useData();
 
@@ -68,7 +72,7 @@ export const useSellOrderHandlers = ({
   }, [setManualExchangeRate, setManualExchangeRateInput]);
 
   const addOrderItem = useCallback(() => {
-    setOrderItems(prev => [...prev, { productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined }]);
+    setOrderItems(prev => [...prev, { productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined, packingUnitId: undefined, packingQuantity: '' }]);
   }, [setOrderItems]);
 
   const removeOrderItem = useCallback((index: number) => {
@@ -84,16 +88,29 @@ export const useSellOrderHandlers = ({
         item.productId = value;
         const selectedProduct = productMap[value as number];
         item.landedCost = selectedProduct?.averageLandedCost;
-      } else if (field === 'qty') {
-        item.qty = value;
-        const qtyNum = parseFloat(value) || 0;
-        const priceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = String(qtyNum * priceNum);
+        // Set default packing unit if product has one
+        item.packingUnitId = selectedProduct?.defaultPackingUnitId;
+      } else if (field === 'packingUnitId') {
+        item.packingUnitId = value === 'none-selected' ? undefined : parseInt(value);
+        // Recalculate base qty if packing quantity exists
+        const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
+        const selectedPackingUnit = packingUnitMap[item.packingUnitId as number];
+        if (selectedPackingUnit && packingQtyNum > 0) {
+          item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
+        } else {
+          item.qty = ''; // Clear base qty if no valid packing unit or quantity
+        }
+      } else if (field === 'packingQuantity') {
+        item.packingQuantity = value;
+        const packingQtyNum = parseFloat(value) || 0;
+        const selectedPackingUnit = packingUnitMap[item.packingUnitId as number];
+        if (selectedPackingUnit && packingQtyNum > 0) {
+          item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
+        } else {
+          item.qty = ''; // Clear base qty if no valid packing unit or quantity
+        }
       } else if (field === 'price') {
         item.price = value;
-        const qtyNum = parseFloat(String(item.qty)) || 0;
-        const priceNum = parseFloat(value) || 0;
-        item.itemTotal = String(qtyNum * priceNum);
       } else if (field === 'itemTotal') {
         item.itemTotal = value;
         const qtyNum = parseFloat(String(item.qty)) || 0;
@@ -104,10 +121,16 @@ export const useSellOrderHandlers = ({
           item.price = '0';
         }
       }
+      
+      // Recalculate itemTotal based on base qty and price
+      const finalQtyNum = parseFloat(String(item.qty)) || 0;
+      const finalPriceNum = parseFloat(String(item.price)) || 0;
+      item.itemTotal = String(finalQtyNum * finalPriceNum);
+
       newItems[index] = item;
       return newItems;
     });
-  }, [setOrderItems, productMap]);
+  }, [setOrderItems, productMap, packingUnitMap]);
 
   return {
     handleChange,

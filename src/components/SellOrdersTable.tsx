@@ -4,7 +4,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { t } from '@/utils/i18n';
-import { SellOrder, Customer, Warehouse } from '@/types';
+import { SellOrder, Customer, Warehouse, PackingUnit } from '@/types'; // Import PackingUnit
+import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
 interface SellOrdersTableProps {
   orders: (SellOrder & {
@@ -33,8 +34,21 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
   handleSortClick,
   getSortIndicator,
 }) => {
+  const { packingUnitMap } = useData(); // Access packingUnitMap
+
   const totalSumExclVat = orders.reduce((sum, order) => sum + order.totalExclVat, 0);
   const totalSumInclVat = orders.reduce((sum, order) => sum + order.totalInclVat, 0);
+
+  const formatOrderItemsForDisplay = (items: SellOrder['items']) => {
+    if (!items || items.length === 0) return t('noItemsFound');
+    return items.map(item => {
+      const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
+      const displayQty = packingUnit && item.packingQuantity !== undefined
+        ? `${item.packingQuantity} ${packingUnit.name}`
+        : `${item.qty} ${t('piece')}`; // Fallback to base unit
+      return `${displayQty}`;
+    }).join(', ');
+  };
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto">

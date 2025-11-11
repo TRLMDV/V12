@@ -14,7 +14,7 @@ interface UseSellOrderFormProps {
 }
 
 export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) => {
-  const { settings } = useData();
+  const { settings, packingUnits, packingUnitMap } = useData();
 
   // Ensure settings and its properties are always valid, with fallbacks
   const safeSettings = settings || {};
@@ -38,6 +38,9 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     warehouseMap,
     mainWarehouse,
     isEdit,
+    products,
+    customers,
+    warehouses,
   } = useSellOrderState({ orderId });
 
   // 2. Calculations
@@ -60,7 +63,17 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
   // Update order total and items with calculated values
   useEffect(() => {
     setOrder(prev => ({ ...prev, total: totalWithVat }));
-    setOrderItems(calculatedOrderItems);
+    setOrderItems(prevItems => prevItems.map((prevItem, index) => {
+      const calculatedItem = calculatedOrderItems[index];
+      if (calculatedItem) {
+        return {
+          ...prevItem, // Keep productId, qty, price, itemTotal, packingUnitId, packingQuantity as they are the source of truth for user input
+          cleanProfit: calculatedItem.cleanProfit,
+          landedCost: calculatedItem.landedCost,
+        };
+      }
+      return prevItem;
+    }));
   }, [totalWithVat, calculatedOrderItems, setOrder, setOrderItems]);
 
   // 3. Handlers
@@ -80,6 +93,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     setManualExchangeRate,
     setManualExchangeRateInput,
     productMap,
+    packingUnitMap, // Pass packingUnitMap
   });
 
   // 4. Actions
@@ -91,7 +105,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     isGeneratePaymentDisabled,
   } = useSellOrderActions({
     order,
-    orderItems,
+    orderItems: calculatedOrderItems, // Pass calculated items with landed cost
     selectedCurrency,
     manualExchangeRate,
     mainWarehouse,
@@ -108,6 +122,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     productMap,
     warehouseMap,
     mainWarehouse,
+    packingUnits, // Pass packingUnits
+    packingUnitMap, // Pass packingUnitMap
     isGenerateMovementDisabled,
     isGeneratePaymentDisabled,
     handleChange,
@@ -129,5 +145,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     currentExchangeRateToMainCurrency,
     subtotalInOrderCurrency,
     activeCurrencies, // Now guaranteed to be an array
+    products,
+    customers,
+    warehouses,
   };
 };

@@ -6,7 +6,8 @@ import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { t } from '@/utils/i18n';
-import { SellOrder, Product, Customer, Warehouse } from '@/types';
+import { SellOrder, Product, Customer, Warehouse, PackingUnit } from '@/types';
+import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
 interface SellOrdersMultiSheetExportButtonProps {
   sellOrders: SellOrder[];
@@ -23,6 +24,8 @@ const SellOrdersMultiSheetExportButton: React.FC<SellOrdersMultiSheetExportButto
   warehouseMap,
   buttonLabel,
 }) => {
+  const { packingUnitMap } = useData(); // Access packingUnitMap
+
   const handleExport = () => {
     if (!sellOrders || sellOrders.length === 0) {
       toast.info(t('excelExportInfo'), { description: t('noDataToExport') });
@@ -53,7 +56,9 @@ const SellOrdersMultiSheetExportButton: React.FC<SellOrdersMultiSheetExportButto
       const itemHeaders = [
         t('productName'),
         t('sku'),
-        t('qty'),
+        t('packingUnit'), // New header
+        t('packingQuantity'), // New header
+        t('qty') + ` (${t('baseUnit')})`, // Base unit quantity
         `${t('price')} (AZN)`,
         `${t('itemTotal')} (AZN)`,
         t('landedCost'),
@@ -65,10 +70,14 @@ const SellOrdersMultiSheetExportButton: React.FC<SellOrdersMultiSheetExportButto
         const product = productMap[item.productId];
         const productLandedCost = product?.averageLandedCost || 0;
         const cleanProfit = (item.price - productLandedCost) * item.qty;
+        const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
+
         data.push([
           product?.name || 'N/A',
           product?.sku || 'N/A',
-          item.qty,
+          packingUnit?.name || t('piece'), // Display packing unit name
+          item.packingQuantity !== undefined ? item.packingQuantity : item.qty, // Display packing quantity if available, else base qty
+          item.qty, // Base unit quantity
           item.price.toFixed(2),
           (item.qty * item.price).toFixed(2),
           productLandedCost.toFixed(2),
@@ -83,7 +92,9 @@ const SellOrdersMultiSheetExportButton: React.FC<SellOrdersMultiSheetExportButto
       const colWidths = [
         { wch: 25 }, // Product Name
         { wch: 15 }, // SKU
-        { wch: 10 }, // Qty
+        { wch: 15 }, // Packing Unit
+        { wch: 15 }, // Packing Quantity
+        { wch: 10 }, // Qty (Base Unit)
         { wch: 15 }, // Price
         { wch: 15 }, // Item Total
         { wch: 15 }, // Landed Cost

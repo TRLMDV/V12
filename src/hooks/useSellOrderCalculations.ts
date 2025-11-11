@@ -11,6 +11,8 @@ interface SellOrderItemState {
   itemTotal: number | string;
   cleanProfit?: number;
   landedCost?: number;
+  packingUnitId?: number; // New: ID of the selected packing unit
+  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
 }
 
 interface UseSellOrderCalculationsProps {
@@ -50,7 +52,7 @@ export const useSellOrderCalculations = ({
 
     orderItems.forEach(item => {
       const itemTotalNum = parseFloat(String(item.itemTotal)) || 0;
-      const qtyNum = parseFloat(String(item.qty)) || 0;
+      const qtyNum = parseFloat(String(item.qty)) || 0; // This is now base unit quantity
       const priceNum = parseFloat(String(item.price)) || 0;
       
       let itemCleanProfit = 0;
