@@ -97,18 +97,19 @@ interface DataContextType {
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
   packingUnits: PackingUnit[]; // New: Packing units
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // New: Setter for packing units
+  packingUnitMap: { [key: number]: PackingUnit }; // New: Memoized map for packing units
   
   // Recycle Bin
   recycleBin: RecycleBinItem[];
   setRecycleBin: React.Dispatch<React.SetStateAction<RecycleBinItem[]>>;
-  addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
+  addToRecycleBin: (item: any, collectionKey: CollectionKey | 'packingUnits') => void;
   restoreFromRecycleBin: (recycleItemId: string) => void;
   deletePermanentlyFromRecycleBin: (recycleItemId: string) => void;
   cleanRecycleBin: () => void;
 
   // CRUD operations
-  saveItem: (key: CollectionKey | 'packingUnits', item: any) => void; // Updated key type
-  deleteItem: (key: CollectionKey | 'packingUnits', id: number) => void; // Updated key type
+  saveItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', item: any) => void; // Updated key type
+  deleteItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', id: number) => void; // Updated key type
   getNextId: (key: CollectionKey | 'packingUnits' | 'paymentCategories') => number; // Updated key type
   setNextIdForCollection: (key: CollectionKey | 'packingUnits' | 'paymentCategories', nextId: number) => void; // Updated key type
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
@@ -237,7 +238,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   // --- Recycle Bin Operations ---
-  const addToRecycleBin = useCallback((item: any, collectionKey: CollectionKey | 'packingUnits') => {
+  const addToRecycleBin = useCallback((item: any, collectionKey: CollectionKey | 'packingUnits' | 'paymentCategories') => {
     const recycleItemId = `${collectionKey}-${item.id}-${Date.now()}`;
     const newItem: RecycleBinItem = {
       id: recycleItemId,
@@ -259,7 +260,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const { collectionKey, data } = itemToRestore;
-      let setter: React.Dispatch<React.SetStateAction<any[]>>;
+      let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<Settings>>;
 
       switch (collectionKey) {
         case 'products': setter = setProducts; break;
@@ -272,12 +273,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'outgoingPayments': setter = setOutgoingPayments; break;
         case 'productMovements': setter = setProductMovements; break;
         case 'packingUnits': setter = setPackingUnits; break; // New case for packing units
+        case 'paymentCategories':
+          setSettings(prevSettings => ({
+            ...prevSettings,
+            paymentCategories: [...(prevSettings.paymentCategories || []), data],
+          }));
+          showAlertModal(t('success'), t('itemRestored'));
+          return prevRecycleBin.filter(item => item.id !== recycleItemId);
         default:
           showAlertModal(t('error'), t('unknownCollectionType'));
           return prevRecycleBin;
       }
 
-      setter(prevItems => {
+      (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => {
         // Ensure the item is not duplicated if it somehow already exists
         if (prevItems.some((i: any) => i.id === data.id)) {
           showAlertModal(t('error'), t('itemAlreadyExists'));
@@ -289,7 +297,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       showAlertModal(t('success'), t('itemRestored'));
       return prevRecycleBin.filter(item => item.id !== recycleItemId);
     });
-  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, showAlertModal]);
+  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, showAlertModal]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
     showConfirmationModal(
@@ -312,6 +320,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
   }, [setRecycleBin, showConfirmationModal, showAlertModal]);
+
+  // Memoized map for packing units
+  const packingUnitMap = useMemo(() => {
+    return packingUnits.reduce((acc, pu) => ({ ...acc, [pu.id]: pu }), {} as { [key: number]: PackingUnit });
+  }, [packingUnits]);
 
   // Use the new CRUD operations hook
   const {
@@ -402,6 +415,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits, // Provide packing units
+    packingUnitMap, // Provide packing unit map
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, // Add recycle bin functions
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,
@@ -421,6 +435,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits, setPackingUnits,
+    packingUnitMap,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,
