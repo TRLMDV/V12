@@ -119,10 +119,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
         </TableBody>
         <TableFooter>
           <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
-            <TableCell colSpan={6} className="p-3 text-right text-lg">{t('totals')}:</TableCell>
-            <TableCell className="p-3 text-lg text-gray-700 dark:text-slate-300">{totalSumExclVat.toFixed(2)} AZN</TableCell>
-            <TableCell className="p-3 text-lg text-sky-600 dark:text-sky-400">{totalSumInclVat.toFixed(2)} AZN</TableCell>
-            <TableCell className="p-3"></TableCell> {/* Empty cell for actions column */}
+            <TableCell colSpan={6} className="p-3 text-right text-lg">{t('totals')}:</TableCell><TableCell className="p-3 text-lg text-gray-700 dark:text-slate-300">{totalSumExclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3 text-lg text-sky-600 dark:text-sky-400">{totalSumInclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3"></TableCell>
           </TableRow>
         </TableFooter>
       </Table>

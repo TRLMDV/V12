@@ -138,6 +138,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
   });
 
+  // Add console logs for debugging
+  console.log("[DataContext] products:", products);
+  console.log("[DataContext] customers:", customers);
+  console.log("[DataContext] suppliers:", suppliers);
+  console.log("[DataContext] warehouses:", warehouses);
+  console.log("[DataContext] purchaseOrders:", purchaseOrders);
+  console.log("[DataContext] sellOrders:", sellOrders);
+  console.log("[DataContext] incomingPayments:", incomingPayments);
+  console.log("[DataContext] outgoingPayments:", outgoingPayments);
+  console.log("[DataContext] productMovements:", productMovements);
+
+
   // Use the new modals hook
   const {
     showAlertModal,
@@ -170,7 +182,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const {
     updateStockFromOrder: baseUpdateStockFromOrder,
     updateAverageCosts: baseUpdateAverageCosts,
-  } = useInventoryManagement({ products, setProducts });
+  } = useInventoryManagement({ products: Array.isArray(products) ? products : [], setProducts }); // Defensive check here too
 
   // Override updateAverageCosts to use mainCurrency
   const updateAverageCosts = useCallback((purchaseOrder: PurchaseOrder) => {
@@ -304,15 +316,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProductMovements,
     setNextIds,
     // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
-    products,
-    suppliers,
-    customers,
-    warehouses,
-    purchaseOrders,
-    sellOrders,
-    incomingPayments,
-    outgoingPayments,
-    productMovements,
+    products: Array.isArray(products) ? products : [], // Defensive check
+    suppliers: Array.isArray(suppliers) ? suppliers : [], // Defensive check
+    customers: Array.isArray(customers) ? customers : [], // Defensive check
+    warehouses: Array.isArray(warehouses) ? warehouses : [], // Defensive check
+    purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [], // Defensive check
+    sellOrders: Array.isArray(sellOrders) ? sellOrders : [], // Defensive check
+    incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], // Defensive check
+    outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], // Defensive check
+    productMovements: Array.isArray(productMovements) ? productMovements : [], // Defensive check
     // Other stable dependencies
     nextIds, // nextIds value for getNextId
     showAlertModal,
@@ -350,22 +362,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates, setNextIds, setRecycleBin]);
 
   const productsWithTotalStock = useMemo(() => {
-    return products.map(p => ({
+    return Array.isArray(products) ? products.map(p => ({ // Defensive check for products
       ...p,
       totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
-    }));
+    })) : [];
   }, [products]);
 
   const value = useMemo(() => ({
     products: productsWithTotalStock, setProducts, // Provide products with totalStock
-    suppliers, setSuppliers,
-    customers, setCustomers,
-    warehouses, setWarehouses,
-    purchaseOrders, setPurchaseOrders,
-    sellOrders, setSellOrders,
-    incomingPayments, setIncomingPayments,
-    outgoingPayments, setOutgoingPayments,
-    productMovements, setProductMovements,
+    suppliers: Array.isArray(suppliers) ? suppliers : [], setSuppliers, // Defensive check
+    customers: Array.isArray(customers) ? customers : [], setCustomers, // Defensive check
+    warehouses: Array.isArray(warehouses) ? warehouses : [], setWarehouses, // Defensive check
+    purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [], setPurchaseOrders, // Defensive check
+    sellOrders: Array.isArray(sellOrders) ? sellOrders : [], setSellOrders, // Defensive check
+    incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], setIncomingPayments, // Defensive check
+    outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], setOutgoingPayments, // Defensive check
+    productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements, // Defensive check
     settings, setSettings,
     currencyRates, setCurrencyRates,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, // Add recycle bin functions
