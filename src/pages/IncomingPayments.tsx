@@ -10,21 +10,23 @@ import PaymentForm from '@/forms/PaymentForm';
 import { PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label'; // Ensuring this import is present
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { Payment, SellOrder } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof Payment | 'linkedOrderDisplay';
+  key: keyof Payment | 'linkedOrderDisplay' | 'categoryDisplay'; // Added categoryDisplay
   direction: 'ascending' | 'descending';
 };
 
 const IncomingPayments: React.FC = () => {
-  const { incomingPayments, sellOrders, customers, deleteItem, currencyRates } = useData();
+  const { incomingPayments, sellOrders, customers, deleteItem, currencyRates, settings } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaymentId, setEditingPaymentId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | string>('all'); // New state for category filter
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,38 +34,86 @@ const IncomingPayments: React.FC = () => {
 
   const sellOrderMap = sellOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: SellOrder });
   const customerMap = customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
+  const paymentCategoryMap = useMemo(() => (settings.paymentCategories || []).reduce((acc, cat) => ({ ...acc, [cat.name]: cat.name }), {} as { [key: string]: string }), [settings.paymentCategories]);
 
-  const paymentsByOrder = useMemo(() => {
-    return incomingPayments.reduce((acc, p) => {
-      acc[p.orderId] = (acc[p.orderId] || 0) + (p.amount * (p.paymentCurrency === 'AZN' ? 1 : (p.paymentExchangeRate || currencyRates[p.paymentCurrency] || 1)));
-      return acc;
-    }, {} as { [key: number]: number });
+
+  // Aggregate payments by order ID and specific category (products) in AZN
+  const paymentsByOrderAndCategoryAZN = useMemo(() => {
+    const result: {
+      [orderId: number]: {
+        products: number;
+      };
+    } = {};
+
+    incomingPayments.forEach(p => {
+      if (p.orderId !== 0 && p.paymentCategory === 'products') { // Only 'products' category for linked sell orders
+        if (!result[p.orderId]) {
+          result[p.orderId] = { products: 0 };
+        }
+        const amountInAZN = p.amount * (p.paymentCurrency === 'AZN' ? 1 : (p.paymentExchangeRate || currencyRates[p.paymentCurrency] || 1));
+        result[p.orderId].products += amountInAZN;
+      }
+    });
+    return result;
   }, [incomingPayments, currencyRates]);
 
   const filteredAndSortedPayments = useMemo(() => {
-    let filteredPayments = incomingPayments;
+    let currentPayments = incomingPayments;
 
+    // 1. Apply date filters
     if (startDateFilter) {
-      filteredPayments = filteredPayments.filter(p => p.date >= startDateFilter);
+      currentPayments = currentPayments.filter(p => p.date >= startDateFilter);
     }
     if (endDateFilter) {
-      filteredPayments = filteredPayments.filter(p => p.date <= endDateFilter);
+      currentPayments = currentPayments.filter(p => p.date <= endDateFilter);
     }
 
-    const sortableItems = filteredPayments.map(p => {
+    // 2. Add derived properties like categoryDisplay and remainingAmountText
+    const paymentsWithDerivedProps = currentPayments.map(p => {
       let linkedOrderDisplay = '';
+      let remainingAmountText = '';
+      let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
+      let categoryDisplay = '';
+
       if (p.orderId === 0) {
-        linkedOrderDisplay = t('manualExpense');
+        categoryDisplay = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
+        linkedOrderDisplay = `${categoryDisplay} ${p.manualDescription ? `- ${p.manualDescription}` : ''}`;
       } else {
         const order = sellOrderMap[p.orderId];
         const customerName = order ? customerMap[order.contactId] || 'Unknown' : 'N/A';
-        linkedOrderDisplay = `${t('orderId')} #${p.orderId} (${customerName})`;
+        
+        // For incoming payments linked to sell orders, the category is always 'products'
+        categoryDisplay = t('paymentForProducts');
+        linkedOrderDisplay = `${t('orderId')} #${p.orderId} (${customerName}) ${categoryDisplay}`;
+
+        if (order) {
+          const totalPaidForThisOrderInAZN = paymentsByOrderAndCategoryAZN[p.orderId]?.products || 0;
+          const orderTotal = order.total;
+          const currentRemainingBalanceInAZN = orderTotal - totalPaidForThisOrderInAZN;
+
+          const isFullyPaid = currentRemainingBalanceInAZN <= 0.001;
+
+          if (isFullyPaid) {
+            rowClass += ' bg-green-100 dark:bg-green-900/50';
+            remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(${t('fullyPaid')})</span>`;
+          } else {
+            rowClass += ' bg-red-100 dark:bg-red-900/50';
+            remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${currentRemainingBalanceInAZN.toFixed(2)} AZN ${t('remaining')})</span>`;
+          }
+        }
       }
-      return { ...p, linkedOrderDisplay };
+      return { ...p, linkedOrderDisplay, remainingAmountText, rowClass, categoryDisplay };
     });
 
+    // 3. Apply category filter to the processed payments
+    let finalFilteredPayments = paymentsWithDerivedProps;
+    if (categoryFilter !== 'all') {
+      finalFilteredPayments = finalFilteredPayments.filter(p => p.categoryDisplay === categoryFilter);
+    }
+
+    // 4. Apply sorting
     if (sortConfig.key) {
-      sortableItems.sort((a, b) => {
+      finalFilteredPayments.sort((a, b) => {
         const key = sortConfig.key;
         const valA = a[key] === undefined ? '' : a[key];
         const valB = b[key] === undefined ? '' : b[key];
@@ -78,15 +128,23 @@ const IncomingPayments: React.FC = () => {
         return sortConfig.direction === 'ascending' ? comparison : -comparison;
       });
     }
-    return sortableItems;
-  }, [incomingPayments, sellOrders, customers, sortConfig, startDateFilter, endDateFilter, paymentsByOrder]);
+    return finalFilteredPayments;
+  }, [incomingPayments, startDateFilter, endDateFilter, categoryFilter, sellOrderMap, customerMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t]);
 
-  // Apply pagination to the filtered and sorted payments
-  const paginatedPayments = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredAndSortedPayments.slice(startIndex, endIndex);
-  }, [filteredAndSortedPayments, currentPage, itemsPerPage]);
+  // Get all unique categories for the filter dropdown
+  const allUniqueCategories = useMemo(() => {
+    const categories = new Set<string>();
+    incomingPayments.forEach(p => {
+      if (p.orderId === 0) {
+        // For manual payments, use the custom category name or 'Manual Expense' if none
+        const manualCategoryName = p.paymentCategory && p.paymentCategory !== 'manual' ? p.paymentCategory : t('manualExpense');
+        categories.add(manualCategoryName);
+      } else if (p.paymentCategory === 'products') { // Only 'products' for linked incoming payments
+        categories.add(t('paymentForProducts'));
+      }
+    });
+    return Array.from(categories).sort();
+  }, [incomingPayments, t]);
 
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -133,7 +191,7 @@ const IncomingPayments: React.FC = () => {
       </div>
 
       <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg shadow">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="incoming-start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
             <Input
@@ -160,6 +218,25 @@ const IncomingPayments: React.FC = () => {
               className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
             />
           </div>
+          <div>
+            <Label htmlFor="category-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('filterByCategory')}</Label>
+            <Select onValueChange={(value) => {
+              setCategoryFilter(value);
+              setCurrentPage(1); // Reset to first page on filter change
+            }} value={categoryFilter}>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder={t('allCategories')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allCategories')}</SelectItem>
+                {allUniqueCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -172,6 +249,9 @@ const IncomingPayments: React.FC = () => {
               </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('linkedOrderDisplay')}>
                 {t('linkedOrder')} / {t('manualExpense')} {getSortIndicator('linkedOrderDisplay')}
+              </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('categoryDisplay')}>
+                {t('category')} {getSortIndicator('categoryDisplay')}
               </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('date')}>
                 {t('paymentDate')} {getSortIndicator('date')}
@@ -188,35 +268,16 @@ const IncomingPayments: React.FC = () => {
           <TableBody>
             {paginatedPayments.length > 0 ? (
               paginatedPayments.map(p => {
-                const order = sellOrderMap[p.orderId];
-                let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
-                let remainingAmountText = '';
-
-                if (order && p.orderId !== 0) {
-                  const totalPaidForThisOrderInAZN = paymentsByOrder[p.orderId] || 0;
-                  const orderTotal = order.total;
-                  const currentRemainingBalanceInAZN = orderTotal - totalPaidForThisOrderInAZN;
-
-                  const isFullyPaid = currentRemainingBalanceInAZN <= 0.001;
-
-                  if (isFullyPaid) {
-                    rowClass += ' bg-green-100 dark:bg-green-900/50';
-                    remainingAmountText = `<span class="text-xs text-green-700 dark:text-green-400 ml-1">(${t('fullyPaid')})</span>`;
-                  } else {
-                    rowClass += ' bg-red-100 dark:bg-red-900/50';
-                    remainingAmountText = `<span class="text-xs text-red-600 dark:text-red-400 ml-1">(${currentRemainingBalanceInAZN.toFixed(2)} AZN ${t('remaining')})</span>`;
-                  }
-                }
-
                 return (
-                  <TableRow key={p.id} className={rowClass}>
+                  <TableRow key={p.id} className={p.rowClass}>
                     <TableCell className="p-3 font-semibold">
-                      #{p.id} {p.orderId === 0 && p.manualDescription ? `- ${p.manualDescription}` : ''}
+                      #{p.id}
                     </TableCell>
                     <TableCell className="p-3">{p.linkedOrderDisplay}</TableCell>
+                    <TableCell className="p-3">{p.categoryDisplay}</TableCell>
                     <TableCell className="p-3">{p.date}</TableCell>
                     <TableCell className="p-3 font-bold">
-                      {p.amount.toFixed(2)} {p.paymentCurrency} <span dangerouslySetInnerHTML={{ __html: remainingAmountText }} />
+                      {p.amount.toFixed(2)} {p.paymentCurrency} <span dangerouslySetInnerHTML={{ __html: p.remainingAmountText }} />
                     </TableCell>
                     <TableCell className="p-3">{p.method}</TableCell>
                     <TableCell className="p-3">
@@ -232,7 +293,7 @@ const IncomingPayments: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={7} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>
