@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import CodeConfirmationModal from '@/components/CodeConfirmationModal'; // Import the new component
 import { Slider } from '@/components/ui/slider'; // Import Slider component
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // Import Table components
-import { PlusCircle, Edit, Trash2 } from 'lucide-react'; // Import icons
+import { PlusCircle, Edit, Trash2, ChevronDown, ChevronUp } from 'lucide-react'; // Import icons
 import FormModal from '@/components/FormModal'; // Import FormModal
 import PaymentCategoryForm from '@/forms/PaymentCategoryForm'; // Import new form
 import { Settings, CurrencyRates, Product, Customer, PaymentCategorySetting, Currency } from '@/types'; // Import types from types file
@@ -33,6 +33,7 @@ const SettingsPage: React.FC = () => {
   const [displayScale, setDisplayScale] = useState(settings.displayScale); // New state for display scale
   const [mainCurrency, setMainCurrency] = useState<Currency>(settings.mainCurrency); // New state for main currency
   const [activeCurrencies, setActiveCurrencies] = useState<Currency[]>(settings.activeCurrencies); // New state for active currencies
+  const [isCurrenciesListOpen, setIsCurrenciesListOpen] = useState(false); // State for collapsible active currencies
 
   // States for all currency rates
   const [rates, setRates] = useState<CurrencyRates>(currencyRates);
@@ -136,6 +137,7 @@ const SettingsPage: React.FC = () => {
   const handleSaveActiveCurrencies = () => {
     setSettings(prev => ({ ...prev, activeCurrencies }));
     toast.success(t('success'), { description: t('activeCurrenciesUpdated') });
+    setIsCurrenciesListOpen(false); // Collapse the list after saving
   };
 
   const handleThemeChange = (value: 'light' | 'dark') => {
@@ -384,28 +386,40 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Active Currencies Selection */}
+      {/* Active Currencies Selection (Collapsible) */}
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('activeCurrenciesSelection')}</h2>
+        <button
+          type="button"
+          onClick={() => setIsCurrenciesListOpen(!isCurrenciesListOpen)}
+          className="flex justify-between items-center w-full text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4 focus:outline-none"
+        >
+          {t('activeCurrenciesSelection')}
+          {isCurrenciesListOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        </button>
         <p className="text-gray-600 dark:text-slate-400 mb-4">{t('activeCurrenciesDescription')}</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
-          {ALL_CURRENCIES.map(c => (
-            <div key={c} className="flex items-center space-x-2">
-              <Checkbox
-                id={`currency-${c}`}
-                checked={activeCurrencies.includes(c)}
-                onCheckedChange={(checked) => handleToggleActiveCurrency(c, checked as boolean)}
-                disabled={c === mainCurrency} // Main currency cannot be deselected
-              />
-              <Label htmlFor={`currency-${c}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {c} {c === mainCurrency && `(${t('mainCurrency')})`}
-              </Label>
+
+        {isCurrenciesListOpen && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
+              {ALL_CURRENCIES.map(c => (
+                <div key={c} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`currency-${c}`}
+                    checked={activeCurrencies.includes(c)}
+                    onCheckedChange={(checked) => handleToggleActiveCurrency(c, checked as boolean)}
+                    disabled={c === mainCurrency} // Main currency cannot be deselected
+                  />
+                  <Label htmlFor={`currency-${c}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    {c} {c === mainCurrency && `(${t('mainCurrency')})`}
+                  </Label>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <div className="flex justify-end">
-          <Button onClick={handleSaveActiveCurrencies}>{t('saveActiveCurrencies')}</Button>
-        </div>
+            <div className="flex justify-end">
+              <Button onClick={handleSaveActiveCurrencies}>{t('saveActiveCurrencies')}</Button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Currency Rates */}
