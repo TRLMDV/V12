@@ -11,7 +11,9 @@ import { BarChart, DollarSign, TrendingUp, Wallet } from 'lucide-react';
 import { PurchaseOrder, SellOrder, Payment, Product } from '@/types'; // Import types from types file
 
 const Finance: React.FC = () => {
-  const { purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, currencyRates } = useData();
+  const { purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, currencyRates, settings, convertCurrency } = useData();
+  const mainCurrency = settings.mainCurrency;
+
   const [period, setPeriod] = useState<'allTime' | 'thisYear' | 'thisMonth' | 'thisWeek' | 'today'>('allTime');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -78,41 +80,51 @@ const Finance: React.FC = () => {
       return paymentDate >= effectiveStartDate && paymentDate <= effectiveEndDate;
     });
 
-    let totalRevenue = 0; // Excl. VAT
-    let totalCOGS = 0;
-    let totalVatCollected = 0;
+    let totalRevenueInMainCurrency = 0; // Excl. VAT
+    let totalCOGSInMainCurrency = 0;
+    let totalVatCollectedInMainCurrency = 0;
 
     filteredSellOrders.forEach(order => {
       if (order.status === 'Shipped') {
-        const subtotalExVat = order.total / (1 + order.vatPercent / 100);
-        totalRevenue += subtotalExVat;
-        totalVatCollected += order.total - subtotalExVat;
+        // order.total is already in mainCurrency
+        const subtotalExVatInMainCurrency = order.total / (1 + order.vatPercent / 100);
+        totalRevenueInMainCurrency += subtotalExVatInMainCurrency;
+        totalVatCollectedInMainCurrency += order.total - subtotalExVatInMainCurrency;
 
         order.items.forEach(item => {
           const product = productMap[item.productId];
           if (product) {
-            totalCOGS += item.qty * (product.averageLandedCost || 0);
+            // product.averageLandedCost is now in mainCurrency
+            totalCOGSInMainCurrency += item.qty * (product.averageLandedCost || 0);
           }
         });
       }
     });
 
-    const grossProfit = totalRevenue - totalCOGS;
+    const grossProfitInMainCurrency = totalRevenueInMainCurrency - totalCOGSInMainCurrency;
 
-    const totalIncoming = filteredIncomingPayments.reduce((sum, p) => sum + p.amount, 0);
-    const totalOutgoing = filteredOutgoingPayments.reduce((sum, p) => sum + p.amount, 0);
-    const netCashFlow = totalIncoming - totalOutgoing;
+    let totalIncomingInMainCurrency = 0;
+    filteredIncomingPayments.forEach(p => {
+      totalIncomingInMainCurrency += convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
+    });
+
+    let totalOutgoingInMainCurrency = 0;
+    filteredOutgoingPayments.forEach(p => {
+      totalOutgoingInMainCurrency += convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
+    });
+    
+    const netCashFlowInMainCurrency = totalIncomingInMainCurrency - totalOutgoingInMainCurrency;
 
     return {
-      totalRevenue,
-      totalCOGS,
-      grossProfit,
-      totalVatCollected,
-      totalIncoming,
-      totalOutgoing,
-      netCashFlow,
+      totalRevenue: totalRevenueInMainCurrency,
+      totalCOGS: totalCOGSInMainCurrency,
+      grossProfit: grossProfitInMainCurrency,
+      totalVatCollected: totalVatCollectedInMainCurrency,
+      totalIncoming: totalIncomingInMainCurrency,
+      totalOutgoing: totalOutgoingInMainCurrency,
+      netCashFlow: netCashFlowInMainCurrency,
     };
-  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates]);
+  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates, settings.mainCurrency, convertCurrency]);
 
   return (
     <div className="container mx-auto p-4">
@@ -166,7 +178,7 @@ const Finance: React.FC = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filteredData.totalRevenue.toFixed(2)} AZN</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filteredData.totalRevenue.toFixed(2)} {mainCurrency}</div>
             <p className="text-xs text-muted-foreground">{t('revenueExVat')}</p>
           </CardContent>
         </Card>
@@ -176,7 +188,7 @@ const Finance: React.FC = () => {
             <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{filteredData.totalCOGS.toFixed(2)} AZN</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{filteredData.totalCOGS.toFixed(2)} {mainCurrency}</div>
             <p className="text-xs text-muted-foreground">{t('costOfGoodsSold')}</p>
           </CardContent>
         </Card>
@@ -186,7 +198,7 @@ const Finance: React.FC = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{filteredData.grossProfit.toFixed(2)} AZN</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{filteredData.grossProfit.toFixed(2)} {mainCurrency}</div>
             <p className="text-xs text-muted-foreground">{t('grossProfitTotal')}</p>
           </CardContent>
         </Card>
@@ -196,7 +208,7 @@ const Finance: React.FC = () => {
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{filteredData.totalVatCollected.toFixed(2)} AZN</div>
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{filteredData.totalVatCollected.toFixed(2)} {mainCurrency}</div>
             <p className="text-xs text-muted-foreground">{t('vatCollectedFromSales')}</p>
           </CardContent>
         </Card>
@@ -210,7 +222,7 @@ const Finance: React.FC = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filteredData.totalIncoming.toFixed(2)} AZN</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{filteredData.totalIncoming.toFixed(2)} {mainCurrency}</div>
           </CardContent>
         </Card>
         <Card className="dark:bg-slate-800 dark:border-slate-700">
@@ -219,7 +231,7 @@ const Finance: React.FC = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{filteredData.totalOutgoing.toFixed(2)} AZN</div>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">{filteredData.totalOutgoing.toFixed(2)} {mainCurrency}</div>
           </CardContent>
         </Card>
         <Card className="dark:bg-slate-800 dark:border-slate-700">
@@ -229,7 +241,7 @@ const Finance: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${filteredData.netCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {filteredData.netCashFlow.toFixed(2)} AZN
+              {filteredData.netCashFlow.toFixed(2)} {mainCurrency}
             </div>
           </CardContent>
         </Card>

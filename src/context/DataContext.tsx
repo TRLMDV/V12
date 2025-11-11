@@ -107,6 +107,9 @@ interface DataContextType {
   isConfirmationModalOpen: boolean;
   confirmationModalProps: { title: string; message: string; onConfirm: () => void } | null;
   closeConfirmationModal: () => void;
+
+  // Currency conversion utility
+  convertCurrency: (amount: number, fromCurrency: Currency, toCurrency: Currency) => number;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -143,11 +146,67 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     closeConfirmationModal,
   } = useModals();
 
+  // --- Currency Conversion Utility ---
+  const convertCurrency = useCallback((amount: number, fromCurrency: Currency, toCurrency: Currency): number => {
+    if (fromCurrency === toCurrency) {
+      return amount;
+    }
+
+    const rateFromAZN = currencyRates[fromCurrency];
+    const rateToAZN = currencyRates[toCurrency];
+
+    if (!rateFromAZN || !rateToAZN) {
+      console.warn(`Missing currency rate for conversion: ${fromCurrency} or ${toCurrency}`);
+      return amount; // Return original amount if rates are missing
+    }
+
+    // Convert to AZN first, then to target currency
+    const amountInAZN = amount * rateFromAZN;
+    return amountInAZN / rateToAZN;
+  }, [currencyRates]);
+
   // Use the new inventory management hook
   const {
-    updateStockFromOrder,
-    updateAverageCosts,
+    updateStockFromOrder: baseUpdateStockFromOrder,
+    updateAverageCosts: baseUpdateAverageCosts,
   } = useInventoryManagement({ products, setProducts });
+
+  // Override updateAverageCosts to use mainCurrency
+  const updateAverageCosts = useCallback((purchaseOrder: PurchaseOrder) => {
+    setProducts(prevProducts => {
+      const updatedProducts = JSON.parse(JSON.stringify(prevProducts));
+      (purchaseOrder.items || []).forEach(item => {
+        const product = updatedProducts.find((p: Product) => p.id === item.productId);
+        if (product) {
+          // item.landedCostPerUnit is already in Main Currency from PurchaseOrderForm
+          const landedCostInMainCurrency = item.landedCostPerUnit || 0;
+          if (landedCostInMainCurrency <= 0) return;
+
+          const totalStock = Object.values(product.stock || {}).reduce((a, b) => a + b, 0);
+          const stockBeforeThisOrder = totalStock - item.qty;
+
+          if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {
+            const oldTotalValue = stockBeforeThisOrder * product.averageLandedCost;
+            const newItemsValue = item.qty * landedCostInMainCurrency;
+            if (totalStock > 0) {
+              product.averageLandedCost = parseFloat(((oldTotalValue + newItemsValue) / totalStock).toFixed(4));
+            } else {
+              product.averageLandedCost = landedCostInMainCurrency;
+            }
+          } else {
+            product.averageLandedCost = landedCostInMainCurrency;
+          }
+        }
+      });
+      return updatedProducts;
+    });
+  }, [setProducts]);
+
+  // Override updateStockFromOrder to use the base one
+  const updateStockFromOrder = useCallback((newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => {
+    baseUpdateStockFromOrder(newOrder, oldOrder);
+  }, [baseUpdateStockFromOrder]);
+
 
   // --- Recycle Bin Operations ---
   const addToRecycleBin = useCallback((item: any, collectionKey: CollectionKey) => {
@@ -313,6 +372,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateStockFromOrder, updateAverageCosts,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
+    convertCurrency, // Add currency conversion utility
   }), [
     productsWithTotalStock, setProducts,
     suppliers, setSuppliers,
@@ -330,6 +390,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateStockFromOrder, updateAverageCosts,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
+    convertCurrency,
   ]);
 
   return (

@@ -7,7 +7,7 @@ export interface Product {
   description: string;
   stock: { [warehouseId: number]: number };
   minStock: number;
-  averageLandedCost: number;
+  averageLandedCost: number; // Stored in Main Currency
   imageUrl: string;
   totalStock?: number; // Added for easier export/display
 }
@@ -45,7 +45,7 @@ export interface OrderItem {
   qty: number;
   price: number;
   currency?: Currency; // For PO items
-  landedCostPerUnit?: number; // For PO items (in AZN)
+  landedCostPerUnit?: number; // For PO items (in Main Currency)
 }
 
 export interface PurchaseOrder {
@@ -56,14 +56,14 @@ export interface PurchaseOrder {
   status: 'Draft' | 'Ordered' | 'Received';
   items: OrderItem[];
   currency: Currency;
-  exchangeRate?: number; // Manual rate if entered
+  exchangeRate?: number; // Manual rate if entered (foreign to AZN)
   transportationFees: number;
   transportationFeesCurrency: Currency;
   customFees: number;
   customFeesCurrency: Currency;
   additionalFees: number;
   additionalFeesCurrency: Currency;
-  total: number; // Total Landed Cost in AZN
+  total: number; // Total Landed Cost in Main Currency
 }
 
 export interface SellOrder {

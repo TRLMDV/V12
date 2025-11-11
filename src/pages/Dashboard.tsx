@@ -7,7 +7,8 @@ import { AlertCircle } from 'lucide-react';
 import { Product, SellOrder, Payment, CurrencyRates } from '@/types'; // Import types from types file
 
 const Dashboard: React.FC = () => {
-  const { products, sellOrders, incomingPayments, currencyRates } = useData();
+  const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
+  const mainCurrency = settings.mainCurrency;
 
   const getOverdueSellOrders = () => {
     const customers = useData().customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
@@ -15,21 +16,28 @@ const Dashboard: React.FC = () => {
     const now = MOCK_CURRENT_DATE.getTime();
 
     const paymentsByOrder = incomingPayments.reduce((acc, payment) => {
-      acc[payment.orderId] = (acc[payment.orderId] || 0) + payment.amount;
+      // Convert payment amount to AZN for consistent calculation against order total (which is in AZN)
+      const paymentAmountInAZN = convertCurrency(payment.amount, payment.paymentCurrency, 'AZN');
+      acc[payment.orderId] = (acc[payment.orderId] || 0) + paymentAmountInAZN;
       return acc;
     }, {} as { [key: number]: number });
 
     const overdueOrders: any[] = [];
     sellOrders.forEach(order => {
-      const totalPaid = paymentsByOrder[order.id] || 0;
-      const amountDue = order.total - totalPaid;
-      if (amountDue > 0.001) {
+      // Order total is now in mainCurrency, convert to AZN for comparison with paymentsByOrder (which is in AZN)
+      const orderTotalInAZN = convertCurrency(order.total, mainCurrency, 'AZN');
+      const totalPaidInAZN = paymentsByOrder[order.id] || 0;
+      const amountDueInAZN = orderTotalInAZN - totalPaidInAZN;
+
+      if (amountDueInAZN > 0.001) {
         const orderDate = new Date(order.orderDate).getTime();
         const timeDiff = now - orderDate;
         if (timeDiff > thirtyDaysInMs) {
+          // Convert amountDue back to mainCurrency for display
+          const amountDueInMainCurrency = convertCurrency(amountDueInAZN, 'AZN', mainCurrency);
           overdueOrders.push({
             ...order,
-            amountDue: amountDue,
+            amountDue: amountDueInMainCurrency,
             daysOverdue: Math.floor(timeDiff / (1000 * 60 * 60 * 24)) - 30,
             customerName: customers[order.contactId] || 'Unknown Customer'
           });
@@ -43,17 +51,21 @@ const Dashboard: React.FC = () => {
   const lowStockProducts = products.filter(p => (p.stock ? Object.values(p.stock).reduce((a, b) => a + b, 0) : 0) < p.minStock);
   const shippedSellOrders = sellOrders.filter(o => o.status === 'Shipped');
 
-  let totalRevenue = 0;
-  let totalCOGS = 0;
+  let totalRevenueInMainCurrency = 0;
+  let totalCOGSInMainCurrency = 0;
 
   shippedSellOrders.forEach(order => {
-    totalRevenue += order.total;
+    // Order total is already in mainCurrency
+    totalRevenueInMainCurrency += order.total;
     (order.items || []).forEach(item => {
       const product = products.find(p => p.id === item.productId);
-      if (product) totalCOGS += item.qty * (product.averageLandedCost || 0);
+      if (product) {
+        // product.averageLandedCost is now in mainCurrency
+        totalCOGSInMainCurrency += item.qty * (product.averageLandedCost || 0);
+      }
     });
   });
-  const grossProfit = totalRevenue - totalCOGS;
+  const grossProfitInMainCurrency = totalRevenueInMainCurrency - totalCOGSInMainCurrency;
   const overdueOrders = getOverdueSellOrders();
 
   return (
@@ -62,32 +74,31 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('totalRevenueShipped')}</h2>
-          <p className="text-3xl font-bold text-green-500 mt-2">{totalRevenue.toFixed(2)} AZN</p>
+          <p className="text-3xl font-bold text-green-500 mt-2">{totalRevenueInMainCurrency.toFixed(2)} {mainCurrency}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('cogs')}</h2>
-          <p className="text-3xl font-bold text-red-500 mt-2">{totalCOGS.toFixed(2)} AZN</p>
+          <p className="text-3xl font-bold text-red-500 mt-2">{totalCOGSInMainCurrency.toFixed(2)} {mainCurrency}</p>
         </div>
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('grossProfitShipped')}</h2>
-          <p className="text-3xl font-bold text-blue-500 mt-2">{grossProfit.toFixed(2)} AZN</p>
+          <p className="text-3xl font-bold text-blue-500 mt-2">{grossProfitInMainCurrency.toFixed(2)} {mainCurrency}</p>
         </div>
       </div>
       <div className="mt-8 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('liveCurrencyRates')}</h2>
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('liveCurrencyRates', { mainCurrency })}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">USD to AZN</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(currencyRates.USD || 0).toFixed(4)}</p>
-          </div>
-          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">EUR to AZN</p>
-            <p className="2xl font-bold text-gray-800 dark:text-slate-200">{(currencyRates.EUR || 0).toFixed(4)}</p>
-          </div>
-          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">RUB to AZN</p>
-            <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(currencyRates.RUB || 0).toFixed(4)}</p>
-          </div>
+          {Object.entries(currencyRates)
+            .filter(([currency]) => currency !== mainCurrency) // Don't show rate for main currency to itself
+            .map(([currency, rateToAZN]) => {
+              const rateToMainCurrency = convertCurrency(1, 'AZN', mainCurrency) / rateToAZN; // Convert 1 AZN to mainCurrency, then divide by rate of foreign to AZN
+              return (
+                <div key={currency} className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{currency} to {mainCurrency}</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(1 / rateToMainCurrency).toFixed(4)}</p> {/* Display 1 {mainCurrency} = X {foreignCurrency} */}
+                </div>
+              );
+            })}
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
@@ -116,7 +127,7 @@ const Dashboard: React.FC = () => {
                       <td className="p-3">{o.customerName}</td>
                       <td className="p-3">{o.orderDate}</td>
                       <td className="p-3 text-red-600 font-bold">{o.daysOverdue}</td>
-                      <td className="p-3 font-semibold">{o.amountDue.toFixed(2)} AZN</td>
+                      <td className="p-3 font-semibold">{o.amountDue.toFixed(2)} {mainCurrency}</td>
                     </tr>
                   ))}
                 </tbody>

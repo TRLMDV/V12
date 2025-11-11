@@ -4,7 +4,7 @@ const i18n = {
   en: {
     backupRestore: 'Backup & Restore', backupData: 'Backup Data', restoreData: 'Restore Data', restoreWarning: 'This will overwrite all current data. Are you sure you want to proceed?', restoreSuccess: 'Data restored successfully. The application will now reload.', restoreError: 'Invalid backup file.',
     theme: 'Theme', light: 'Light', dark: 'Dark', companyDetails: 'Company Details', companyName: 'Company Name', companyLogo: 'Company Logo', changeLogo: 'Change Logo', saveCompanyDetails: 'Save Company Details', success: 'Success', detailsUpdated: 'Company details updated.',
-    dashboard: 'Dashboard', products: 'Products', purchaseOrders: 'Purchase Orders', sellOrders: 'SellOrders', suppliers: 'Suppliers', customers: 'Customers', incomingPayments: 'Incoming Payments', outgoingPayments: 'Outgoing Payments', warehouses: 'Warehouses', productMovement: 'Product Movement', finance: 'Finance', profitability: 'Profitability', dataImportExport: 'Data Import/Export', totalRevenueShipped: 'Total Revenue (Shipped)', cogs: 'Cost of Goods Sold (COGS)', grossProfitShipped: 'Gross Profit (Shipped)', liveCurrencyRates: 'Live Currency Rates (to AZN)', overduePaymentAlerts: 'Overdue Payment Alerts', orderId: 'Order ID', customer: 'Customer', orderDate: 'Order Date', daysOverdue: 'Days Overdue', amountDue: 'Amount Due', noOverduePayments: 'No overdue payments. All accounts are settled!', lowStockAlerts: 'Low Stock Alerts', product: 'Product', sku: 'SKU', totalStock: 'Total Stock', minStock: 'Min. Stock', noLowStockProducts: 'No products are low on stock. Great job!', addProduct: 'Add Product', image: 'Image', name: 'Name', category: 'Category', avgLandedCost: 'Avg. Landed Cost', landedCostPlusMarkup: 'Avg LC + Markup (Excl VAT)',
+    dashboard: 'Dashboard', products: 'Products', purchaseOrders: 'Purchase Orders', sellOrders: 'SellOrders', suppliers: 'Suppliers', customers: 'Customers', incomingPayments: 'Incoming Payments', outgoingPayments: 'Outgoing Payments', warehouses: 'Warehouses', productMovement: 'Product Movement', finance: 'Finance', profitability: 'Profitability', dataImportExport: 'Data Import/Export', totalRevenueShipped: 'Total Revenue (Shipped)', cogs: 'Cost of Goods Sold (COGS)', grossProfitShipped: 'Gross Profit (Shipped)', liveCurrencyRates: 'Live Currency Rates (to {mainCurrency})', overduePaymentAlerts: 'Overdue Payment Alerts', orderId: 'Order ID', customer: 'Customer', orderDate: 'Order Date', daysOverdue: 'Days Overdue', amountDue: 'Amount Due', noOverduePayments: 'No overdue payments. All accounts are settled!', lowStockAlerts: 'Low Stock Alerts', product: 'Product', sku: 'SKU', totalStock: 'Total Stock', minStock: 'Min. Stock', noLowStockProducts: 'No products are low on stock. Great job!', addProduct: 'Add Product', image: 'Image', name: 'Name', category: 'Category', avgLandedCost: 'Avg. Landed Cost', landedCostPlusMarkup: 'Avg LC + Markup (Excl VAT)',
     edit: 'Edit', delete: 'Delete', noItemsFound: 'No items found.', editProduct: 'Edit Product', createProduct: 'Create Product', productName: 'Product Name', productImage: 'Product Image', chooseFile: 'Choose File', minimumStockLevel: 'Minimum Stock Level', saveProduct: 'Save Product', editSellOrder: 'Edit Sell Order', createSellOrder: 'Create Sell Order', editPurchaseOrder: 'Edit Purchase Order', 'createPurchaseOrder': 'Create Purchase Order', supplier: 'Supplier', sourceWarehouse: 'Source Warehouse', destinationWarehouse: 'Destination Warehouse', status: 'Status', draft: 'Draft', confirmed: 'Confirmed', ordered: 'Ordered', shipped: 'Shipped', received: 'Received', orderItems: 'Order Items', selectProduct: 'Select Product', qty: 'Qty', price: 'Price', addItem: 'Add Item', exchangeRateToAZN: 'Exchange Rate to AZN', exchangeRatePlaceholder: 'e.g., 2.00 for EUR', exchangeRateHelpText: 'Enter the value of 1 unit of the foreign currency in AZN.', transportationFees: 'Transportation Fees', customFees: 'Custom Fees', additionalFees: 'Additional Fees', vatPercent: 'VAT (%)', total: 'Total', saveOrder: 'Save Order', stockError: 'Stock Error', notEnoughStock: 'Not enough stock for', available: 'Available', requested: 'Requested', language: 'Language', addWarehouse: 'Add Warehouse', productsInThisWarehouse: 'Products in this Warehouse', noProductsStored: 'No products currently stored here.', addPO: 'Add PO', addSO: 'Add SO', filterByWarehouse: 'Filter by Warehouse:', allWarehouses: 'All Warehouses', noOrdersForWarehouse: 'No orders found for this warehouse.', orderStatus: 'Order Status', paymentStatus: 'Payment Status', paid: 'Paid', partiallyPaid: 'Partially Paid', unpaid: 'Unpaid', addPayment: 'Add Payment', paymentId: 'Payment ID', linkedOrder: 'Linked Order', amount: 'Amount', method: 'Method', newMovement: 'New Movement', from: 'From', to: 'To', totalItems: 'Total Items', view: 'View', detailsForMovement: 'Details for Movement', financeTitle: 'Finance - Profit & Loss', period: 'Period:', allTime: 'All Time', thisYear: 'This Year', thisYear: 'This Year', thisMonth: 'This Month', 'thisWeek': 'This Week', today: 'Today', keyMetrics: 'Key Metrics', totalRevenue: 'Total Revenue', grossProfit: 'Gross Profit', totalVatCollected: 'Total VAT Collected', cashFlow: 'Cash Flow', totalIncomingPayments: 'Total Incoming Payments', totalOutgoingPayments: 'Total Outgoing Payments', netCashFlow: 'Net Cash Flow', profitabilityAnalysis: 'Profitability Analysis', startDate: 'Start Date', endDate: 'End Date', filter: 'Filter', salesPercentage: 'Sales Percentage (by Qty)', daysInStock: 'Days in Stock', totalSales: 'Total Sales (Markup-Based)', cleanProfit: 'Clean Profit (Markup-Based)',
     currencyRatesSettings: 'Currency Rates (to AZN)', toAzn: 'to AZN', saveCurrencyRates: 'Save Currency Rates', ratesUpdated: 'Currency rates updated.', invalidRates: 'Please enter valid numbers for currency rates.',
     defaultVat: 'Default VAT (%)', saveDefaultVat: 'Save VAT', vatUpdated: 'Default VAT updated.',
@@ -44,7 +44,7 @@ const i18n = {
     editProductMovement: 'Edit Product Movement',
     createProductMovement: 'Create Product Movement',
     totalValue: 'Total Value',
-    landedCostPerUnit: 'Landed Cost / Unit (AZN)',
+    landedCostPerUnit: 'Landed Cost / Unit ({mainCurrency})',
     remaining: 'Remaining',
     cogsTotal: 'Total COGS',
     revenueExVat: 'Total Revenue (Excl. VAT)',
@@ -87,7 +87,7 @@ const i18n = {
     mainWarehouseNotFound: 'Main Warehouse not found. Please ensure a warehouse of type "Main" exists.',
     selectDestinationWarehouse: 'Please select a destination warehouse for the sell order first.',
     movementNotNeeded: 'The sell order is already linked to the Main Warehouse. No movement needed.',
-    noValidProductsForMovement: 'No valid products in the sell order to generate a movement for.',
+    noValidProductsForMovement: 'No valid products for the sell order to generate a movement for.',
     productMovementAlreadyGenerated: 'A product movement has been generated for this sell order.',
     totalLandedCost: 'Total Landed Cost',
     paymentForProducts: 'Payment for Products',
@@ -223,8 +223,14 @@ const i18n = {
 // Language is fixed to English for now
 const currentLang = 'en';
 
-export function t(key: keyof typeof i18n.en): string {
-  return i18n.en[key] || key;
+export function t(key: keyof typeof i18n.en, replacements?: { [key: string]: string | number }): string {
+  let text = i18n.en[key] || key;
+  if (replacements) {
+    for (const placeholder in replacements) {
+      text = text.replace(`{${placeholder}}`, String(replacements[placeholder]));
+    }
+  }
+  return text;
 }
 
 export function getKeyAsPageId(key: string): string {
