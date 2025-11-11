@@ -48,36 +48,6 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
 
-  // Log activeCurrencies directly in the component before rendering
-  console.log("SellOrderForm: activeCurrencies before map", activeCurrencies);
-
-  // Final defensive check, though useSellOrderForm should now guarantee activeCurrencies is an array
-  if (!Array.isArray(activeCurrencies)) {
-    console.error("SellOrderForm: activeCurrencies is unexpectedly not an array!", activeCurrencies);
-    // Fallback to a minimal rendering to prevent crash
-    return (
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="currency" className="text-right">{t('orderCurrency')}</Label>
-            <Select onValueChange={handleCurrencyChange} value={selectedCurrency}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder={mainCurrency} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem key={mainCurrency} value={mainCurrency}>{mainCurrency}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* ... other essential form elements if needed, but keep it minimal */}
-        </div>
-        <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700 space-x-2">
-          <Button type="submit">{t('saveOrder')}</Button>
-        </div>
-      </form>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
