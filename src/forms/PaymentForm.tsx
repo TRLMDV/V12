@@ -376,7 +376,15 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
           }
         }
 
-        const currentPaymentsForCategoryAZN = adjustedPaymentsAZN[selectedOrderOption.category] || 0; // Use adjustedPaymentsAZN
+        // Recalculate adjustedPaymentsAZN for the specific order and category within handleSubmit
+        const currentOrderPayments = paymentsByOrderAndCategoryAZN[selectedOrderOption.id] || { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
+        let adjustedPaymentsAZN = { ...currentOrderPayments };
+        if (isEdit && paymentId === paymentToSave.id && paymentToSave.paymentCategory !== 'manual') {
+          const existingPaymentAmountInAZN = (payment.amount || 0) * (payment.paymentCurrency === 'AZN' ? 1 : (payment.paymentExchangeRate || currencyRates[payment.paymentCurrency || 'AZN'] || 1));
+          adjustedPaymentsAZN[paymentToSave.paymentCategory] -= existingPaymentAmountInAZN;
+        }
+
+        const currentPaymentsForCategoryAZN = adjustedPaymentsAZN[selectedOrderOption.category] || 0;
         const remainingAmountForCategoryAZN = totalCategoryValueAZN - currentPaymentsForCategoryAZN;
 
         if (amountInAZN > remainingAmountForCategoryAZN + 0.001) {
