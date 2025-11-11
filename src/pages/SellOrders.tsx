@@ -16,7 +16,7 @@ import SellOrderDetails from '@/components/SellOrderDetails';
 import { SellOrder, Product, Customer, Warehouse } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof SellOrder | 'customerName' | 'warehouseName' | 'totalItems' | 'totalValueAZN' | 'paymentStatus' | 'totalRevenueExVat';
+  key: keyof SellOrder | 'customerName' | 'warehouseName' | 'totalItems' | 'totalValueAZN' | 'paymentStatus';
   direction: 'ascending' | 'descending';
 };
 
@@ -150,7 +150,6 @@ const SellOrders: React.FC = () => {
       const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 0), 0) || 0;
       const totalValueAZN = order.total || 0;
       const paymentStatus = getPaymentStatus(order);
-      const totalRevenueExVat = order.total / (1 + order.vatPercent / 100); // Calculate Total without VAT
 
       return {
         ...order,
@@ -159,7 +158,6 @@ const SellOrders: React.FC = () => {
         totalItems,
         totalValueAZN,
         paymentStatus,
-        totalRevenueExVat, // Include in mapped item
       };
     });
 
@@ -174,8 +172,8 @@ const SellOrders: React.FC = () => {
         let valA: any = a[key];
         let valB: any = b[key];
 
-        if (valA === undefined || valA === null) valA = (key === 'id' || key === 'totalItems' || key === 'totalValueAZN' || key === 'totalRevenueExVat') ? 0 : '';
-        if (valB === undefined || valB === null) valB = (key === 'id' || key === 'totalItems' || key === 'totalValueAZN' || key === 'totalRevenueExVat') ? 0 : '';
+        if (valA === undefined || valA === null) valA = (key === 'id' || key === 'totalItems' || key === 'totalValueAZN') ? 0 : '';
+        if (valB === undefined || valB === null) valB = (key === 'id' || key === 'totalItems' || key === 'totalValueAZN') ? 0 : '';
 
         let comparison = 0;
 
@@ -183,7 +181,6 @@ const SellOrders: React.FC = () => {
           case 'id':
           case 'totalItems':
           case 'totalValueAZN':
-          case 'totalRevenueExVat': // Added for sorting
             comparison = (valA as number) - (valB as number);
             break;
           case 'orderDate':
