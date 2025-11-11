@@ -55,6 +55,7 @@ const i18n = {
     qtySold: 'Qty Sold',
     manualExpense: 'Manual Expense / Unlinked Payment',
     landedCostPlusMarkup: 'Avg LC + Markup (Excl VAT)',
+    landedCostPlusMarkupPlusVat: 'Avg LC + Markup + VAT (Incl VAT)', // Updated translation
     totals: 'Totals',
     allSuppliers: 'All Suppliers',
     allProducts: 'All Products',
@@ -247,7 +248,6 @@ const i18n = {
     liter: 'liter',
     packingUnitNameRequired: 'Packing unit name is required.',
     baseUnitRequired: 'Base unit is required.',
-    conversionFactorRequired: 'Conversion factor is required.',
     conversionFactorPositive: 'Conversion factor must be a positive number.',
     pieceConversionFactor: 'A "Piece" packing unit must have a conversion factor of 1.',
     defaultPacking: 'Default Packing',
