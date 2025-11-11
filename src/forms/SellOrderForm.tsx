@@ -10,6 +10,7 @@ import { t } from '@/utils/i18n';
 import { useSellOrderForm } from '@/hooks/useSellOrderForm';
 import SellOrderItemsField from '@/components/SellOrderItemsField';
 import { Product, Customer, Warehouse, Currency } from '@/types'; // Import types from types file
+import { useData } from '@/context/DataContext'; // Import useData
 
 interface SellOrderFormProps {
   orderId?: number;
@@ -35,9 +36,6 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     handleGenerateProductMovement,
     handleGenerateIncomingPayment,
     handleSubmit,
-    products,
-    customers,
-    warehouses,
     productMap,
     totalVatAmount,
     totalCleanProfit,
@@ -47,6 +45,9 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     subtotalInOrderCurrency,
     activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
+
+  // Get customers, products, and warehouses directly from useData
+  const { customers, products, warehouses } = useData();
 
   return (
     <form onSubmit={handleSubmit}>
