@@ -50,6 +50,9 @@ const ActiveCurrenciesSettings: React.FC<ActiveCurrenciesSettingsProps> = ({
     setIsCurrenciesListOpen(false); // Collapse the list after saving
   };
 
+  // Sort ALL_CURRENCIES alphabetically for display
+  const sortedAllCurrencies = [...ALL_CURRENCIES].sort((a, b) => a.localeCompare(b));
+
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
       <button
@@ -65,7 +68,7 @@ const ActiveCurrenciesSettings: React.FC<ActiveCurrenciesSettingsProps> = ({
       {isCurrenciesListOpen && (
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
-            {ALL_CURRENCIES.map(c => (
+            {sortedAllCurrencies.map(c => (
               <div key={c} className="flex items-center space-x-2">
                 <Checkbox
                   id={`currency-${c}`}
