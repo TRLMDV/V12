@@ -16,6 +16,7 @@ import { PlusCircle, Edit, Trash2 } from 'lucide-react'; // Import icons
 import FormModal from '@/components/FormModal'; // Import FormModal
 import PaymentCategoryForm from '@/forms/PaymentCategoryForm'; // Import new form
 import { Settings, CurrencyRates, Product, Customer, PaymentCategorySetting, Currency } from '@/types'; // Import types from types file
+import { Checkbox } from '@/components/ui/checkbox'; // Import Checkbox
 
 const ALL_CURRENCIES: Currency[] = [
   'AZN', 'USD', 'EUR', 'RUB', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'CNY', 'KWD', 'BHD', 'OMR', 'JOD', 'GIP', 'KYD', 'KRW', 'SGD', 'INR', 'MXN', 'SEK', 'THB'
@@ -31,6 +32,7 @@ const SettingsPage: React.FC = () => {
   const [defaultMarkup, setDefaultMarkup] = useState(settings.defaultMarkup);
   const [displayScale, setDisplayScale] = useState(settings.displayScale); // New state for display scale
   const [mainCurrency, setMainCurrency] = useState<Currency>(settings.mainCurrency); // New state for main currency
+  const [activeCurrencies, setActiveCurrencies] = useState<Currency[]>(settings.activeCurrencies); // New state for active currencies
 
   // States for all currency rates
   const [rates, setRates] = useState<CurrencyRates>(currencyRates);
@@ -51,6 +53,7 @@ const SettingsPage: React.FC = () => {
     setDefaultMarkup(settings.defaultMarkup);
     setDisplayScale(settings.displayScale);
     setMainCurrency(settings.mainCurrency); // Initialize main currency
+    setActiveCurrencies(settings.activeCurrencies); // Initialize active currencies
     setRates(currencyRates); // Initialize all rates
   }, [settings, currencyRates]);
 
@@ -60,12 +63,23 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleSaveCurrencyRates = () => {
-    const invalidRates = ALL_CURRENCIES.filter(c => c !== 'AZN' && (isNaN(rates[c]) || rates[c] <= 0));
+    // Only validate and save rates for active currencies and AZN
+    const currenciesToValidate = Array.from(new Set([...activeCurrencies, 'AZN']));
+    const invalidRates = currenciesToValidate.filter(c => c !== 'AZN' && (isNaN(rates[c]) || rates[c] <= 0));
     if (invalidRates.length > 0) {
       toast.error(t('invalidRates'), { description: `Please enter valid positive numbers for: ${invalidRates.join(', ')}` });
       return;
     }
-    setCurrencyRates(prev => ({ ...prev, ...rates, AZN: 1.00 })); // Ensure AZN is always 1.00
+    
+    // Create a new rates object containing only active currencies and AZN
+    const newRates: Partial<CurrencyRates> = { AZN: 1.00 };
+    activeCurrencies.forEach(c => {
+      if (c !== 'AZN') {
+        newRates[c] = rates[c] || 0; // Use existing rate or 0 if not set
+      }
+    });
+
+    setCurrencyRates(prev => ({ ...prev, ...newRates }));
     toast.success(t('success'), { description: t('ratesUpdated') });
   };
 
@@ -97,8 +111,31 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleSaveMainCurrency = () => {
-    setSettings(prev => ({ ...prev, mainCurrency }));
+    // Ensure main currency is always in activeCurrencies
+    const updatedActiveCurrencies = Array.from(new Set([...activeCurrencies, mainCurrency]));
+    setSettings(prev => ({ ...prev, mainCurrency, activeCurrencies: updatedActiveCurrencies }));
+    setActiveCurrencies(updatedActiveCurrencies); // Update local state immediately
     toast.success(t('success'), { description: t('mainCurrencyUpdated') });
+  };
+
+  const handleToggleActiveCurrency = (currency: Currency, isChecked: boolean) => {
+    if (currency === mainCurrency) {
+      // Main currency cannot be deactivated
+      toast.info(t('mainCurrencyCannotBeDeactivated'));
+      return;
+    }
+    setActiveCurrencies(prev => {
+      if (isChecked) {
+        return Array.from(new Set([...prev, currency])).sort();
+      } else {
+        return prev.filter(c => c !== currency);
+      }
+    });
+  };
+
+  const handleSaveActiveCurrencies = () => {
+    setSettings(prev => ({ ...prev, activeCurrencies }));
+    toast.success(t('success'), { description: t('activeCurrenciesUpdated') });
   };
 
   const handleThemeChange = (value: 'light' | 'dark') => {
@@ -347,12 +384,36 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Active Currencies Selection */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('activeCurrenciesSelection')}</h2>
+        <p className="text-gray-600 dark:text-slate-400 mb-4">{t('activeCurrenciesDescription')}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
+          {ALL_CURRENCIES.map(c => (
+            <div key={c} className="flex items-center space-x-2">
+              <Checkbox
+                id={`currency-${c}`}
+                checked={activeCurrencies.includes(c)}
+                onCheckedChange={(checked) => handleToggleActiveCurrency(c, checked as boolean)}
+                disabled={c === mainCurrency} // Main currency cannot be deselected
+              />
+              <Label htmlFor={`currency-${c}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                {c} {c === mainCurrency && `(${t('mainCurrency')})`}
+              </Label>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={handleSaveActiveCurrencies}>{t('saveActiveCurrencies')}</Button>
+        </div>
+      </div>
+
       {/* Currency Rates */}
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('currencyRatesSettings')}</h2>
         <p className="text-gray-600 dark:text-slate-400 mb-4">{t('currencyRatesDescription')}</p>
         <div className="grid gap-4 py-4">
-          {ALL_CURRENCIES.filter(c => c !== 'AZN').map(c => (
+          {activeCurrencies.filter(c => c !== 'AZN').map(c => ( // Only show active currencies, excluding AZN
             <div key={c} className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor={`${c}-to-azn`} className="text-right">{c} {t('toAzn')}</Label>
               <Input

@@ -58,6 +58,7 @@ const initialSettings: Settings = {
     { id: 8, name: 'Software Subscriptions' },
   ],
   mainCurrency: 'AZN', // New: Default main currency
+  activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB'], // New: Default active currencies
 };
 
 // --- Context Definition ---

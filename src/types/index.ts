@@ -131,6 +131,7 @@ export interface Settings {
   displayScale: number; // New: Program display scaling percentage
   paymentCategories: PaymentCategorySetting[]; // New: Custom payment categories
   mainCurrency: Currency; // New: Main currency for the application
+  activeCurrencies: Currency[]; // New: Currencies the user wants to actively use
 }
 
 // --- Recycle Bin Types ---

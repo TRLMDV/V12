@@ -42,7 +42,7 @@ const i18n = {
     productsToMove: 'Products to Move',
     saveMovement: 'Save Movement',
     editProductMovement: 'Edit Product Movement',
-    createProductMovement: 'Create Product Movement',
+    createProductMovement: 'Create ProductMovement',
     totalValue: 'Total Value',
     landedCostPerUnit: 'Landed Cost / Unit ({mainCurrency})',
     remaining: 'Remaining',
@@ -217,6 +217,12 @@ const i18n = {
     saveMainCurrency: 'Save Main Currency',
     mainCurrencyUpdated: 'Main currency updated.',
     currencyRatesDescription: 'Enter the exchange rate for 1 unit of each currency to AZN. AZN is always 1.00.',
+    // New for active currencies
+    activeCurrenciesSelection: 'Active Currencies Selection',
+    activeCurrenciesDescription: 'Select the currencies you actively use in your business. Only selected currencies will appear in forms and be configurable for rates.',
+    saveActiveCurrencies: 'Save Active Currencies',
+    activeCurrenciesUpdated: 'Active currencies updated.',
+    mainCurrencyCannotBeDeactivated: 'The main currency cannot be deactivated.',
   }
 };
 
