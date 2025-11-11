@@ -95,6 +95,9 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     isEdit,
   });
 
+  // Log activeCurrencies to debug
+  console.log("useSellOrderForm: settings.activeCurrencies", settings.activeCurrencies);
+
   return {
     order,
     setOrder, // Exposed for potential external updates if needed, though less likely with modularity
@@ -123,6 +126,6 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     mainCurrency,
     currentExchangeRateToMainCurrency,
     subtotalInOrderCurrency,
-    activeCurrencies: settings.activeCurrencies, // <--- Added this line
+    activeCurrencies: settings.activeCurrencies,
   };
 };

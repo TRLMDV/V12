@@ -45,7 +45,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     manualExchangeRateInput,
     mainCurrency,
     subtotalInOrderCurrency,
-    activeCurrencies, // <--- Destructured activeCurrencies here
+    activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
 
   return (
@@ -112,7 +112,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
               <SelectValue placeholder={mainCurrency} />
             </SelectTrigger>
             <SelectContent>
-              {activeCurrencies.map(c => ( // <--- Using activeCurrencies here
+              {(activeCurrencies || []).map(c => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
