@@ -5,10 +5,11 @@ export interface Product {
   sku: string;
   category: string;
   description: string;
-  stock: { [warehouseId: number]: number };
+  stock: { [warehouseId: number]: number }; // Stock is always in base units (pieces or ml/liter)
   minStock: number;
   averageLandedCost: number; // Stored in Main Currency
   imageUrl: string;
+  defaultPackingUnitId?: number; // New: Default packing unit for this product
   totalStock?: number; // Added for easier export/display
 }
 
@@ -38,14 +39,61 @@ export interface Warehouse {
   type: 'Main' | 'Secondary'; // Added type field
 }
 
-export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF' | 'DOP' | 'EGP' | 'ERN' | 'SZL' | 'ZAR' | 'ETB' | 'FKP' | 'FJD' | 'XPF' | 'GMD' | 'GEL' | 'GHS' | 'GTQ' | 'GNF' | 'GYD' | 'HTG' | 'HNL' | 'HKD' | 'HUF' | 'ISK' | 'IDR' | 'IRR' | 'IQD' | 'ILS' | 'JMD' | 'KZT' | 'KES' | 'KPW' | 'KGS' | 'LAK' | 'LBP' | 'LSL' | 'LRD' | 'LYD' | 'MDL' | 'MOP' | 'MGA' | 'MWK' | 'MYR' | 'MVR' | 'MRU' | 'MZN' | 'MMK' | 'NAD' | 'NPR' | 'NIO' | 'NGN' | 'NOK' | 'PKR' | 'PGK' | 'PYG' | 'PEN' | 'PHP' | 'PLN' | 'QAR' | 'RON' | 'RSD' | 'SCR' | 'SLE' | 'SBD' | 'SOS' | 'SSP' | 'STN' | 'SRD' | 'SYP' | 'TWD' | 'TJS' | 'TZS' | 'TTD' | 'TND' | 'TRY' | 'TMT' | 'UGX' | 'UAH' | 'AED' | 'UYU' | 'UZS' | 'VUV' | 'VES' | 'VED' | 'VND' | 'YER' | 'ZMW' | 'ZWG';
+export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF' | 'DOP' | 'EGP' | 'ERN' | 'SZL' | 'ZAR' | 'ETB' | 'FKP' | 'FJD' | 'XPF' | 'GMD' | 'GEL' | 'GHS' | 'GTQ' | 'GNF' | 'GYD' | 'HTG' | 'HNL' | 'HKD' | 'HUF' | 'ISK' | 'IDR' | 'IRR' | 'IQD' | 'ILS' | 'JMD' | 'KZT' | 'KES' | 'KPW' | 'KGS' | 'LAK' | 'LBP' | 'LSL' | 'LRD' | 'LYD' | 'MDL' | 'MOP' | 'MGA' | 'MWK' | 'MYR' | 'MVR' | 'MRU' | 'MZN' | 'MMK' | 'NAD' | 'NPR' | 'NIO' | 'NGN' | 'NOK' | 'PKR': number;
+  PGK: number;
+  PYG: number;
+  PEN: number;
+  PHP: number;
+  PLN: number;
+  QAR: number;
+  RON: number;
+  RSD: number;
+  SCR: number;
+  SLE: number;
+  SBD: number;
+  SOS: number;
+  SSP: number;
+  STN: number;
+  SRD: number;
+  SYP: number;
+  TWD: number;
+  TJS: number;
+  TZS: number;
+  TTD: number;
+  TND: number;
+  TRY: number;
+  TMT: number;
+  UGX: number;
+  UAH: number;
+  AED: number;
+  UYU: number;
+  UZS: number;
+  VUV: number;
+  VES: number;
+  VED: number;
+  VND: number;
+  YER: number;
+  ZMW: number;
+  ZWG: number;
+}
+
+export type BaseUnit = 'piece' | 'ml' | 'liter';
+
+export interface PackingUnit {
+  id: number;
+  name: string; // e.g., "Piece", "Box", "Bottle"
+  baseUnit: BaseUnit; // The fundamental unit this packing converts to
+  conversionFactor: number; // How many base units are in one of this packing unit (e.g., 10 for a box of 10 pieces)
+}
 
 export interface OrderItem {
   productId: number;
-  qty: number;
+  qty: number; // This will now always be the quantity in the product's base unit
   price: number;
   currency?: Currency; // For PO items
   landedCostPerUnit?: number; // For PO items (in Main Currency)
+  packingUnitId?: number; // New: The ID of the selected packing unit for this order item
+  packingQuantity?: number; // New: The quantity in terms of the selected packing unit
 }
 
 export interface PurchaseOrder {
@@ -255,6 +303,7 @@ export interface Settings {
   mainCurrency: Currency; // New: Main currency for the application
   activeCurrencies: Currency[]; // New: Currencies the user wants to actively use
   showDashboardCurrencyRates: boolean; // New: Toggle for dashboard currency rates visibility
+  packingUnits: PackingUnit[]; // New: Custom packing units
 }
 
 // --- Recycle Bin Types ---

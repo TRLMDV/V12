@@ -16,7 +16,8 @@ import ActiveCurrenciesSettings from '@/components/settings/ActiveCurrenciesSett
 import CurrencyRatesSettings from '@/components/settings/CurrencyRatesSettings';
 import PaymentCategoriesSettings from '@/components/settings/PaymentCategoriesSettings';
 import EraseAllDataSection from '@/components/settings/EraseAllDataSection';
-import DashboardCurrencyRatesToggle from '@/components/settings/DashboardCurrencyRatesToggle'; // New import
+import DashboardCurrencyRatesToggle from '@/components/settings/DashboardCurrencyRatesToggle';
+import PackingSettings from '@/components/settings/PackingSettings'; // New import
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -107,11 +108,20 @@ const SettingsPage: React.FC = () => {
         setSettings={setSettings}
         t={t}
         showConfirmationModal={showConfirmationModal}
-        getNextId={getNextId}
-        setNextIdForCollection={setNextIdForCollection}
+        getNextId={(key) => getNextId(key as 'paymentCategories')} // Cast key
+        setNextIdForCollection={(key, nextId) => setNextIdForCollection(key as 'paymentCategories', nextId)} // Cast key
       />
 
-      <DashboardCurrencyRatesToggle // New component
+      <PackingSettings
+        settings={settings}
+        setSettings={setSettings}
+        t={t}
+        showConfirmationModal={showConfirmationModal}
+        getNextId={(key) => getNextId(key as 'packingUnits')} // Cast key
+        setNextIdForCollection={(key, nextId) => setNextIdForCollection(key as 'packingUnits', nextId)} // Cast key
+      />
+
+      <DashboardCurrencyRatesToggle
         settings={settings}
         setSettings={setSettings}
         t={t}

@@ -226,6 +226,31 @@ const i18n = {
     // New for dashboard currency rates toggle
     dashboardCurrencyRates: 'Dashboard Currency Rates',
     showCurrencyRatesOnDashboard: 'Show Currency Rates on Dashboard',
+    // New for Packing Units
+    packingUnits: 'Packing Units',
+    packingUnit: 'Packing Unit',
+    addPackingUnit: 'Add Packing Unit',
+    editPackingUnit: 'Edit Packing Unit',
+    deletePackingUnit: 'Delete Packing Unit',
+    packingUnitName: 'Packing Unit Name',
+    baseUnit: 'Base Unit',
+    conversionFactor: 'Conversion Factor',
+    savePackingUnit: 'Save Packing Unit',
+    noPackingUnitsFound: 'No packing units found. Add some to define how your products are packaged!',
+    packingUnitAdded: 'Packing unit added successfully.',
+    packingUnitUpdated: 'Packing unit updated successfully.',
+    packingUnitDeleted: 'Packing unit deleted successfully.',
+    deletePackingUnitWarning: 'Are you sure you want to delete this packing unit? This action cannot be undone.',
+    selectPackingUnit: 'Select Packing Unit',
+    piece: 'Piece',
+    ml: 'ml',
+    liter: 'liter',
+    packingUnitNameRequired: 'Packing unit name is required.',
+    baseUnitRequired: 'Base unit is required.',
+    conversionFactorRequired: 'Conversion factor is required.',
+    conversionFactorPositive: 'Conversion factor must be a positive number.',
+    pieceConversionFactor: 'A "Piece" packing unit must have a conversion factor of 1.',
+    defaultPacking: 'Default Packing',
   }
 };
 

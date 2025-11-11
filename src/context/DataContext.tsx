@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { t } from '@/utils/i18n';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // Import new hooks
 import { useModals } from '@/hooks/useModals';
@@ -13,7 +13,7 @@ import { useCrudOperations } from '@/hooks/useCrudOperations';
 // Import all data types from the new types file
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -61,6 +61,14 @@ const initialSettings: Settings = {
   mainCurrency: 'AZN', // New: Default main currency
   activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD'], // Updated: Default active currencies
   showDashboardCurrencyRates: true, // New: Default to showing dashboard currency rates
+  packingUnits: [ // Default packing units
+    { id: 1, name: 'Piece', baseUnit: 'piece', conversionFactor: 1 },
+    { id: 2, name: 'Pack', baseUnit: 'piece', conversionFactor: 10 },
+    { id: 3, name: 'Box', baseUnit: 'piece', conversionFactor: 100 },
+    { id: 4, name: 'Bottle (ml)', baseUnit: 'ml', conversionFactor: 1 },
+    { id: 5, name: 'Bottle (liter)', baseUnit: 'liter', conversionFactor: 1 },
+    { id: 6, name: 'Barrel (liter)', baseUnit: 'liter', conversionFactor: 200 },
+  ],
 };
 
 // --- Context Definition ---
@@ -87,6 +95,8 @@ interface DataContextType {
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   currencyRates: CurrencyRates;
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
+  packingUnits: PackingUnit[]; // New: Packing units
+  setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // New: Setter for packing units
   
   // Recycle Bin
   recycleBin: RecycleBinItem[];
@@ -97,10 +107,10 @@ interface DataContextType {
   cleanRecycleBin: () => void;
 
   // CRUD operations
-  saveItem: (key: CollectionKey, item: any) => void;
-  deleteItem: (key: CollectionKey, id: number) => void;
-  getNextId: (key: CollectionKey) => number;
-  setNextIdForCollection: (key: CollectionKey, nextId: number) => void; // New function
+  saveItem: (key: CollectionKey | 'packingUnits', item: any) => void; // Updated key type
+  deleteItem: (key: CollectionKey | 'packingUnits', id: number) => void; // Updated key type
+  getNextId: (key: CollectionKey | 'packingUnits' | 'paymentCategories') => number; // Updated key type
+  setNextIdForCollection: (key: CollectionKey | 'packingUnits' | 'paymentCategories', nextId: number) => void; // Updated key type
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
 
@@ -132,12 +142,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [settings, setSettings] = useLocalStorage<Settings>('settings', initialSettings);
   const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', defaultCurrencyRates);
+  const [packingUnits, setPackingUnits] = useLocalStorage<PackingUnit[]>('packingUnits', initialSettings.packingUnits); // New state for packing units
   const [recycleBin, setRecycleBin] = useLocalStorage<RecycleBinItem[]>('recycleBin', []);
 
   // Internal state for next IDs, managed by DataProvider
   const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
     products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1,
     paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
+    packingUnits: initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1, // New nextId for packing units
   });
 
   // Add console logs for debugging
@@ -150,6 +162,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] incomingPayments:", incomingPayments);
   console.log("[DataContext] outgoingPayments:", outgoingPayments);
   console.log("[DataContext] productMovements:", productMovements);
+  console.log("[DataContext] packingUnits:", packingUnits); // Log packing units
 
 
   // Use the new modals hook
@@ -224,12 +237,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   // --- Recycle Bin Operations ---
-  const addToRecycleBin = useCallback((item: any, collectionKey: CollectionKey) => {
+  const addToRecycleBin = useCallback((item: any, collectionKey: CollectionKey | 'packingUnits') => {
     const recycleItemId = `${collectionKey}-${item.id}-${Date.now()}`;
     const newItem: RecycleBinItem = {
       id: recycleItemId,
       originalId: item.id,
-      collectionKey,
+      collectionKey: collectionKey as CollectionKey, // Cast to CollectionKey for RecycleBinItem
       data: item,
       deletedAt: MOCK_CURRENT_DATE.toISOString(),
     };
@@ -258,6 +271,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'incomingPayments': setter = setIncomingPayments; break;
         case 'outgoingPayments': setter = setOutgoingPayments; break;
         case 'productMovements': setter = setProductMovements; break;
+        case 'packingUnits': setter = setPackingUnits; break; // New case for packing units
         default:
           showAlertModal(t('error'), t('unknownCollectionType'));
           return prevRecycleBin;
@@ -275,7 +289,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       showAlertModal(t('success'), t('itemRestored'));
       return prevRecycleBin.filter(item => item.id !== recycleItemId);
     });
-  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, showAlertModal]);
+  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, showAlertModal]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
     showConfirmationModal(
@@ -316,6 +330,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIncomingPayments,
     setOutgoingPayments,
     setProductMovements,
+    setPackingUnits, // New setter for packing units
     setNextIds,
     // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
     products: Array.isArray(products) ? products : [], // Defensive check
@@ -327,6 +342,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], // Defensive check
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], // Defensive check
     productMovements: Array.isArray(productMovements) ? productMovements : [], // Defensive check
+    packingUnits: Array.isArray(packingUnits) ? packingUnits : [], // Defensive check
     // Other stable dependencies
     nextIds, // nextIds value for getNextId
     showAlertModal,
@@ -351,6 +367,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProductMovements(initialData.productMovements);
       setSettings(initialSettings);
       setCurrencyRates(defaultCurrencyRates);
+      setPackingUnits(initialSettings.packingUnits); // Initialize packing units
       setRecycleBin([]); // Ensure recycle bin is also initialized empty
 
       // Initialize nextIds based on initial data (which are now empty, so start from 1)
@@ -359,10 +376,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         initialNextIds[key] = 1; // Always start from 1 for empty collections
       });
       initialNextIds.paymentCategories = initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1;
+      initialNextIds.packingUnits = initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1; // Initialize nextId for packing units
       setNextIds(initialNextIds);
       setInitialized(true);
     }
-  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates, setNextIds, setRecycleBin]);
+  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates, setPackingUnits, setNextIds, setRecycleBin]);
 
   const productsWithTotalStock = useMemo(() => {
     return Array.isArray(products) ? products.map(p => ({ // Defensive check for products
@@ -383,6 +401,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements, // Defensive check
     settings, setSettings,
     currencyRates, setCurrencyRates,
+    packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits, // Provide packing units
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, // Add recycle bin functions
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,
@@ -401,6 +420,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     productMovements, setProductMovements,
     settings, setSettings,
     currencyRates, setCurrencyRates,
+    packingUnits, setPackingUnits,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,
