@@ -187,6 +187,7 @@ const i18n = {
     paymentForTransportationFees: 'Payment for Transportation Fees', // New translation
     paymentForCustomFees: 'Payment for Custom Fees', // New translation
     paymentForAdditionalFees: 'Payment for Additional Fees', // New translation
+    totalWithVat: 'Total (Incl. VAT)', // New translation
   }
 };
 
