@@ -98,6 +98,7 @@ const SettingsPage: React.FC = () => {
         setCurrencyRates={setCurrencyRates}
         t={t}
         activeCurrencies={settings.activeCurrencies} // Use global activeCurrencies for rates display
+        mainCurrency={settings.mainCurrency} // Pass mainCurrency
       />
 
       <PaymentCategoriesSettings
