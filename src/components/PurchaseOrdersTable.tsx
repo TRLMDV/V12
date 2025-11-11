@@ -4,7 +4,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { t } from '@/utils/i18n';
-import { PurchaseOrder } from '@/types';
+import { PurchaseOrder, PackingUnit } from '@/types'; // Import PackingUnit
+import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
 interface PurchaseOrdersTableProps {
   orders: (PurchaseOrder & {
@@ -31,6 +32,19 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({
   handleSortClick,
   getSortIndicator,
 }) => {
+  const { packingUnitMap } = useData(); // Access packingUnitMap
+
+  const formatOrderItemsForDisplay = (items: PurchaseOrder['items']) => {
+    if (!items || items.length === 0) return t('noItemsFound');
+    return items.map(item => {
+      const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
+      const displayQty = packingUnit && item.packingQuantity !== undefined
+        ? `${item.packingQuantity} ${packingUnit.name}`
+        : `${item.qty} ${t('piece')}`; // Fallback to base unit
+      return `${displayQty}`;
+    }).join(', ');
+  };
+
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto">
       <Table>

@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
-import { PurchaseOrder, Product, Supplier, Warehouse, Currency } from '@/types';
+import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit } from '@/types';
 
 interface PurchaseOrderItemState {
   productId: number | '';
-  qty: number | string;
+  qty: number | string; // This will be the quantity in base units
   price: number | string;
   itemTotal: number | string;
   currency?: Currency;
   landedCostPerUnit?: number;
+  packingUnitId?: number; // New: ID of the selected packing unit
+  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
 }
 
 interface UsePurchaseOrderStateProps {
@@ -18,13 +20,14 @@ interface UsePurchaseOrderStateProps {
 }
 
 export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) => {
-  const { purchaseOrders, suppliers, warehouses, products, settings, getNextId } = useData();
+  const { purchaseOrders, suppliers, warehouses, products, settings, getNextId, packingUnits } = useData();
   const isEdit = orderId !== undefined;
   const mainCurrency = settings.mainCurrency;
 
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s }), {} as { [key: number]: Supplier }), [suppliers]);
   const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]);
   const warehouseMap = useMemo(() => warehouses.reduce((acc, w) => ({ ...acc, [w.id]: w }), {} as { [key: number]: Warehouse }), [warehouses]);
+  const packingUnitMap = useMemo(() => packingUnits.reduce((acc, pu) => ({ ...acc, [pu.id]: pu }), {} as { [key: number]: PackingUnit }), [packingUnits]);
   const activeCurrencies = useMemo(() => settings.activeCurrencies || ['AZN'], [settings.activeCurrencies]);
 
   const [order, setOrder] = useState<Partial<PurchaseOrder>>(() => {
@@ -51,14 +54,16 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
       if (existingOrder) return existingOrder.items.map(item => ({
         productId: item.productId,
-        qty: String(item.qty),
+        qty: String(item.qty), // Base unit quantity
         price: String(item.price),
         itemTotal: String(item.qty * item.price),
         currency: item.currency || existingOrder.currency,
         landedCostPerUnit: item.landedCostPerUnit,
+        packingUnitId: item.packingUnitId, // Load existing packing unit
+        packingQuantity: String(item.packingQuantity || ''), // Load existing packing quantity
       }));
     }
-    return [{ productId: '', qty: '', price: '', itemTotal: '' }];
+    return [{ productId: '', qty: '', price: '', itemTotal: '', packingUnitId: undefined, packingQuantity: '' }];
   });
 
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(mainCurrency);
@@ -80,6 +85,8 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
           itemTotal: String(item.qty * item.price),
           currency: item.currency || existingOrder.currency,
           landedCostPerUnit: item.landedCostPerUnit,
+          packingUnitId: item.packingUnitId,
+          packingQuantity: String(item.packingQuantity || ''),
         })));
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);
@@ -99,14 +106,14 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         additionalFeesCurrency: 'AZN',
         total: 0,
       });
-      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '' }]);
+      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '', packingUnitId: undefined, packingQuantity: '' }]);
       setSelectedCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
       setOpenComboboxIndex(null);
       setIsFormInitialized(true);
     }
-  }, [orderId, isEdit, purchaseOrders, products, getNextId, isFormInitialized, mainCurrency]);
+  }, [orderId, isEdit, purchaseOrders, products, getNextId, isFormInitialized, mainCurrency, packingUnits]);
 
   return {
     order,
@@ -124,11 +131,13 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     supplierMap,
     productMap,
     warehouseMap,
+    packingUnitMap, // Pass packingUnitMap
     activeCurrencies,
     mainCurrency,
     isEdit,
     products, // Pass products array for combobox
     suppliers, // Pass suppliers array for dropdown
     warehouses, // Pass warehouses array for dropdown
+    packingUnits, // Pass packingUnits array for dropdown
   };
 };

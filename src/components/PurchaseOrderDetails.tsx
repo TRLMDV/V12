@@ -4,13 +4,14 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportButton';
 import { t } from '@/utils/i18n';
-import { PurchaseOrder, Product, Supplier, Warehouse, CurrencyRates } from '@/types';
+import { PurchaseOrder, Product, Supplier, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
 
 interface PurchaseOrderDetailsProps {
   order: PurchaseOrder;
   supplierMap: { [key: number]: Supplier };
   warehouseMap: { [key: number]: Warehouse };
   productMap: { [key: number]: Product };
+  packingUnitMap: { [key: number]: PackingUnit }; // New: Pass packingUnitMap
   currencyRates: CurrencyRates;
 }
 
@@ -19,6 +20,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
   supplierMap,
   warehouseMap,
   productMap,
+  packingUnitMap, // Destructure new prop
   currencyRates,
 }) => {
   // Recalculate for display in native currency for consistency with form
@@ -53,7 +55,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
         <TableHeader>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
             <TableHead className="p-2">{t('product')}</TableHead>
-            <TableHead className="p-2">{t('qty')}</TableHead>
+            <TableHead className="p-2">{t('qty')}</TableHead> {/* Now displays packing quantity */}
             <TableHead className="p-2">{t('price')}</TableHead>
             <TableHead className="p-2">{t('landedCostPerUnit')}</TableHead>
             <TableHead className="p-2">{t('totalValue')}</TableHead>
@@ -63,10 +65,15 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
           {order.items?.map((item, index) => {
             const product = productMap[item.productId];
             const itemTotalLandedAZN = (item.landedCostPerUnit || 0) * item.qty;
+            const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
+            const displayQty = packingUnit && item.packingQuantity !== undefined
+              ? `${item.packingQuantity} ${packingUnit.name}`
+              : `${item.qty} ${t('piece')}`; // Fallback to base unit
+
             return (
               <TableRow key={index} className="border-b dark:border-slate-600">
                 <TableCell className="p-2">{product?.name || 'N/A'}</TableCell>
-                <TableCell className="p-2">{item.qty}</TableCell>
+                <TableCell className="p-2">{displayQty}</TableCell>
                 <TableCell className="p-2">{item.price?.toFixed(2)} {item.currency || order.currency}</TableCell>
                 <TableCell className="p-2">{item.landedCostPerUnit?.toFixed(2)} AZN</TableCell>
                 <TableCell className="p-2">{itemTotalLandedAZN.toFixed(2)} AZN</TableCell>

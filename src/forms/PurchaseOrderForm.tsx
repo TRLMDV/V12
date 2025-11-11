@@ -22,6 +22,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     warehouses,
     products,
     productMap,
+    packingUnits, // New: packingUnits
+    packingUnitMap, // New: packingUnitMap
     activeCurrencies,
     mainCurrency,
     handleChange,
@@ -137,6 +139,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
           addOrderItem={addOrderItem}
           products={products}
           productMap={productMap}
+          packingUnits={packingUnits} // Pass packingUnits
+          packingUnitMap={packingUnitMap} // Pass packingUnitMap
           warehouseId={order.warehouseId as number}
           selectedCurrency={selectedCurrency}
           openComboboxIndex={openComboboxIndex}

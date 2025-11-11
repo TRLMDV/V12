@@ -14,7 +14,7 @@ interface UsePurchaseOrderFormProps {
 }
 
 export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFormProps) => {
-  const { currencyRates, settings } = useData();
+  const { currencyRates, settings, packingUnits, packingUnitMap } = useData(); // New: packingUnits and packingUnitMap
 
   // 1. State Management
   const {
@@ -65,7 +65,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
       const calculatedItem = calculatedOrderItems[index];
       if (calculatedItem) {
         return {
-          ...prevItem, // Keep productId, qty, price, itemTotal as they are the source of truth for user input
+          ...prevItem, // Keep productId, qty, price, itemTotal, packingUnitId, packingQuantity as they are the source of truth for user input
           currency: calculatedItem.currency as Currency,
           landedCostPerUnit: calculatedItem.landedCostPerUnit,
         };
@@ -91,6 +91,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     setManualExchangeRate,
     setManualExchangeRateInput,
     productMap,
+    packingUnitMap, // Pass packingUnitMap
     selectedCurrency,
   });
 
@@ -113,6 +114,8 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     supplierMap,
     productMap,
     warehouseMap,
+    packingUnits, // Pass packingUnits
+    packingUnitMap, // Pass packingUnitMap
     activeCurrencies,
     mainCurrency,
     products,

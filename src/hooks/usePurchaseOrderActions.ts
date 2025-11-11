@@ -8,11 +8,13 @@ import { t } from '@/utils/i18n';
 
 interface PurchaseOrderItemState {
   productId: number | '';
-  qty: number | string;
+  qty: number | string; // This will be the quantity in base units
   price: number | string;
   itemTotal: number | string;
   currency?: Currency;
   landedCostPerUnit?: number;
+  packingUnitId?: number; // New: ID of the selected packing unit
+  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
 }
 
 interface UsePurchaseOrderActionsProps {
@@ -41,6 +43,7 @@ export const usePurchaseOrderActions = ({
     updateAverageCosts,
     showAlertModal,
     getNextId,
+    packingUnitMap, // New: Access packingUnitMap
   } = useData();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -51,9 +54,9 @@ export const usePurchaseOrderActions = ({
       return;
     }
 
-    const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.qty)) > 0 && parseFloat(String(item.price)) >= 0);
+    const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
+      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero.');
       return;
     }
 
@@ -62,13 +65,21 @@ export const usePurchaseOrderActions = ({
       return;
     }
 
-    const finalOrderItems: OrderItem[] = validOrderItems.map(item => ({
-      productId: item.productId as number,
-      qty: parseFloat(String(item.qty)) || 0,
-      price: parseFloat(String(item.price)) || 0,
-      currency: selectedCurrency,
-      landedCostPerUnit: item.landedCostPerUnit,
-    }));
+    const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
+      const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
+      const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
+      const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum; // Calculate base quantity
+
+      return {
+        productId: item.productId as number,
+        qty: baseQty, // Store quantity in base units
+        price: parseFloat(String(item.price)) || 0,
+        currency: selectedCurrency,
+        landedCostPerUnit: item.landedCostPerUnit,
+        packingUnitId: item.packingUnitId, // Store packing unit ID
+        packingQuantity: packingQtyNum, // Store quantity in packing units
+      };
+    });
 
     const orderToSave: PurchaseOrder = {
       ...order,
@@ -100,7 +111,7 @@ export const usePurchaseOrderActions = ({
     toast.success(t('success'), { description: `Purchase Order #${orderToSave.id || 'new'} saved successfully.` });
   }, [
     order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRate, onSuccess, isEdit,
-    purchaseOrders, saveItem, updateStockFromOrder, updateAverageCosts, showAlertModal, getNextId
+    purchaseOrders, saveItem, updateStockFromOrder, updateAverageCosts, showAlertModal, getNextId, packingUnitMap
   ]);
 
   return {
