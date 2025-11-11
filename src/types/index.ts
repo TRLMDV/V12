@@ -61,7 +61,7 @@ export interface PurchaseOrder {
   transportationFeesCurrency: Currency;
   customFees: number;
   customFeesCurrency: Currency;
-  additionalFees: number;
+  additionalFees: Currency;
   additionalFeesCurrency: Currency;
   total: number; // Total Landed Cost in Main Currency
 }
