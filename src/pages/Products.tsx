@@ -188,7 +188,7 @@ const Products: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('priceWithMarkupCalc')}>
                 {t('landedCostPlusMarkup')} {sortConfig.key === 'priceWithMarkupCalc' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('priceWithMarkupAndVatCalc')}>
+              <TableHead className="p-3 w-40 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('priceWithMarkupAndVatCalc')}>
                 {t('landedCostPlusMarkupPlusVat')} {sortConfig.key === 'priceWithMarkupAndVatCalc' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
               <TableHead className="p-3">{t('actions')}</TableHead>
@@ -228,7 +228,7 @@ const Products: React.FC = () => {
                     <TableCell className="p-3 font-semibold text-gray-700 dark:text-slate-300">
                       {priceWithMarkupDisplay}
                     </TableCell>
-                    <TableCell className="p-3 font-semibold text-sky-600 dark:text-sky-400">
+                    <TableCell className="p-3 w-40 font-semibold text-sky-600 dark:text-sky-400">
                       {priceWithMarkupPlusVatDisplay}
                     </TableCell>
                     <TableCell className="p-3">
