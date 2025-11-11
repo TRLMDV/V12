@@ -8,7 +8,7 @@ import { Currency } from '@/types';
 // Import new modular components
 import CompanyDetailsSettings from '@/components/settings/CompanyDetailsSettings';
 import ThemeSettings from '@/components/settings/ThemeSettings';
-import DisplayScalingSettings from '@/components/settings/DisplayScalingSettings';
+// import DisplayScalingSettings from '@/components/settings/DisplayScalingSettings'; // Removed
 import DefaultVatSettings from '@/components/settings/DefaultVatSettings';
 import DefaultMarkupSettings from '@/components/settings/DefaultMarkupSettings';
 import MainCurrencySettings from '@/components/settings/MainCurrencySettings';
@@ -17,7 +17,7 @@ import CurrencyRatesSettings from '@/components/settings/CurrencyRatesSettings';
 import PaymentCategoriesSettings from '@/components/settings/PaymentCategoriesSettings';
 import EraseAllDataSection from '@/components/settings/EraseAllDataSection';
 import DashboardCurrencyRatesToggle from '@/components/settings/DashboardCurrencyRatesToggle';
-import PackingSettings from '@/components/settings/PackingSettings'; // New import
+import PackingSettings from '@/components/settings/PackingSettings';
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -60,11 +60,7 @@ const SettingsPage: React.FC = () => {
         t={t}
       />
 
-      <DisplayScalingSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
+      {/* Removed DisplayScalingSettings */}
 
       <DefaultVatSettings
         settings={settings}
