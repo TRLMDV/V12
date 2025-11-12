@@ -1,16 +1,12 @@
-"use client";
-
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { t } from '@/utils/i18n';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-// Import new hooks
 import { useModals } from '@/hooks/useModals';
 import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 import { useCrudOperations } from '@/hooks/useCrudOperations';
 
-// Import all data types from the new types file
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
   CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit
@@ -47,8 +43,8 @@ const initialSettings: Settings = {
   defaultVat: 18,
   defaultMarkup: 70,
   currencyRates: defaultCurrencyRates,
-  displayScale: 100, // New: Default display scale
-  paymentCategories: [ // Default payment categories
+  displayScale: 100,
+  paymentCategories: [
     { id: 1, name: 'Rent' },
     { id: 2, name: 'Utilities' },
     { id: 3, name: 'Salaries' },
@@ -57,11 +53,12 @@ const initialSettings: Settings = {
     { id: 6, name: 'Travel' },
     { id: 7, name: 'Maintenance' },
     { id: 8, name: 'Software Subscriptions' },
+    { id: 9, name: 'initialCapital' }, // New: Initial Capital category
   ],
-  mainCurrency: 'AZN', // New: Default main currency
-  activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD'], // Updated: Default active currencies
-  showDashboardCurrencyRates: true, // New: Default to showing dashboard currency rates
-  packingUnits: [ // Default packing units
+  mainCurrency: 'AZN',
+  activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD'],
+  showDashboardCurrencyRates: true,
+  packingUnits: [
     { id: 1, name: 'Piece', baseUnit: 'piece', conversionFactor: 1 },
     { id: 2, name: 'Pack', baseUnit: 'piece', conversionFactor: 10 },
     { id: 3, name: 'Box', baseUnit: 'piece', conversionFactor: 100 },
@@ -95,23 +92,23 @@ interface DataContextType {
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   currencyRates: CurrencyRates;
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
-  packingUnits: PackingUnit[]; // New: Packing units
-  setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // New: Setter for packing units
-  packingUnitMap: { [key: number]: PackingUnit }; // New: Memoized map for packing units
+  packingUnits: PackingUnit[];
+  setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>;
+  packingUnitMap: { [key: number]: PackingUnit };
   
   // Recycle Bin
   recycleBin: RecycleBinItem[];
   setRecycleBin: React.Dispatch<React.SetStateAction<RecycleBinItem[]>>;
-  addToRecycleBin: (item: any, collectionKey: CollectionKey | 'packingUnits') => void;
+  addToRecycleBin: (item: any, collectionKey: CollectionKey | 'packingUnits' | 'paymentCategories') => void;
   restoreFromRecycleBin: (recycleItemId: string) => void;
   deletePermanentlyFromRecycleBin: (recycleItemId: string) => void;
   cleanRecycleBin: () => void;
 
   // CRUD operations
-  saveItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', item: any) => void; // Updated key type
-  deleteItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', id: number) => void; // Updated key type
-  getNextId: (key: CollectionKey | 'packingUnits' | 'paymentCategories') => number; // Updated key type
-  setNextIdForCollection: (key: CollectionKey | 'packingUnits' | 'paymentCategories', nextId: number) => void; // Updated key type
+  saveItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', item: any) => void;
+  deleteItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', id: number) => void;
+  getNextId: (key: CollectionKey | 'packingUnits' | 'paymentCategories') => number;
+  setNextIdForCollection: (key: CollectionKey | 'packingUnits' | 'paymentCategories', nextId: number) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
 
@@ -143,14 +140,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [settings, setSettings] = useLocalStorage<Settings>('settings', initialSettings);
   const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', defaultCurrencyRates);
-  const [packingUnits, setPackingUnits] = useLocalStorage<PackingUnit[]>('packingUnits', initialSettings.packingUnits); // New state for packing units
+  const [packingUnits, setPackingUnits] = useLocalStorage<PackingUnit[]>('packingUnits', initialSettings.packingUnits);
   const [recycleBin, setRecycleBin] = useLocalStorage<RecycleBinItem[]>('recycleBin', []);
 
   // Internal state for next IDs, managed by DataProvider
   const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
     products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1,
     paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
-    packingUnits: initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1, // New nextId for packing units
+    packingUnits: initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1,
   });
 
   // Add console logs for debugging
@@ -163,7 +160,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] incomingPayments:", incomingPayments);
   console.log("[DataContext] outgoingPayments:", outgoingPayments);
   console.log("[DataContext] productMovements:", productMovements);
-  console.log("[DataContext] packingUnits:", packingUnits); // Log packing units
+  console.log("[DataContext] packingUnits:", packingUnits);
 
 
   // Use the new modals hook
@@ -198,7 +195,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const {
     updateStockFromOrder: baseUpdateStockFromOrder,
     updateAverageCosts: baseUpdateAverageAverageCosts,
-  } = useInventoryManagement({ products: Array.isArray(products) ? products : [], setProducts }); // Defensive check here too
+  } = useInventoryManagement({ products: Array.isArray(products) ? products : [], setProducts });
 
   // Override updateAverageCosts to use mainCurrency
   const updateAverageCosts = useCallback((purchaseOrder: PurchaseOrder) => {
@@ -243,7 +240,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newItem: RecycleBinItem = {
       id: recycleItemId,
       originalId: item.id,
-      collectionKey: collectionKey as CollectionKey, // Cast to CollectionKey for RecycleBinItem
+      collectionKey: collectionKey as CollectionKey,
       data: item,
       deletedAt: MOCK_CURRENT_DATE.toISOString(),
     };
@@ -272,7 +269,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'incomingPayments': setter = setIncomingPayments; break;
         case 'outgoingPayments': setter = setOutgoingPayments; break;
         case 'productMovements': setter = setProductMovements; break;
-        case 'packingUnits': setter = setPackingUnits; break; // New case for packing units
+        case 'packingUnits': setter = setPackingUnits; break;
         case 'paymentCategories':
           setSettings(prevSettings => ({
             ...prevSettings,
@@ -331,7 +328,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getNextId,
     setNextIdForCollection,
     saveItem,
-    deleteItem, // This deleteItem will now call addToRecycleBin
+    deleteItem,
   } = useCrudOperations({
     // Pass setters (stable references)
     setProducts,
@@ -343,21 +340,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIncomingPayments,
     setOutgoingPayments,
     setProductMovements,
-    setPackingUnits, // New setter for packing units
+    setPackingUnits,
     setNextIds,
     // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
-    products: Array.isArray(products) ? products : [], // Defensive check
-    suppliers: Array.isArray(suppliers) ? suppliers : [], // Defensive check
-    customers: Array.isArray(customers) ? customers : [], // Defensive check
-    warehouses: Array.isArray(warehouses) ? warehouses : [], // Defensive check
-    purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [], // Defensive check
-    sellOrders: Array.isArray(sellOrders) ? sellOrders : [], // Defensive check
-    incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], // Defensive check
-    outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], // Defensive check
-    productMovements: Array.isArray(productMovements) ? productMovements : [], // Defensive check
-    packingUnits: Array.isArray(packingUnits) ? packingUnits : [], // Defensive check
+    products: Array.isArray(products) ? products : [],
+    suppliers: Array.isArray(suppliers) ? suppliers : [],
+    customers: Array.isArray(customers) ? customers : [],
+    warehouses: Array.isArray(warehouses) ? warehouses : [],
+    purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [],
+    sellOrders: Array.isArray(sellOrders) ? sellOrders : [],
+    incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [],
+    outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [],
+    productMovements: Array.isArray(productMovements) ? productMovements : [],
+    packingUnits: Array.isArray(packingUnits) ? packingUnits : [],
     // Other stable dependencies
-    nextIds, // nextIds value for getNextId
+    nextIds,
     showAlertModal,
     showConfirmationModal,
     updateStockFromOrder,
@@ -380,48 +377,48 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProductMovements(initialData.productMovements);
       setSettings(initialSettings);
       setCurrencyRates(defaultCurrencyRates);
-      setPackingUnits(initialSettings.packingUnits); // Initialize packing units
-      setRecycleBin([]); // Ensure recycle bin is also initialized empty
+      setPackingUnits(initialSettings.packingUnits);
+      setRecycleBin([]);
 
       // Initialize nextIds based on initial data (which are now empty, so start from 1)
       const initialNextIds: { [key: string]: number } = {};
       (Object.keys(initialData) as (keyof typeof initialData)[]).forEach(key => {
-        initialNextIds[key] = 1; // Always start from 1 for empty collections
+        initialNextIds[key] = 1;
       });
       initialNextIds.paymentCategories = initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1;
-      initialNextIds.packingUnits = initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1; // Initialize nextId for packing units
+      initialNextIds.packingUnits = initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1;
       setNextIds(initialNextIds);
       setInitialized(true);
     }
   }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates, setPackingUnits, setNextIds, setRecycleBin]);
 
   const productsWithTotalStock = useMemo(() => {
-    return Array.isArray(products) ? products.map(p => ({ // Defensive check for products
+    return Array.isArray(products) ? products.map(p => ({
       ...p,
       totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
     })) : [];
   }, [products]);
 
   const value = useMemo(() => ({
-    products: productsWithTotalStock, setProducts, // Provide products with totalStock
-    suppliers: Array.isArray(suppliers) ? suppliers : [], setSuppliers, // Defensive check
-    customers: Array.isArray(customers) ? customers : [], setCustomers, // Defensive check
-    warehouses: Array.isArray(warehouses) ? warehouses : [], setWarehouses, // Defensive check
-    purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [], setPurchaseOrders, // Defensive check
-    sellOrders: Array.isArray(sellOrders) ? sellOrders : [], setSellOrders, // Defensive check
-    incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], setIncomingPayments, // Defensive check
-    outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], setOutgoingPayments, // Defensive check
-    productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements, // Defensive check
+    products: productsWithTotalStock, setProducts,
+    suppliers: Array.isArray(suppliers) ? suppliers : [], setSuppliers,
+    customers: Array.isArray(customers) ? customers : [], setCustomers,
+    warehouses: Array.isArray(warehouses) ? warehouses : [], setWarehouses,
+    purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [], setPurchaseOrders,
+    sellOrders: Array.isArray(sellOrders) ? sellOrders : [], setSellOrders,
+    incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], setIncomingPayments,
+    outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], setOutgoingPayments,
+    productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements,
     settings, setSettings,
     currencyRates, setCurrencyRates,
-    packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits, // Provide packing units
-    packingUnitMap, // Provide packing unit map
-    recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, // Add recycle bin functions
+    packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits,
+    packingUnitMap,
+    recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
-    convertCurrency, // Add currency conversion utility
+    convertCurrency,
   }), [
     productsWithTotalStock, setProducts,
     suppliers, setSuppliers,

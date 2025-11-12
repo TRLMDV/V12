@@ -1,13 +1,11 @@
-"use client";
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { t, getKeyAsPageId } from '@/utils/i18n';
 import { useData } from '@/context/DataContext';
 import {
-  Home, Package, ShoppingCart, DollarSign, Users, Truck, Warehouse, TrendingUp, BarChart, Settings, UploadCloud, ArrowLeftRight, // Removed Trash2 icon
+  Home, Package, ShoppingCart, DollarSign, Users, Truck, Warehouse, TrendingUp, BarChart, Settings, UploadCloud, ArrowLeftRight, Banknote, // Added Banknote icon
 } from 'lucide-react';
-import { Settings as SettingsType } from '@/types'; // Import Settings type with an alias
+import { Settings as SettingsType } from '@/types';
 
 const navItems = [
   { id: 'dashboard', icon: <Home className="w-6 h-6 mr-3" /> },
@@ -16,15 +14,15 @@ const navItems = [
   { id: 'sellOrders', icon: <DollarSign className="w-6 h-6 mr-3" /> },
   { id: 'suppliers', icon: <Users className="w-6 h-6 mr-3" /> },
   { id: 'customers', icon: <Users className="w-6 h-6 mr-3" /> },
-  { id: 'incomingPayments', icon: <DollarSign className="w-6 h-6 mr-3" /> }, // Reusing icon for now
-  { id: 'outgoingPayments', icon: <DollarSign className="w-6 h-6 mr-3" /> }, // Reusing icon for now
+  { id: 'incomingPayments', icon: <DollarSign className="w-6 h-6 mr-3" /> },
+  { id: 'outgoingPayments', icon: <DollarSign className="w-6 h-6 mr-3" /> },
   { id: 'warehouses', icon: <Warehouse className="w-6 h-6 mr-3" /> },
   { id: 'productMovement', icon: <ArrowLeftRight className="w-6 h-6 mr-3" /> },
   { id: 'finance', icon: <BarChart className="w-6 h-6 mr-3" /> },
   { id: 'profitability', icon: <TrendingUp className="w-6 h-6 mr-3" /> },
   { id: 'dataImportExport', icon: <UploadCloud className="w-6 h-6 mr-3" /> },
+  { id: 'bank', icon: <Banknote className="w-6 h-6 mr-3" /> }, // New Bank item
   { id: 'settings', icon: <Settings className="w-6 h-6 mr-3" /> },
-  // Removed Recycle Bin item
 ];
 
 const Sidebar: React.FC = () => {
