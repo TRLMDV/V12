@@ -127,38 +127,25 @@ const Bank: React.FC = () => {
 
   const transactionsWithRunningBalance = useMemo(() => {
     const transactionsWithBalance: (Transaction & { runningBalance: number })[] = [];
-    let currentBalance = 0;
+    let currentBalance = 0; // Start from 0 for the displayed running balance
 
-    // Calculate initial balance from transactions *before* the filter start date
-    const initialTransactions = allTransactions.filter(t => !startDateFilter || t.date < startDateFilter);
-    initialTransactions.forEach(t => {
-      currentBalance += (t.type === 'incoming' ? t.amount : -t.amount);
-    });
-
-    // Apply running balance to filtered transactions
     filteredTransactions.forEach(t => {
       currentBalance += (t.type === 'incoming' ? t.amount : -t.amount);
       transactionsWithBalance.push({ ...t, runningBalance: currentBalance });
     });
 
     return transactionsWithBalance;
-  }, [allTransactions, filteredTransactions, startDateFilter]);
+  }, [filteredTransactions]);
 
-  const currentBankBalance = useMemo(() => {
-    if (transactionsWithRunningBalance.length > 0) {
-      return transactionsWithRunningBalance[transactionsWithRunningBalance.length - 1].runningBalance;
-    }
-    // If no transactions in the filtered view, but there are transactions before the filter,
-    // calculate the balance up to the start date.
-    if (startDateFilter && allTransactions.length > 0) {
-      let balanceBeforeFilter = 0;
-      allTransactions.filter(t => t.date < startDateFilter).forEach(t => {
-        balanceBeforeFilter += (t.type === 'incoming' ? t.amount : -t.amount);
-      });
-      return balanceBeforeFilter;
-    }
-    return 0; // No transactions at all
-  }, [allTransactions, transactionsWithRunningBalance, startDateFilter]);
+  const totalBankBalance = useMemo(() => { // New memo for overall bank balance
+    let balance = 0;
+    allTransactions.forEach(t => {
+      balance += (t.type === 'incoming' ? t.amount : -t.amount);
+    });
+    return balance;
+  }, [allTransactions]);
+
+  const currentBankBalance = totalBankBalance; // This will now reflect the true total balance
 
   return (
     <div className="container mx-auto p-4">
