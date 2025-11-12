@@ -2,13 +2,12 @@
 
 import React from 'react';
 import { useData } from '@/context/DataContext';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Currency } from '@/types';
 
 // Import new modular components
 import CompanyDetailsSettings from '@/components/settings/CompanyDetailsSettings';
 import ThemeSettings from '@/components/settings/ThemeSettings';
-// import DisplayScalingSettings from '@/components/settings/DisplayScalingSettings'; // Removed
 import DefaultVatSettings from '@/components/settings/DefaultVatSettings';
 import DefaultMarkupSettings from '@/components/settings/DefaultMarkupSettings';
 import MainCurrencySettings from '@/components/settings/MainCurrencySettings';
@@ -18,6 +17,7 @@ import PaymentCategoriesSettings from '@/components/settings/PaymentCategoriesSe
 import EraseAllDataSection from '@/components/settings/EraseAllDataSection';
 import DashboardCurrencyRatesToggle from '@/components/settings/DashboardCurrencyRatesToggle';
 import PackingSettings from '@/components/settings/PackingSettings';
+import LanguageSettings from '@/components/settings/LanguageSettings'; // New import
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -34,6 +34,7 @@ const SettingsPage: React.FC = () => {
     getNextId,
     setNextIdForCollection,
   } = useData();
+  const { t } = useTranslation(); // Use the new hook
 
   // Local state for activeCurrencies, passed to MainCurrencySettings and ActiveCurrenciesSettings
   // This allows these components to manage their own activeCurrencies state before saving to global settings
@@ -122,6 +123,8 @@ const SettingsPage: React.FC = () => {
         setSettings={setSettings}
         t={t}
       />
+
+      <LanguageSettings /> {/* New Language Settings component */}
 
       <EraseAllDataSection
         t={t}

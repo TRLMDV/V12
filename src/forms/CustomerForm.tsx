@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Customer } from '@/types';
 
 interface CustomerFormProps {
@@ -17,6 +17,7 @@ interface CustomerFormProps {
 
 const CustomerForm: React.FC<CustomerFormProps> = ({ customerId, onSuccess }) => {
   const { customers, warehouses, saveItem } = useData();
+  const { t } = useTranslation(); // Use the new hook
   const isEdit = customerId !== undefined;
   const [customer, setCustomer] = useState<Partial<Customer>>({});
   const [defaultWarehouseId, setDefaultWarehouseId] = useState<number | undefined>(undefined); // Changed to undefined for no selection

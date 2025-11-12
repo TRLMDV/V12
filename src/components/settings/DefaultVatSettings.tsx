@@ -5,15 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Settings } from '@/types';
 
 interface DefaultVatSettingsProps {
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
-  t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
-const DefaultVatSettings: React.FC<DefaultVatSettingsProps> = ({ settings, setSettings, t }) => {
+const DefaultVatSettings: React.FC<DefaultVatSettingsProps> = ({ settings, setSettings }) => {
+  const { t } = useTranslation(); // Use the new hook
   const [defaultVat, setDefaultVat] = useState(settings.defaultVat);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ const DefaultVatSettings: React.FC<DefaultVatSettingsProps> = ({ settings, setSe
 
   const handleSaveDefaultVat = () => {
     if (isNaN(defaultVat) || defaultVat < 0 || defaultVat > 100) {
-      toast.error('Validation Error', { description: 'VAT percentage must be between 0 and 100.' });
+      toast.error(t('validationError'), { description: t('vatPercentageMustBeBetween0And100') });
       return;
     }
     setSettings(prev => ({ ...prev, defaultVat }));

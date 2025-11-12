@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Product, Customer } from '@/types'; // Import types from types file
 
 interface ExcelExportButtonProps {
@@ -23,6 +23,7 @@ const ExcelExportButton: React.FC<ExcelExportButtonProps> = ({
   buttonLabel, // Changed from 'label'
   columns,
 }) => {
+  const { t } = useTranslation(); // Use the new hook
   const handleExport = () => {
     if (!data || data.length === 0) {
       toast.info(t('excelExportInfo'), { description: t('noDataToExport') });

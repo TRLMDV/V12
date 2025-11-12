@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
 import { toast } from 'sonner';
 import { PurchaseOrder, Product, OrderItem, Currency } from '@/types';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 
 interface PurchaseOrderItemState {
   productId: number | '';
@@ -45,23 +45,24 @@ export const usePurchaseOrderActions = ({
     getNextId,
     packingUnitMap, // New: Access packingUnitMap
   } = useData();
+  const { t } = useTranslation(); // Use the new hook
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
     if (!order.contactId || !order.warehouseId || !order.orderDate) {
-      showAlertModal('Validation Error', 'Supplier, Warehouse, and Order Date are required.');
+      showAlertModal(t('validationError'), t('supplierWarehouseAndOrderDateAreRequired'));
       return;
     }
 
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero.');
+      showAlertModal(t('validationError'), t('pleaseAddAtLeastOneValidOrderItem'));
       return;
     }
 
     if (selectedCurrency !== 'AZN' && (!manualExchangeRate || manualExchangeRate <= 0)) {
-      showAlertModal('Validation Error', 'Please enter a valid exchange rate for the selected currency.');
+      showAlertModal(t('validationError'), t('pleaseEnterAValidExchangeRate'));
       return;
     }
 
@@ -108,10 +109,10 @@ export const usePurchaseOrderActions = ({
       updateAverageCosts(orderToSave);
     }
     onSuccess();
-    toast.success(t('success'), { description: `Purchase Order #${orderToSave.id || 'new'} saved successfully.` });
+    toast.success(t('success'), { description: t('purchaseOrderSavedSuccessfully', { orderId: String(orderToSave.id || 'new') }) });
   }, [
     order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRate, onSuccess, isEdit,
-    purchaseOrders, saveItem, updateStockFromOrder, updateAverageCosts, showAlertModal, getNextId, packingUnitMap
+    purchaseOrders, saveItem, updateStockFromOrder, updateAverageCosts, showAlertModal, getNextId, packingUnitMap, t
   ]);
 
   return {

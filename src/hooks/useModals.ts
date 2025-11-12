@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { toast as sonnerToast } from 'sonner';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 
 interface ConfirmationModalProps {
   title: string;
@@ -11,6 +11,7 @@ interface ConfirmationModalProps {
 }
 
 export function useModals() {
+  const { t } = useTranslation(); // Use the new hook
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState<ConfirmationModalProps | null>(null);
 
@@ -18,12 +19,12 @@ export function useModals() {
     sonnerToast.info(message, {
       duration: 5000,
       action: {
-        label: 'OK',
+        label: t('ok'), // Use translation for OK button
         onClick: () => sonnerToast.dismiss(),
       },
       description: title,
     });
-  }, []);
+  }, [t]); // Add t as dependency
 
   const showConfirmationModal = useCallback((title: string, message: string, onConfirm: () => void) => {
     setConfirmationModalProps({ title, message, onConfirm });

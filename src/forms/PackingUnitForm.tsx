@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { PackingUnit, BaseUnit } from '@/types';
 
 interface PackingUnitFormProps {
@@ -15,6 +15,7 @@ interface PackingUnitFormProps {
 }
 
 const PackingUnitForm: React.FC<PackingUnitFormProps> = ({ packingUnit, onSuccess, onCancel }) => {
+  const { t } = useTranslation(); // Use the new hook
   const [name, setName] = useState(packingUnit?.name || '');
   const [baseUnit, setBaseUnit] = useState<BaseUnit>(packingUnit?.baseUnit || 'piece');
   const [conversionFactor, setConversionFactor] = useState(String(packingUnit?.conversionFactor || 1));

@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
 import { toast } from 'sonner';
 import { SellOrder, Product, OrderItem, ProductMovement, Payment, Currency } from '@/types';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 
 interface SellOrderItemState {
   productId: number | '';
@@ -51,13 +51,14 @@ export const useSellOrderActions = ({
     currencyRates,
     packingUnitMap, // New: Access packingUnitMap
   } = useData();
+  const { t } = useTranslation(); // Use the new hook
 
   const currentExchangeRateToAZN = selectedCurrency === 'AZN' ? 1 : (manualExchangeRate !== undefined ? manualExchangeRate : currencyRates[selectedCurrency]);
 
   const handleGenerateProductMovement = useCallback(() => {
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero before generating a product movement.');
+      showAlertModal(t('validationError'), t('pleaseAddAtLeastOneValidOrderItemBeforeGeneratingProductMovement'));
       return;
     }
 
@@ -92,7 +93,7 @@ export const useSellOrderActions = ({
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
-      showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating a product movement.');
+      showAlertModal(t('validationError'), t('customerWarehouseAndOrderDateAreRequiredBeforeGeneratingProductMovement'));
       return;
     }
     
@@ -126,14 +127,14 @@ export const useSellOrderActions = ({
 
       const product = productsCopy.find(p => p.id === item.productId);
       if (!product) {
-        showAlertModal('Error', `Product with ID ${item.productId} not found.`);
+        showAlertModal('Error', t('productNotFoundWithId', { productId: String(item.productId) }));
         return;
       }
 
       const sourceStock = product.stock?.[mainWarehouse.id] || 0;
       if (sourceStock < qtyNum) {
-        const productName = productMap[item.productId]?.name || 'Unknown Product';
-        showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName} (${product.sku}) in ${mainWarehouse.name}. ${t('available')}: ${sourceStock}, ${t('requested')}: ${qtyNum}.`);
+        const productName = productMap[item.productId]?.name || t('unknownProduct');
+        showAlertModal(t('stockError'), t('notEnoughStockInWarehouse', { productName, sku: product.sku, warehouseName: mainWarehouse.name, available: String(sourceStock), requested: String(qtyNum) }));
         return;
       }
 
@@ -166,14 +167,14 @@ export const useSellOrderActions = ({
     const updatedOrderWithMovement = { ...orderToSave, productMovementId: newMovementId };
     saveItem('sellOrders', updatedOrderWithMovement);
 
-    toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[orderToSave.warehouseId as number]?.name}.` });
+    toast.success(t('success'), { description: t('productMovementGeneratedSuccessfully', { movementId: String(newMovementId), sourceWarehouse: mainWarehouse.name, destWarehouse: warehouseMap[orderToSave.warehouseId as number]?.name }) });
 
-  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap]);
+  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, t]);
 
   const handleGenerateIncomingPayment = useCallback(() => {
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero before generating an incoming payment.');
+      showAlertModal(t('validationError'), t('pleaseAddAtLeastOneValidOrderItemBeforeGeneratingIncomingPayment'));
       return;
     }
 
@@ -208,12 +209,12 @@ export const useSellOrderActions = ({
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
-      showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating an incoming payment.');
+      showAlertModal(t('validationError'), t('customerWarehouseAndOrderDateAreRequiredBeforeGeneratingIncomingPayment'));
       return;
     }
     
     if (orderToSave.total === 0) {
-      showAlertModal('Validation Error', 'Order total must be greater than zero to generate an incoming payment.');
+      showAlertModal(t('validationError'), t('orderTotalMustBeGreaterThanZeroToGenerateIncomingPayment'));
       return;
     }
 
@@ -251,27 +252,27 @@ export const useSellOrderActions = ({
     const updatedOrderWithPayment = { ...orderToSave, incomingPaymentId: newPaymentId };
     saveItem('sellOrders', updatedOrderWithPayment);
 
-    toast.success(t('success'), { description: `${t('incomingPayment')} #${newPaymentId} ${t('generatedSuccessfully')}.` });
+    toast.success(t('success'), { description: t('incomingPaymentGeneratedSuccessfully', { paymentId: String(newPaymentId) }) });
 
-  }, [order, orderItems, showAlertModal, getNextId, saveItem, incomingPayments, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap]);
+  }, [order, orderItems, showAlertModal, getNextId, saveItem, incomingPayments, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, t]);
 
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
     if (!order.contactId || !order.warehouseId || !order.orderDate) {
-      showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required.');
+      showAlertModal(t('validationError'), t('customerWarehouseAndOrderDateAreRequired'));
       return;
     }
 
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero.');
+      showAlertModal(t('validationError'), t('pleaseAddAtLeastOneValidOrderItem'));
       return;
     }
 
     if (selectedCurrency !== 'AZN' && (!manualExchangeRate || manualExchangeRate <= 0)) {
-      showAlertModal('Validation Error', 'Please enter a valid exchange rate for the selected currency.');
+      showAlertModal(t('validationError'), t('pleaseEnterAValidExchangeRate'));
       return;
     }
 
@@ -309,8 +310,8 @@ export const useSellOrderActions = ({
         }
 
         if (availableStock < requestedQtyBaseUnits) {
-          const productName = productMap[productId]?.name || 'Unknown Product';
-          showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName}. ${t('available')}: ${availableStock} ${t('piece')}, ${t('requested')}: ${requestedQtyBaseUnits} ${t('piece')}.`);
+          const productName = productMap[productId]?.name || t('unknownProduct');
+          showAlertModal(t('stockError'), t('notEnoughStock', { productName, available: String(availableStock), requested: String(requestedQtyBaseUnits) }));
           return;
         }
       }
@@ -351,8 +352,8 @@ export const useSellOrderActions = ({
     saveItem('sellOrders', orderToSave);
     updateStockFromOrder(orderToSave, oldOrder);
     onSuccess();
-    toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
-  }, [order, orderItems, products, isEdit, sellOrders, showAlertModal, productMap, getNextId, saveItem, updateStockFromOrder, onSuccess, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, packingUnitMap]);
+    toast.success(t('success'), { description: t('sellOrderSavedSuccessfully', { orderId: String(orderToSave.id || 'new') }) });
+  }, [order, orderItems, products, isEdit, sellOrders, showAlertModal, productMap, getNextId, saveItem, updateStockFromOrder, onSuccess, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, packingUnitMap, t]);
 
   const isGenerateMovementDisabled = !!order.productMovementId;
   const isGeneratePaymentDisabled = !!order.incomingPaymentId || (order.total || 0) <= 0;

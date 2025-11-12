@@ -3,7 +3,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportButton';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { PurchaseOrder, Product, Supplier, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
 
 interface PurchaseOrderDetailsProps {
@@ -23,6 +23,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
   packingUnitMap, // Destructure new prop
   currencyRates,
 }) => {
+  const { t } = useTranslation(); // Use the new hook
   // Recalculate for display in native currency for consistency with form
   const productsSubtotalNative = order.items?.reduce((sum, item) => sum + (item.price * item.qty), 0) || 0;
   const orderNativeToAznRate = order.currency === 'AZN' ? 1 : (order.exchangeRate || currencyRates[order.currency] || 1);
@@ -45,7 +46,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
       <p><strong>{t('supplier')}:</strong> {supplierMap[order.contactId]?.name || 'N/A'}</p>
       <p><strong>{t('warehouse')}:</strong> {warehouseMap[order.warehouseId]?.name || 'N/A'}</p>
       <p><strong>{t('orderDate')}:</strong> {order.orderDate}</p>
-      <p><strong>{t('status')}:</strong> {t(order.status.toLowerCase() as keyof typeof t)}</p>
+      <p><strong>{t('status')}:</strong> {t(order.status.toLowerCase() as any)}</p> {/* Cast to any for dynamic key */}
       <p><strong>{t('orderCurrency')}:</strong> {order.currency}</p>
       {order.currency !== 'AZN' && order.exchangeRate && (
         <p><strong>{t('exchangeRateToAZN')}:</strong> {order.exchangeRate}</p>

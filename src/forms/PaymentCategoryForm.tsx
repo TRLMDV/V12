@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { PaymentCategorySetting } from '@/types';
 
 interface PaymentCategoryFormProps {
@@ -14,6 +14,7 @@ interface PaymentCategoryFormProps {
 }
 
 const PaymentCategoryForm: React.FC<PaymentCategoryFormProps> = ({ category, onSuccess, onCancel }) => {
+  const { t } = useTranslation(); // Use the new hook
   const [categoryName, setCategoryName] = useState(category?.name || '');
 
   useEffect(() => {

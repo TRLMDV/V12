@@ -3,7 +3,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportButton';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { SellOrder, Product, Customer, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
 import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
@@ -23,13 +23,14 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
   currencyRates,
 }) => {
   const { packingUnitMap } = useData(); // Access packingUnitMap
+  const { t } = useTranslation(); // Use the new hook
 
   return (
     <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
       <p><strong>{t('customer')}:</strong> {customerMap[order.contactId]?.name || 'N/A'}</p>
       <p><strong>{t('warehouse')}:</strong> {warehouseMap[order.warehouseId]?.name || 'N/A'}</p>
       <p><strong>{t('orderDate')}:</strong> {order.orderDate}</p>
-      <p><strong>{t('orderStatus')}:</strong> {t(order.status.toLowerCase() as keyof typeof t)}</p>
+      <p><strong>{t('orderStatus')}:</strong> {t(order.status.toLowerCase() as any)}</p> {/* Cast to any for dynamic key */}
       <p><strong>{t('vatPercent')}:</strong> {order.vatPercent}%</p>
       <h3 className="font-semibold mt-4 mb-2">{t('orderItems')}</h3>
       <Table>

@@ -9,7 +9,7 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Product, PackingUnit } from '@/types'; // Import PackingUnit
 
 interface SellOrderItemState {
@@ -46,6 +46,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
   packingUnitMap, // Destructure new prop
   warehouseId,
 }) => {
+  const { t } = useTranslation(); // Use the new hook
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null);
 
   return (

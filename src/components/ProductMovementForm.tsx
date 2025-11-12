@@ -24,7 +24,7 @@ interface MovementItemState {
 }
 
 const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, onSuccess }) => {
-  const { products, warehouses, saveItem, showAlertModal, setProducts } = useData();
+  const { productMovements, products, warehouses, saveItem, showAlertModal, setProducts } = useData();
   const { t } = useTranslation(); // Use the new hook
   const isEdit = movementId !== undefined;
 
@@ -35,20 +35,18 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
 
   useEffect(() => {
     if (isEdit) {
-      const existingMovement = products.find(m => m.id === movementId); // Changed from productMovements to products
+      const existingMovement = productMovements.find(m => m.id === movementId);
       if (existingMovement) {
-        // Assuming productMovements has a similar structure to Product for simplicity in this mock
-        // In a real app, you'd fetch the actual ProductMovement by ID
-        setSourceWarehouseId(existingMovement.stock ? Object.keys(existingMovement.stock)[0] as unknown as number : ''); // Placeholder
-        setDestWarehouseId(existingMovement.stock ? Object.keys(existingMovement.stock)[1] as unknown as number : ''); // Placeholder
-        setMovementItems([{ productId: existingMovement.id, quantity: existingMovement.stock ? Object.values(existingMovement.stock)[0] : 0 }]); // Placeholder
+        setSourceWarehouseId(existingMovement.sourceWarehouseId);
+        setDestWarehouseId(existingMovement.destWarehouseId);
+        setMovementItems(existingMovement.items.map(item => ({ productId: item.productId, quantity: item.quantity })));
       }
     } else {
       setSourceWarehouseId('');
       setDestWarehouseId('');
       setMovementItems([{ productId: '', quantity: 1 }]);
     }
-  }, [movementId, isEdit, products]); // Changed dependency from productMovements to products
+  }, [movementId, isEdit, productMovements]);
 
   const addMovementItem = useCallback(() => {
     setMovementItems(prev => [...prev, { productId: '', quantity: 1 }]);
@@ -84,20 +82,15 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
 
     // Deep copy products for validation and potential update
     const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
-    const currentMovement = isEdit ? products.find(m => m.id === movementId) : null; // Changed from productMovements to products
+    const currentMovement = isEdit ? productMovements.find(m => m.id === movementId) : null;
 
     // --- Revert stock change if editing an existing movement ---
     if (isEdit && currentMovement) {
-      // This part needs to be adapted to how productMovements are actually structured
-      // For now, assuming a simple reversal based on the currentMovement's items
-      // This is a placeholder and needs actual ProductMovement data structure
-      currentMovement.stock && Object.entries(currentMovement.stock).forEach(([whId, qty]) => {
-        const p = productsCopy.find(p => p.id === currentMovement.id);
+      currentMovement.items.forEach(item => {
+        const p = productsCopy.find(p => p.id === item.productId);
         if (p && p.stock) {
-          // This logic is highly dependent on how productMovements are stored.
-          // For a simple mock, we'll assume the movement represents a single product's stock change.
-          // In a real app, you'd iterate through currentMovement.items
-          // For now, we'll skip complex reversal for mock data.
+          p.stock[currentMovement.sourceWarehouseId] = (p.stock[currentMovement.sourceWarehouseId] || 0) + item.quantity;
+          p.stock[currentMovement.destWarehouseId] = (p.stock[currentMovement.destWarehouseId] || 0) - item.quantity;
         }
       });
     }
@@ -106,7 +99,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
     for (const item of newItems) {
       const p = productsCopy.find(p => p.id === item.productId);
       if (!p || !p.stock) {
-        showAlertModal(t('error'), `${t('productDataMissingForItemId')} ${item.productId}`);
+        showAlertModal(t('error'), t('productDataMissingForItemId', { itemId: String(item.productId) }));
         return;
       }
 

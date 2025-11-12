@@ -6,15 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import ImageUpload from '@/components/ImageUpload';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Settings } from '@/types';
 
 interface CompanyDetailsSettingsProps {
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
-  t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
-const CompanyDetailsSettings: React.FC<CompanyDetailsSettingsProps> = ({ settings, setSettings, t }) => {
+const CompanyDetailsSettings: React.FC<CompanyDetailsSettingsProps> = ({ settings, setSettings }) => {
+  const { t } = useTranslation(); // Use the new hook
   const [companyName, setCompanyName] = useState(settings.companyName);
   const [companyLogo, setCompanyLogo] = useState<string | null>(settings.companyLogo);
 

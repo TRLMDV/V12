@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { SellOrder, Customer, Warehouse, PackingUnit } from '@/types'; // Import PackingUnit
 import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
@@ -35,6 +35,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
   getSortIndicator,
 }) => {
   const { packingUnitMap } = useData(); // Access packingUnitMap
+  const { t } = useTranslation(); // Use the new hook
 
   const totalSumExclVat = orders.reduce((sum, order) => sum + order.totalExclVat, 0);
   const totalSumInclVat = orders.reduce((sum, order) => sum + order.totalInclVat, 0);
@@ -96,7 +97,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
                     order.status === 'Confirmed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                     'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                   }`}>
-                    {t(order.status.toLowerCase() as keyof typeof t)}
+                    {t(order.status.toLowerCase() as any)}
                   </span>
                 </TableCell>
                 <TableCell className="p-3">
@@ -105,11 +106,11 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
                     order.paymentStatus === 'Partially Paid' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                     'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                   }`}>
-                    {t(order.paymentStatus.toLowerCase().replace(' ', '') as keyof typeof t)}
+                    {t(order.paymentStatus.toLowerCase().replace(' ', '') as any)}
                   </span>
                 </TableCell>
                 <TableCell className="p-3 font-bold text-gray-700 dark:text-slate-300">{order.totalExclVat.toFixed(2)} AZN</TableCell>
-                <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalInclVat.toFixed(2)} AZN</TableCell>
+                <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalInclVat.toFixed(2)} AZN}</TableCell>
                 <TableCell className="p-3">
                   <Button variant="link" onClick={() => viewOrderDetails(order.id)} className="mr-2 p-0 h-auto">
                     {t('view')}

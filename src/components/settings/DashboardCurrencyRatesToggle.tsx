@@ -3,15 +3,16 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Settings } from '@/types';
 
 interface DashboardCurrencyRatesToggleProps {
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
-  t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
-const DashboardCurrencyRatesToggle: React.FC<DashboardCurrencyRatesToggleProps> = ({ settings, setSettings, t }) => {
+const DashboardCurrencyRatesToggle: React.FC<DashboardCurrencyRatesToggleProps> = ({ settings, setSettings }) => {
+  const { t } = useTranslation(); // Use the new hook
   const handleToggle = (checked: boolean) => {
     setSettings(prev => ({ ...prev, showDashboardCurrencyRates: checked }));
   };

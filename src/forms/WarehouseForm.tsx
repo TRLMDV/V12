@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { t } from '@/utils/i18n';
+import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Warehouse } from '@/types'; // Import types from types file
 
 interface WarehouseFormProps {
@@ -16,6 +16,7 @@ interface WarehouseFormProps {
 
 const WarehouseForm: React.FC<WarehouseFormProps> = ({ warehouseId, onSuccess }) => {
   const { warehouses, saveItem } = useData();
+  const { t } = useTranslation(); // Use the new hook
   const isEdit = warehouseId !== undefined;
   const [warehouse, setWarehouse] = useState<Partial<Warehouse>>({});
 
