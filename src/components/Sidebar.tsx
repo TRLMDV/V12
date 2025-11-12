@@ -2,9 +2,8 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { getKeyAsPageId } from '@/hooks/useTranslation'; // Updated import
+import { t, getKeyAsPageId } from '@/utils/i18n';
 import { useData } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import {
   Home, Package, ShoppingCart, DollarSign, Users, Truck, Warehouse, TrendingUp, BarChart, Settings, UploadCloud, ArrowLeftRight, // Removed Trash2 icon
 } from 'lucide-react';
@@ -30,7 +29,6 @@ const navItems = [
 
 const Sidebar: React.FC = () => {
   const { settings } = useData();
-  const { t } = useTranslation(); // Use the new hook
   const location = useLocation();
   const currentPageId = location.pathname === '/' ? 'dashboard' : getKeyAsPageId(location.pathname.substring(1));
 
@@ -72,7 +70,7 @@ const Sidebar: React.FC = () => {
                   to={pageId === 'dashboard' ? '/' : `/${pageId}`}
                   className={`nav-link flex items-center p-2 rounded-md hover:bg-sky-600 hover:text-white ${activeClass}`}
                 >
-                  {item.icon}{t(item.id as any)}
+                  {item.icon}{t(item.id as keyof typeof t)}
                 </Link>
               </li>
             );

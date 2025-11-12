@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { toast as sonnerToast } from 'sonner';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
   CollectionKey
@@ -34,7 +34,6 @@ interface UseCrudOperationsProps {
   incomingPayments: Payment[];
   outgoingPayments: Payment[];
   productMovements: ProductMovement[];
-  t: (key: string, replacements?: { [key: string]: string | number }) => string; // Add t to props
 }
 
 export function useCrudOperations({
@@ -53,7 +52,6 @@ export function useCrudOperations({
   addToRecycleBin,
   // Current state values for validation, not for useCallback dependencies
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements,
-  t, // Destructure t
 }: UseCrudOperationsProps) {
 
   const getNextId = useCallback((key: CollectionKey) => {
@@ -107,7 +105,7 @@ export function useCrudOperations({
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements,
-    getNextId, setNextIdForCollection, showAlertModal, t,
+    getNextId, setNextIdForCollection, showAlertModal,
     // Include current state values for validation, but not as dependencies for useCallback
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements,
   ]);
@@ -139,35 +137,35 @@ export function useCrudOperations({
       // --- Deletion validation checks (need current state values) ---
       if (key === 'products') {
         const hasOrders = sellOrders.some(o => o.items?.some(i => i.productId === id)) || purchaseOrders.some(o => o.items?.some(i => i.productId === id));
-        if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductUsedInOrders')); return; }
+        if (hasOrders) { showAlertModal('Deletion Failed', 'Cannot delete this product because it is used in existing purchase or sell orders.'); return; }
 
         const hasMovements = productMovements.some(m => m.items?.some(i => i.productId === id));
-        if (hasMovements) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductUsedInMovements')); return; }
+        if (hasMovements) { showAlertModal('Deletion Failed', 'Cannot delete this product. It is used in existing product movements.'); return; }
 
         const productToDelete = products.find(p => p.id === id);
         if (productToDelete && productToDelete.stock && Object.values(productToDelete.stock).some(qty => qty > 0)) {
-          showAlertModal(t('deletionFailed'), t('cannotDeleteProductWithStock'));
+          showAlertModal('Deletion Failed', 'Cannot delete this product. There is remaining stock across warehouses.');
           return;
         }
       }
       if (key === 'warehouses') {
         const warehouseToDelete = currentCollection.find((w: Warehouse) => w.id === id);
         if (warehouseToDelete && warehouseToDelete.type === 'Main') {
-          showAlertModal(t('deletionFailed'), t('cannotDeleteMainWarehouse'));
+          showAlertModal('Deletion Failed', 'Cannot delete the Main Warehouse. Please designate another warehouse as Main first.');
           return;
         }
         if (products.some(p => p.stock && p.stock[id] && p.stock[id] > 0)) {
-          showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseWithStock'));
+          showAlertModal('Deletion Failed', 'Cannot delete this warehouse because it contains stock. Please move all products first.');
           return;
         }
         const hasOrders = purchaseOrders.some(o => o.warehouseId === id) ||
                          sellOrders.some(o => o.warehouseId === id) ||
                          productMovements.some(m => m.sourceWarehouseId === id || m.destWarehouseId === id);
-        if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseUsedInOrdersOrMovements')); return; }
+        if (hasOrders) { showAlertModal('Deletion Failed', 'Cannot delete this warehouse. It is used in existing orders or movements.'); return; }
       }
       if (key === 'suppliers' || key === 'customers') {
         const orderCollection = key === 'suppliers' ? purchaseOrders : sellOrders;
-        if (orderCollection.some(o => o.contactId === id)) { showAlertModal(t('deletionFailed'), t('cannotDeleteContactLinkedToOrders', { contactType: key.slice(0, -1) })); return; }
+        if (orderCollection.some(o => o.contactId === id)) { showAlertModal('Deletion Failed', `Cannot delete this ${key.slice(0, -1)} because they are linked to existing orders.`); return; }
       }
 
       // Reverse stock change if deleting a completed order/movement
@@ -216,7 +214,7 @@ export function useCrudOperations({
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements,
-    showAlertModal, showConfirmationModal, updateStockFromOrder, addToRecycleBin, t,
+    showAlertModal, showConfirmationModal, updateStockFromOrder, addToRecycleBin,
     // Include current state values for validation, but not as dependencies for useCallback
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements,
   ]);

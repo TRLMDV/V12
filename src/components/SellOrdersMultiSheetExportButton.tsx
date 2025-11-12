@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { SellOrder, Product, Customer, Warehouse, PackingUnit } from '@/types';
 import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
@@ -25,7 +25,6 @@ const SellOrdersMultiSheetExportButton: React.FC<SellOrdersMultiSheetExportButto
   buttonLabel,
 }) => {
   const { packingUnitMap } = useData(); // Access packingUnitMap
-  const { t } = useTranslation(); // Use the new hook
 
   const handleExport = () => {
     if (!sellOrders || sellOrders.length === 0) {
@@ -45,7 +44,7 @@ const SellOrdersMultiSheetExportButton: React.FC<SellOrdersMultiSheetExportButto
       data.push([t('customer'), customerMap[order.contactId]?.name || 'N/A']);
       data.push([t('warehouse'), warehouseMap[order.warehouseId]?.name || 'N/A']);
       data.push([t('orderDate'), order.orderDate]);
-      data.push([t('orderStatus'), t(order.status.toLowerCase() as any)]); // Cast to any for dynamic key
+      data.push([t('orderStatus'), t(order.status.toLowerCase() as keyof typeof t)]);
       data.push([t('vatPercent'), `${order.vatPercent}%`]);
       data.push([t('totalRevenueExVat'), `${(order.total / (1 + order.vatPercent / 100)).toFixed(2)} AZN`]);
       data.push([t('totalVat'), `${(order.total - (order.total / (1 + order.vatPercent / 100))).toFixed(2)} AZN`]);

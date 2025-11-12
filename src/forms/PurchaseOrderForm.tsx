@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { usePurchaseOrderForm } from '@/hooks/usePurchaseOrderForm';
 import PurchaseOrderItemsField from '@/components/PurchaseOrderItemsField'; // New component
 
@@ -42,7 +42,6 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     openComboboxIndex,
     setOpenComboboxIndex,
   } = usePurchaseOrderForm({ orderId, onSuccess });
-  const { t } = useTranslation(); // Use the new hook
 
   return (
     <form onSubmit={handleSubmit}>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { PurchaseOrder, SellOrder, Product, Customer, Supplier, Warehouse, CurrencyRates } from '@/types';
 
 interface OrderDetailsExcelExportButtonProps {
@@ -27,7 +27,6 @@ const OrderDetailsExcelExportButton: React.FC<OrderDetailsExcelExportButtonProps
   warehouseMap,
   currencyRates,
 }) => {
-  const { t } = useTranslation(); // Use the new hook
   const handleExport = () => {
     if (!order) {
       toast.error(t('exportError'), { description: t('noDataToExport') });
@@ -41,7 +40,7 @@ const OrderDetailsExcelExportButton: React.FC<OrderDetailsExcelExportButtonProps
       { Field: t('orderId'), Value: order.id },
       { Field: t('orderDate'), Value: order.orderDate },
       { Field: t('warehouse'), Value: warehouseMap[order.warehouseId]?.name || 'N/A' },
-      { Field: t('status'), Value: t(order.status.toLowerCase() as any) }, // Cast to any for dynamic key
+      { Field: t('status'), Value: t(order.status.toLowerCase() as keyof typeof t) },
     ];
 
     if (orderType === 'purchase') {

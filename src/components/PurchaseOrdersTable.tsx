@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { PurchaseOrder, PackingUnit } from '@/types'; // Import PackingUnit
 import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
@@ -33,7 +33,6 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({
   getSortIndicator,
 }) => {
   const { packingUnitMap } = useData(); // Access packingUnitMap
-  const { t } = useTranslation(); // Use the new hook
 
   const formatOrderItemsForDisplay = (items: PurchaseOrder['items']) => {
     if (!items || items.length === 0) return t('noItemsFound');
@@ -89,7 +88,7 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({
                     order.status === 'Ordered' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                     'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                   }`}>
-                    {t(order.status.toLowerCase() as any)}
+                    {t(order.status.toLowerCase() as keyof typeof t)}
                   </span>
                 </TableCell>
                 <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.productsSubtotalNative.toFixed(2)} {order.currency}</TableCell>

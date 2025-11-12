@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { toast } from 'sonner';
 // No types from src/types/index.ts are directly used here, so no import needed.
 
@@ -31,7 +31,6 @@ const CodeConfirmationModal: React.FC<CodeConfirmationModalProps> = ({
   onConfirm,
   codeToEnter,
 }) => {
-  const { t } = useTranslation(); // Use the new hook
   const [enteredCode, setEnteredCode] = useState('');
 
   useEffect(() => {

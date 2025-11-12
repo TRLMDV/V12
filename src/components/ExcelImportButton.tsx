@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { Product, Customer } from '@/types'; // Import types from types file
 
 interface ExcelImportButtonProps {
@@ -18,7 +18,6 @@ interface ExcelImportButtonProps {
 }
 
 const ExcelImportButton: React.FC<ExcelImportButtonProps> = ({ onImport, buttonLabel, description, requiredColumns }) => {
-  const { t } = useTranslation(); // Use the new hook
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

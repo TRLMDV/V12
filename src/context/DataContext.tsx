@@ -2,18 +2,18 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { t } from '@/utils/i18n';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // Import new hooks
 import { useModals } from '@/hooks/useModals';
 import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 import { useCrudOperations } from '@/hooks/useCrudOperations';
-import { useTranslation } from '@/hooks/useTranslation'; // Import useTranslation hook
 
 // Import all data types from the new types file
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit, AppLanguage
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -37,7 +37,7 @@ const defaultCurrencyRates: CurrencyRates = {
   'JPY': 0.011, 'GBP': 2.15, 'AUD': 1.10, 'CAD': 1.25, 'CHF': 1.85, 'CNY': 0.24,
   'KWD': 5.50, 'BHD': 4.50, 'OMR': 4.40, 'JOD': 2.40, 'GIP': 2.15, 'KYD': 2.05,
   'KRW': 0.0013, 'SGD': 1.28, 'INR': 0.020, 'MXN': 0.095, 'SEK': 0.18, 'THB': 0.048,
-  'AFN': 1.00, 'ALL': 1.00, 'DZD': 1.00, 'AOA': 1.00, 'XCD': 1.00, 'ARS': 1.00, 'AMD': 1.00, 'AWG': 1.00, 'SHP': 1.00, 'BSD': 1.00, 'BDT': 1.00, 'BBD': 1.00, 'BYN': 1.00, 'BZD': 1.00, 'XOF': 1.00, 'BMD': 1.00, 'BTN': 1.00, 'BOB': 1.00, 'BAM': 1.00, 'BWP': 1.00, 'BRL': 1.00, 'BND': 1.00, 'BGN': 1.00, 'BIF': 1.00, 'KHR': 1.00, 'XAF': 1.00, 'CVE': 1.00, 'CDF': 1.00, 'KMF': 1.00, 'NZD': 1.00, 'CRC': 1.00, 'CUP': 1.00, 'XCG': 1.00, 'CZK': 1.00, 'DKK': 1.00, 'DJF': 1.00, 'DOP': 1.00, 'EGP': 1.00, 'ERN': 1.00, 'SZL': 1.00, 'ZAR': 1.00, 'ETB': 1.00, 'FKP': 1.00, 'FJD': 1.00, 'XPF': 1.00, 'GMD': 1.00, 'GEL': 1.00, 'GHS': 1.00, 'GTQ': 1.00, 'GNF': 1.00, 'GYD': 1.00, 'HTG': 1.00, 'HNL': 1.00, 'HKD': 1.00, 'HUF': 1.00, 'ISK': 1.00, 'IDR': 1.00, 'IRR': 1.00, 'IQD': 1.00, 'ILS': 1.00, 'JMD': 1.00, 'KZT': 1.00, 'KES': 1.00, 'KPW': 1.00, 'KGS': 1.00, 'LAK': 1.00, 'LBP': 1.00, 'LSL': 1.00, 'LRD': 1.00, 'LYD': 1.00, 'MDL': 1.00, 'MOP': 1.00, 'MGA': 1.00, 'MWK': 1.00, 'MYR': 1.00, 'MVR': 1.00, 'MRU': 1.00, 'MZN': 1.00, 'MMK': 1.00, 'NAD': 1.00, 'NPR': 1.00, 'NIO': 1.00, 'NGN': 1.00, 'NOK': 1.00, 'PKR': 1.00, 'PGK': 1.00, 'PYG': 1.00, 'PEN': 1.00, 'PHP': 1.00, 'PLN': 1.00, 'QAR': 1.00, 'RON': 1.00, 'RSD': 1.00, 'SCR': 1.00, 'SLE: 1.00', 'SBD': 1.00, 'SOS': 1.00, 'SSP': 1.00, 'STN': 1.00, 'SRD': 1.00, 'SYP': 1.00, 'TWD': 1.00, 'TJS': 1.00, 'TZS': 1.00, 'TTD': 1.00, 'TND': 1.00, 'TRY': 1.00, 'TMT': 1.00, 'UGX': 1.00, 'UAH': 1.00, 'AED': 1.00, 'UYU': 1.00, 'UZS': 1.00, 'VUV': 1.00, 'VES': 1.00, 'VED': 1.00, 'VND': 1.00, 'YER': 1.00, 'ZMW': 1.00, 'ZWG': 1.00,
+  'AFN': 1.00, 'ALL': 1.00, 'DZD': 1.00, 'AOA': 1.00, 'XCD': 1.00, 'ARS': 1.00, 'AMD': 1.00, 'AWG': 1.00, 'SHP': 1.00, 'BSD': 1.00, 'BDT': 1.00, 'BBD': 1.00, 'BYN': 1.00, 'BZD': 1.00, 'XOF': 1.00, 'BMD': 1.00, 'BTN': 1.00, 'BOB': 1.00, 'BAM': 1.00, 'BWP': 1.00, 'BRL': 1.00, 'BND': 1.00, 'BGN': 1.00, 'BIF': 1.00, 'KHR': 1.00, 'XAF': 1.00, 'CVE': 1.00, 'CDF': 1.00, 'KMF': 1.00, 'NZD': 1.00, 'CRC': 1.00, 'CUP': 1.00, 'XCG': 1.00, 'CZK': 1.00, 'DKK': 1.00, 'DJF': 1.00, 'DOP': 1.00, 'EGP': 1.00, 'ERN': 1.00, 'SZL': 1.00, 'ZAR': 1.00, 'ETB': 1.00, 'FKP': 1.00, 'FJD': 1.00, 'XPF': 1.00, 'GMD': 1.00, 'GEL': 1.00, 'GHS': 1.00, 'GTQ': 1.00, 'GNF': 1.00, 'GYD': 1.00, 'HTG': 1.00, 'HNL': 1.00, 'HKD': 1.00, 'HUF': 1.00, 'ISK': 1.00, 'IDR': 1.00, 'IRR': 1.00, 'IQD': 1.00, 'ILS': 1.00, 'JMD': 1.00, 'KZT': 1.00, 'KES': 1.00, 'KPW': 1.00, 'KGS': 1.00, 'LAK': 1.00, 'LBP': 1.00, 'LSL': 1.00, 'LRD': 1.00, 'LYD': 1.00, 'MDL': 1.00, 'MOP': 1.00, 'MGA': 1.00, 'MWK': 1.00, 'MYR': 1.00, 'MVR': 1.00, 'MRU': 1.00, 'MZN': 1.00, 'MMK': 1.00, 'NAD': 1.00, 'NPR': 1.00, 'NIO': 1.00, 'NGN': 1.00, 'NOK': 1.00, 'PKR': 1.00, 'PGK': 1.00, 'PYG': 1.00, 'PEN': 1.00, 'PHP': 1.00, 'PLN': 1.00, 'QAR': 1.00, 'RON': 1.00, 'RSD': 1.00, 'SCR': 1.00, 'SLE': 1.00, 'SBD': 1.00, 'SOS': 1.00, 'SSP': 1.00, 'STN': 1.00, 'SRD': 1.00, 'SYP': 1.00, 'TWD': 1.00, 'TJS': 1.00, 'TZS': 1.00, 'TTD': 1.00, 'TND': 1.00, 'TRY': 1.00, 'TMT': 1.00, 'UGX': 1.00, 'UAH': 1.00, 'AED': 1.00, 'UYU': 1.00, 'UZS': 1.00, 'VUV': 1.00, 'VES': 1.00, 'VED': 1.00, 'VND': 1.00, 'YER': 1.00, 'ZMW': 1.00, 'ZWG': 1.00,
 };
 
 const initialSettings: Settings = {
@@ -69,7 +69,6 @@ const initialSettings: Settings = {
     { id: 5, name: 'Bottle (liter)', baseUnit: 'liter', conversionFactor: 1 },
     { id: 6, name: 'Barrel (liter)', baseUnit: 'liter', conversionFactor: 200 },
   ],
-  language: 'en', // New: Default language
 };
 
 // --- Context Definition ---
@@ -103,7 +102,7 @@ interface DataContextType {
   // Recycle Bin
   recycleBin: RecycleBinItem[];
   setRecycleBin: React.Dispatch<React.SetStateAction<RecycleBinItem[]>>;
-  addToRecycleBin: (item: any, collectionKey: CollectionKey | 'packingUnits' | 'paymentCategories') => void;
+  addToRecycleBin: (item: any, collectionKey: CollectionKey | 'packingUnits') => void;
   restoreFromRecycleBin: (recycleItemId: string) => void;
   deletePermanentlyFromRecycleBin: (recycleItemId: string) => void;
   cleanRecycleBin: () => void;
@@ -175,9 +174,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     confirmationModalProps,
     closeConfirmationModal,
   } = useModals();
-
-  // Use the new translation hook to get the `t` function
-  const { t } = useTranslation();
 
   // --- Currency Conversion Utility ---
   const convertCurrency = useCallback((amount: number, fromCurrency: Currency, toCurrency: Currency): number => {
@@ -253,7 +249,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setRecycleBin(prev => [...prev, newItem]);
     showAlertModal(t('success'), t('itemMovedToRecycleBin'));
-  }, [setRecycleBin, showAlertModal, t]);
+  }, [setRecycleBin, showAlertModal]);
 
   const restoreFromRecycleBin = useCallback((recycleItemId: string) => {
     setRecycleBin(prevRecycleBin => {
@@ -301,7 +297,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       showAlertModal(t('success'), t('itemRestored'));
       return prevRecycleBin.filter(item => item.id !== recycleItemId);
     });
-  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, showAlertModal, t]);
+  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, showAlertModal]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
     showConfirmationModal(
@@ -312,7 +308,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         showAlertModal(t('success'), t('itemDeletedPermanently'));
       }
     );
-  }, [setRecycleBin, showConfirmationModal, showAlertModal, t]);
+  }, [setRecycleBin, showConfirmationModal, showAlertModal]);
 
   const cleanRecycleBin = useCallback(() => {
     showConfirmationModal(
@@ -323,7 +319,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         showAlertModal(t('success'), t('recycleBinCleaned'));
       }
     );
-  }, [setRecycleBin, showConfirmationModal, showAlertModal, t]);
+  }, [setRecycleBin, showConfirmationModal, showAlertModal]);
 
   // Memoized map for packing units
   const packingUnitMap = useMemo(() => {
@@ -367,7 +363,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateStockFromOrder,
     updateAverageCosts,
     addToRecycleBin,
-    t, // Pass t to useCrudOperations
   });
 
   // --- Initialization Logic ---

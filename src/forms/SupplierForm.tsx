@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { Supplier } from '@/types'; // Import types from types file
 
 interface SupplierFormProps {
@@ -16,7 +16,6 @@ interface SupplierFormProps {
 
 const SupplierForm: React.FC<SupplierFormProps> = ({ supplierId, onSuccess }) => {
   const { suppliers, saveItem } = useData();
-  const { t } = useTranslation(); // Use the new hook
   const isEdit = supplierId !== undefined;
   const [supplier, setSupplier] = useState<Partial<Supplier>>({});
 

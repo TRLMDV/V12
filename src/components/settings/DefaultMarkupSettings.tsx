@@ -5,16 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { Settings } from '@/types';
 
 interface DefaultMarkupSettingsProps {
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
+  t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
-const DefaultMarkupSettings: React.FC<DefaultMarkupSettingsProps> = ({ settings, setSettings }) => {
-  const { t } = useTranslation(); // Use the new hook
+const DefaultMarkupSettings: React.FC<DefaultMarkupSettingsProps> = ({ settings, setSettings, t }) => {
   const [defaultMarkup, setDefaultMarkup] = useState(settings.defaultMarkup);
 
   useEffect(() => {
@@ -23,7 +22,7 @@ const DefaultMarkupSettings: React.FC<DefaultMarkupSettingsProps> = ({ settings,
 
   const handleSaveDefaultMarkup = () => {
     if (isNaN(defaultMarkup) || defaultMarkup < 0) {
-      toast.error(t('validationError'), { description: t('markupPercentageCannotBeNegative') });
+      toast.error('Validation Error', { description: 'Markup percentage cannot be negative.' });
       return;
     }
     setSettings(prev => ({ ...prev, defaultMarkup }));

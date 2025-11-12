@@ -2,14 +2,13 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 
 interface UseEraseAllDataProps {
   showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
+  t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
-export const useEraseAllData = ({ showConfirmationModal }: UseEraseAllDataProps) => {
-  const { t } = useTranslation(); // Use the new hook
+export const useEraseAllData = ({ showConfirmationModal, t }: UseEraseAllDataProps) => {
   const [isCodeConfirmationModalOpen, setIsCodeConfirmationModalOpen] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
 
@@ -29,7 +28,6 @@ export const useEraseAllData = ({ showConfirmationModal }: UseEraseAllDataProps)
     localStorage.removeItem('nextIds');
     localStorage.removeItem('initialized'); // Reset initialization flag
     localStorage.removeItem('recycleBin'); // Clear recycle bin
-    localStorage.removeItem('packingUnits'); // Clear packing units
 
     toast.success(t('success'), { description: t('allDataErased') });
     setTimeout(() => window.location.reload(), 1000); // Reload to re-initialize with default data

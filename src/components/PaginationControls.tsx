@@ -10,7 +10,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 
 interface PaginationControlsProps {
   totalItems: number;
@@ -25,7 +25,6 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   currentPage,
   onPageChange,
 }) => {
-  const { t } = useTranslation(); // Use the new hook
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   if (totalPages <= 1) {

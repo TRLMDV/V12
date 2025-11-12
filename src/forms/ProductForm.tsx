@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import ImageUpload from '@/components/ImageUpload';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { Product } from '@/types'; // Import types from types file
 
 interface ProductFormProps {
@@ -18,7 +18,6 @@ interface ProductFormProps {
 
 const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
   const { products, packingUnits, saveItem } = useData();
-  const { t } = useTranslation(); // Use the new hook
   const isEdit = productId !== undefined;
   const [product, setProduct] = useState<Partial<Product>>({});
   const [imageUrl, setImageUrl] = useState<string | null>(null);

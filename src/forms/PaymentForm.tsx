@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { Payment, SellOrder, PurchaseOrder, Currency } from '@/types'; // Import types from types file
 
 interface PaymentFormProps {
@@ -30,7 +30,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
     settings, // Added settings to access payment categories and activeCurrencies
   }
     = useData();
-  const { t } = useTranslation(); // Use the new hook
 
   const isIncoming = type === 'incoming';
   const isEdit = paymentId !== undefined;
@@ -250,7 +249,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess })
       }
     });
     return list;
-  }, [allOrders, paymentsByOrderAndCategoryAZN, isIncoming, isEdit, payment, supplierMap, currencyRates, t]);
+  }, [allOrders, paymentsByOrderAndCategoryAZN, isIncoming, isEdit, payment, supplierMap, currencyRates]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRight, DollarSign } from 'lucide-react'; // Added DollarSign icon
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { useSellOrderForm } from '@/hooks/useSellOrderForm';
 import SellOrderItemsField from '@/components/SellOrderItemsField';
 import { Product, Customer, Warehouse, Currency } from '@/types'; // Import types from types file
@@ -48,7 +48,6 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     subtotalInOrderCurrency,
     activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
-  const { t } = useTranslation(); // Use the new hook
 
   return (
     <form onSubmit={handleSubmit}>

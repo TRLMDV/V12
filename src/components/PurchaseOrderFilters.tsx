@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,6 @@ interface PurchaseOrderFiltersProps {
 
 const PurchaseOrderFilters: React.FC<PurchaseOrderFiltersProps> = ({ onFiltersChange }) => {
   const { suppliers, warehouses, products } = useData();
-  const { t } = useTranslation(); // Use the new hook
 
   const [filterWarehouseId, setFilterWarehouseId] = useState<number | 'all'>('all');
   const [filterSupplierValue, setFilterSupplierValue] = useState<number | 'all' | string>('all');

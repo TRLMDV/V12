@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
+import { t } from '@/utils/i18n';
 import { PurchaseOrder, Product, Supplier, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
 import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
 
@@ -27,7 +27,6 @@ const PurchaseOrdersMultiSheetExportButton: React.FC<PurchaseOrdersMultiSheetExp
   buttonLabel,
 }) => {
   const { packingUnitMap } = useData(); // Access packingUnitMap
-  const { t } = useTranslation(); // Use the new hook
 
   const handleExport = () => {
     if (!purchaseOrders || purchaseOrders.length === 0) {
@@ -47,14 +46,11 @@ const PurchaseOrdersMultiSheetExportButton: React.FC<PurchaseOrdersMultiSheetExp
       data.push([t('supplier'), supplierMap[order.contactId]?.name || 'N/A']);
       data.push([t('warehouse'), warehouseMap[order.warehouseId]?.name || 'N/A']);
       data.push([t('orderDate'), order.orderDate]);
-      data.push([t('status'), t(order.status.toLowerCase() as any)]); // Cast to any for dynamic key
+      data.push([t('status'), t(order.status.toLowerCase() as keyof typeof t)]);
       data.push([t('orderCurrency'), order.currency]);
       if (order.currency !== 'AZN') {
         data.push([t('exchangeRateToAZN'), order.exchangeRate || currencyRates[order.currency] || 1]);
       }
-      data.push([t('transportationFees'), `${order.transportationFees.toFixed(2)} ${order.transportationFeesCurrency}`]);
-      data.push([t('customFees'), `${order.customFees.toFixed(2)} ${order.customFeesCurrency}`]);
-      data.push([t('additionalFees'), `${order.additionalFees.toFixed(2)} ${order.additionalFeesCurrency}`]);
       data.push([]); // Spacer
 
       // --- Order Items ---

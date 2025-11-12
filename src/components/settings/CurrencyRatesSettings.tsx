@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTranslation } from '@/hooks/useTranslation'; // Updated import
 import { CurrencyRates, Currency } from '@/types';
 
 interface CurrencyRatesSettingsProps {
   currencyRates: CurrencyRates;
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
+  t: (key: string, replacements?: { [key: string]: string | number }) => string;
   activeCurrencies: Currency[];
   mainCurrency: Currency; // New prop
 }
@@ -19,10 +19,10 @@ interface CurrencyRatesSettingsProps {
 const CurrencyRatesSettings: React.FC<CurrencyRatesSettingsProps> = ({
   currencyRates,
   setCurrencyRates,
+  t,
   activeCurrencies,
   mainCurrency, // Destructure new prop
 }) => {
-  const { t } = useTranslation(); // Use the new hook
   // Internal state for rates, stored as "Foreign to Main Currency" for display/editing
   const [ratesToMain, setRatesToMain] = useState<Partial<CurrencyRates>>({});
   const [isRatesListOpen, setIsRatesListOpen] = useState(false);
@@ -52,7 +52,7 @@ const CurrencyRatesSettings: React.FC<CurrencyRatesSettingsProps> = ({
     const currenciesToValidate = Array.from(new Set([...activeCurrencies, mainCurrency]));
     const invalidRates = currenciesToValidate.filter(c => c !== mainCurrency && (isNaN(ratesToMain[c] || 0) || (ratesToMain[c] || 0) <= 0));
     if (invalidRates.length > 0) {
-      toast.error(t('invalidRates'), { description: t('pleaseEnterValidPositiveNumbersFor', { currencies: invalidRates.join(', ') }) });
+      toast.error(t('invalidRates'), { description: `Please enter valid positive numbers for: ${invalidRates.join(', ')}` });
       return;
     }
     

@@ -255,8 +255,6 @@ export interface CurrencyRates {
   ZWG: number;
 }
 
-export type AppLanguage = 'en' | 'ru' | 'az'; // New type for supported languages
-
 export interface Settings {
   companyName: string;
   companyLogo: string;
@@ -270,7 +268,6 @@ export interface Settings {
   activeCurrencies: Currency[]; // New: Currencies the user wants to actively use
   showDashboardCurrencyRates: boolean; // New: Toggle for dashboard currency rates visibility
   packingUnits: PackingUnit[]; // New: Custom packing units
-  language: AppLanguage; // New: Application language setting
 }
 
 // --- Recycle Bin Types ---
