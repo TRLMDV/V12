@@ -20,8 +20,8 @@ const navItems = [
   { id: 'productMovement', icon: <ArrowLeftRight className="w-6 h-6 mr-3" /> },
   { id: 'finance', icon: <BarChart className="w-6 h-6 mr-3" /> },
   { id: 'profitability', icon: <TrendingUp className="w-6 h-6 mr-3" /> },
+  { id: 'bank', icon: <Banknote className="w-6 h-6 mr-3" /> }, // Moved Bank item
   { id: 'dataImportExport', icon: <UploadCloud className="w-6 h-6 mr-3" /> },
-  { id: 'bank', icon: <Banknote className="w-6 h-6 mr-3" /> }, // New Bank item
   { id: 'settings', icon: <Settings className="w-6 h-6 mr-3" /> },
 ];
 
