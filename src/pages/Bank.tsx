@@ -42,9 +42,19 @@ const Bank: React.FC = () => {
   const [initialCapitalPaymentCategory, setInitialCapitalPaymentCategory] = useState<string | undefined>(undefined);
 
   const handleAddInitialCapital = () => {
-    setEditingPaymentId(undefined);
-    setPaymentFormType('incoming');
-    setInitialCapitalPaymentCategory('initialCapital'); // Set specific category for initial capital
+    const existingInitialCapitalPayment = incomingPayments.find(
+      p => p.orderId === 0 && p.paymentCategory === 'initialCapital'
+    );
+
+    if (existingInitialCapitalPayment) {
+      setEditingPaymentId(existingInitialCapitalPayment.id);
+      setPaymentFormType('incoming'); // It's always an incoming payment
+      setInitialCapitalPaymentCategory('initialCapital'); // Ensure category is set for edit
+    } else {
+      setEditingPaymentId(undefined);
+      setPaymentFormType('incoming');
+      setInitialCapitalPaymentCategory('initialCapital'); // Set specific category for initial capital
+    }
     setIsModalOpen(true);
   };
 
