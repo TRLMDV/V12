@@ -148,7 +148,7 @@ const i18n = {
     noCustomerFound: 'No customer found.',
     paymentForTransportationFees: 'Payment for Transportation Fees',
     paymentForCustomFees: 'Payment for Custom Fees',
-    paymentForAdditionalFees: 'Payment for Additional Fees',
+    paymentForAdditionalFees: 'Payment for AdditionalFees',
     generateIncomingPayment: 'Generate Incoming Payment',
     incomingPayment: 'Incoming Payment',
     incomingPaymentAlreadyGenerated: 'An incoming payment has already been generated for this sell order.',
@@ -223,6 +223,7 @@ const i18n = {
     withdrawMoney: 'Withdraw Money', // New
     withdrawal: 'Withdrawal', // New
     pleaseAddBankAccountInstruction: 'To view transactions, please add a bank account first using the "Add Bank Account" button.',
+    bankAccountBalance: 'Bank Account Balance', // New translation key
   }
 };
 

@@ -13,15 +13,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label'; // Ensuring this import is present
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
-import { Payment, SellOrder } from '@/types'; // Import types from types file
+import { Payment, SellOrder, BankAccount } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof Payment | 'linkedOrderDisplay' | 'categoryDisplay'; // Added categoryDisplay
+  key: keyof Payment | 'linkedOrderDisplay' | 'categoryDisplay' | 'bankAccountBalance'; // Added bankAccountBalance
   direction: 'ascending' | 'descending';
 };
 
 const IncomingPayments: React.FC = () => {
-  const { incomingPayments, sellOrders, customers, deleteItem, currencyRates, settings } = useData();
+  const { incomingPayments, sellOrders, customers, bankAccounts, deleteItem, currencyRates, settings, convertCurrency, outgoingPayments } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaymentId, setEditingPaymentId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -36,6 +36,33 @@ const IncomingPayments: React.FC = () => {
   const sellOrderMap = sellOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: SellOrder });
   const customerMap = customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
   const paymentCategoryMap = useMemo(() => (settings.paymentCategories || []).reduce((acc, cat) => ({ ...acc, [cat.name]: cat.name }), {} as { [key: string]: string }), [settings.paymentCategories]);
+
+  // Calculate current balance for each bank account
+  const bankAccountsWithBalances = useMemo(() => {
+    return bankAccounts.map(account => {
+      let currentBalance = account.initialBalance;
+
+      incomingPayments.forEach(p => {
+        if (p.bankAccountId === account.id) {
+          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
+          currentBalance += amountInAccountCurrency;
+        }
+      });
+
+      outgoingPayments.forEach(p => {
+        if (p.bankAccountId === account.id) {
+          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
+          currentBalance -= amountInAccountCurrency;
+        }
+      });
+
+      return { ...account, currentBalance };
+    });
+  }, [bankAccounts, incomingPayments, outgoingPayments, convertCurrency]);
+
+  const bankAccountMapWithBalances = useMemo(() => {
+    return bankAccountsWithBalances.reduce((acc, account) => ({ ...acc, [account.id]: account }), {} as { [key: number]: BankAccount & { currentBalance: number } });
+  }, [bankAccountsWithBalances]);
 
 
   // Aggregate payments by order ID and specific category (products) in AZN
@@ -75,6 +102,7 @@ const IncomingPayments: React.FC = () => {
       let remainingAmountText = '';
       let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
       let categoryDisplay = '';
+      const linkedBankAccount = bankAccountMapWithBalances[p.bankAccountId];
 
       if (p.orderId === 0) {
         categoryDisplay = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
@@ -103,7 +131,15 @@ const IncomingPayments: React.FC = () => {
           }
         }
       }
-      return { ...p, linkedOrderDisplay, remainingAmountText, rowClass, categoryDisplay };
+      return { 
+        ...p, 
+        linkedOrderDisplay, 
+        remainingAmountText, 
+        rowClass, 
+        categoryDisplay,
+        bankAccountBalance: linkedBankAccount?.currentBalance,
+        bankAccountCurrency: linkedBankAccount?.currency,
+      };
     });
 
     // 3. Apply category filter to the processed payments
@@ -130,7 +166,7 @@ const IncomingPayments: React.FC = () => {
       });
     }
     return finalFilteredPayments;
-  }, [incomingPayments, startDateFilter, endDateFilter, categoryFilter, sellOrderMap, customerMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t]);
+  }, [incomingPayments, startDateFilter, endDateFilter, categoryFilter, sellOrderMap, customerMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t, bankAccountMapWithBalances]);
 
   // Get all unique categories for the filter dropdown
   const allUniqueCategories = useMemo(() => {
@@ -270,6 +306,9 @@ const IncomingPayments: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('method')}>
                 {t('method')} {getSortIndicator('method')}
               </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('bankAccountBalance')}>
+                {t('bankAccountBalance')} {getSortIndicator('bankAccountBalance')}
+              </TableHead>
               <TableHead className="p-3">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
@@ -288,6 +327,9 @@ const IncomingPayments: React.FC = () => {
                       {p.amount.toFixed(2)} {p.paymentCurrency} <span dangerouslySetInnerHTML={{ __html: p.remainingAmountText }} />
                     </TableCell>
                     <TableCell className="p-3">{p.method}</TableCell>
+                    <TableCell className={`p-3 font-bold ${p.bankAccountBalance && p.bankAccountBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {p.bankAccountBalance !== undefined ? `${p.bankAccountBalance.toFixed(2)} ${p.bankAccountCurrency}` : 'N/A'}
+                    </TableCell>
                     <TableCell className="p-3">
                       <Button variant="link" onClick={() => handleEditPayment(p.id)} className="mr-2 p-0 h-auto">
                         {t('edit')}
@@ -301,7 +343,7 @@ const IncomingPayments: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>
