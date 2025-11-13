@@ -50,7 +50,7 @@ const Bank: React.FC = () => {
 
   // Map bank accounts for easy lookup
   const bankAccountMap = useMemo(() => {
-    return bankAccounts.reduce((acc, acc) => ({ ...acc, [acc.id]: acc }), {} as { [key: number]: BankAccount });
+    return bankAccounts.reduce((acc, account) => ({ ...acc, [account.id]: account }), {} as { [key: number]: BankAccount });
   }, [bankAccounts]);
 
   // Calculate current balance for each bank account
