@@ -67,10 +67,33 @@ export const useSellOrderActions = ({
       return;
     }
 
-    const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
-      const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
+    const finalOrderItems: OrderItem[] = validOrderItems.map((item, index) => {
+      // --- Add defensive checks and logging for the current item ---
+      console.log(`DEBUG: Processing item ${index} in handleGenerateProductMovement map:`, item);
+      
+      // Ensure item.packingUnitId is a valid number or null/undefined before accessing packingUnitMap
+      let packingUnit;
+      if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
+          if (typeof item.packingUnitId === 'number') {
+              packingUnit = packingUnitMap[item.packingUnitId];
+              if (!packingUnit) {
+                  console.warn(`DEBUG: Packing unit with ID ${item.packingUnitId} not found in packingUnitMap for item ${index}.`);
+              }
+          } else {
+              console.error(`DEBUG: item.packingUnitId is not a number for item ${index}:`, item.packingUnitId);
+              // Default to undefined if type is wrong
+              item.packingUnitId = undefined; 
+          }
+      } else {
+          packingUnit = undefined; // Explicitly set if null/undefined
+      }
+      
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
       const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum; // Calculate base quantity
+
+      console.log(`DEBUG: Calculated values for item ${index}: packingQtyNum=${packingQtyNum}, baseQty=${baseQty}, packingUnit=`, packingUnit);
+
+      // --- End defensive checks and logging ---
 
       return {
         productId: item.productId as number,
@@ -78,7 +101,7 @@ export const useSellOrderActions = ({
         price: parseFloat(String(item.price)) || 0,
         currency: selectedCurrency, // Sell orders are always in main currency, but keeping this for consistency
         landedCostPerUnit: item.landedCost, // This is actually averageLandedCost from product
-        packingUnitId: item.packingUnitId, // Store packing unit ID
+        packingUnitId: item.packingUnitId, // Store packing unit ID (could be undefined)
         packingQuantity: packingQtyNum, // Store quantity in packing units
       };
     });
