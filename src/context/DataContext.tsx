@@ -95,6 +95,7 @@ interface DataContextType {
   packingUnits: PackingUnit[];
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>;
   packingUnitMap: { [key: number]: PackingUnit };
+  warehouseMap: { [key: number]: Warehouse }; // Added warehouseMap
   
   // Recycle Bin
   recycleBin: RecycleBinItem[];
@@ -208,7 +209,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const landedCostInMainCurrency = item.landedCostPerUnit || 0;
           if (landedCostInMainCurrency <= 0) return;
 
-          const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0);
+          const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0) as number;
           const stockBeforeThisOrder = totalStock - (item.qty as number);
 
           if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {
@@ -323,6 +324,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return packingUnits.reduce((acc, pu) => ({ ...acc, [pu.id]: pu }), {} as { [key: number]: PackingUnit });
   }, [packingUnits]);
 
+  // Memoized map for warehouses
+  const warehouseMap = useMemo(() => {
+    return warehouses.reduce((acc, w) => ({ ...acc, [w.id]: w }), {} as { [key: number]: Warehouse });
+  }, [warehouses]);
+
   // Use the new CRUD operations hook
   const {
     getNextId,
@@ -415,6 +421,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     currencyRates, setCurrencyRates,
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits,
     packingUnitMap,
+    warehouseMap, // Added to context value
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,
@@ -435,6 +442,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     currencyRates, setCurrencyRates,
     packingUnits, setPackingUnits,
     packingUnitMap,
+    warehouseMap, // Added to dependencies
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts,

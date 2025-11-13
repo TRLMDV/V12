@@ -54,7 +54,7 @@ export function useInventoryManagement({ products, setProducts }: UseInventoryMa
           const landedCostInAZN = item.landedCostPerUnit || 0;
           if (landedCostInAZN <= 0) return;
 
-          const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0);
+          const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0) as number;
           const stockBeforeThisOrder = totalStock - (item.qty as number);
 
           if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {

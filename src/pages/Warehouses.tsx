@@ -27,7 +27,7 @@ const Warehouses: React.FC = () => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'ascending' });
   const [productSearchSku, setProductSearchSku] = useState<string>(''); // New state for product search by SKU
 
-  // Pagination states for the main warehouse list
+  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100; // User requested 100 items per page
 
@@ -213,7 +213,7 @@ const Warehouses: React.FC = () => {
                           type="text"
                           placeholder={t('searchBySku')}
                           value={productSearchSku}
-                          onChange={(e) => e.stopPropagation() || setProductSearchSku(e.target.value)} // Prevent collapsing when clicking search
+                          onChange={(e) => { e.stopPropagation(); setProductSearchSku(e.target.value); }} // Prevent collapsing when clicking search
                           className="w-full"
                         />
                       </div>

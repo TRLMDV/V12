@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command'; // Added Command components
 import { cn } from '@/lib/utils'; // Added cn utility
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
-import { ProductMovement, Product } from '@/types'; // Import types from types file
+import type { ProductMovement, Product } from '@/types'; // Import types from types file
 
 type SortConfig = {
   key: keyof ProductMovement | 'sourceWarehouseName' | 'destWarehouseName' | 'totalItems';

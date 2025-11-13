@@ -5,7 +5,7 @@ import { toast as sonnerToast } from 'sonner';
 import { t } from '@/utils/i18n';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CollectionKey, PackingUnit, PaymentCategorySetting
+  CollectionKey, PackingUnit, PaymentCategorySetting, Settings
 } from '@/types';
 
 interface UseCrudOperationsProps {
@@ -19,12 +19,13 @@ interface UseCrudOperationsProps {
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // Added
-  setSettings: React.Dispatch<React.SetStateAction<any>>; // Added for paymentCategories
+  setSettings: React.Dispatch<React.SetStateAction<Settings>>; // Added for paymentCategories
   nextIds: { [key: string]: number }; // Still need nextIds value for getNextId
   setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
   showAlertModal: (title: string, message: string) => void;
   showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
+  updateAverageCosts: (purchaseOrder: PurchaseOrder) => void; // Added
   addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
   // Pass current state values for validation checks where needed, but not as dependencies for useCallback
   products: Product[];
@@ -37,7 +38,7 @@ interface UseCrudOperationsProps {
   outgoingPayments: Payment[];
   productMovements: ProductMovement[];
   packingUnits: PackingUnit[]; // Added
-  settings: any; // Added for paymentCategories
+  settings: Settings; // Added for paymentCategories
 }
 
 export function useCrudOperations({
@@ -84,7 +85,7 @@ export function useCrudOperations({
       case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
       case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
       case 'paymentCategories':
-        setSettings((prevSettings: any) => {
+        setSettings((prevSettings: Settings) => {
           const existingCategories = prevSettings.paymentCategories || [];
           const existingItemIndex = existingCategories.findIndex((i: any) => i.id === item.id);
           let updatedCategories;
@@ -157,7 +158,7 @@ export function useCrudOperations({
             return;
           }
           addToRecycleBin(categoryToDelete, key);
-          setSettings((prevSettings: any) => ({
+          setSettings((prevSettings: Settings) => ({
             ...prevSettings,
             paymentCategories: (prevSettings.paymentCategories || []).filter((c: PaymentCategorySetting) => c.id !== id),
           }));

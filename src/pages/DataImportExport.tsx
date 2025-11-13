@@ -9,12 +9,12 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Download, UploadCloud, Trash2, RotateCcw, XCircle } from 'lucide-react'; // Added Recycle Bin icons
 import ExcelImportButton from '@/components/ExcelImportButton';
-import ExcelExportButton from '@/components/ExcelImportButton';
+import ExcelExportButton from '@/components/ExcelExportButton'; // Corrected import
 import PurchaseOrdersMultiSheetExportButton from '@/components/PurchaseOrdersMultiSheetExportButton';
 import SellOrdersMultiSheetExportButton from '@/components/SellOrdersMultiSheetExportButton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // Added Table components for Recycle Bin
 import { format } from 'date-fns'; // Added for date formatting in Recycle Bin
-import { Product, Customer, Supplier, PurchaseOrder, SellOrder, Payment, ProductMovement, CollectionKey } from '@/types';
+import { Product, Customer, Supplier, PurchaseOrder, SellOrder, Payment, ProductMovement, CollectionKey, Warehouse } from '@/types'; // Import Warehouse
 
 const DataImportExport: React.FC = () => {
   const {
@@ -311,6 +311,7 @@ const DataImportExport: React.FC = () => {
         items: [],
         vatPercent: parseFloat(row['VAT (%)'] || '0'),
         total: parseFloat(row['Total (AZN)'] || '0'),
+        currency: settings.mainCurrency, // Added missing currency property
       };
       newSellOrders.push(newOrder);
     });
@@ -589,7 +590,7 @@ const DataImportExport: React.FC = () => {
             onImport={handleImportProducts}
             requiredColumns={['Product Name', 'SKU', 'Category', 'Description', 'Min. Stock', 'Avg. Landed Cost', 'Image URL']}
           />
-          <ExcelExportButton
+          <ExcelExportButton // Corrected to ExcelExportButton
             buttonLabel={t('exportExcelFile')}
             data={products.map(p => ({
               ...p,
@@ -625,7 +626,7 @@ const DataImportExport: React.FC = () => {
             onImport={handleImportCustomers}
             requiredColumns={['Customer Name', 'Contact Person', 'Email', 'Phone', 'Address']}
           />
-          <ExcelExportButton
+          <ExcelExportButton // Corrected to ExcelExportButton
             buttonLabel={t('exportExcelFile')}
             data={customers}
             fileName="customers_export"
@@ -655,7 +656,7 @@ const DataImportExport: React.FC = () => {
             onImport={handleImportSuppliers}
             requiredColumns={['Supplier Name', 'Contact Person', 'Email', 'Phone', 'Address']}
           />
-          <ExcelExportButton
+          <ExcelExportButton // Corrected to ExcelExportButton
             buttonLabel={t('exportExcelFile')}
             data={suppliers}
             fileName="suppliers_export"
@@ -732,7 +733,7 @@ const DataImportExport: React.FC = () => {
             onImport={handleImportIncomingPayments}
             requiredColumns={['Payment Date', 'Amount Paid', 'Method', 'Payment Currency']}
           />
-          <ExcelExportButton
+          <ExcelExportButton // Corrected to ExcelExportButton
             buttonLabel={t('exportExcelFile')}
             data={incomingPayments.map(p => {
               let linkedOrderDisplay = '';
@@ -779,7 +780,7 @@ const DataImportExport: React.FC = () => {
             onImport={handleImportOutgoingPayments}
             requiredColumns={['Payment Date', 'Amount Paid', 'Method', 'Payment Currency']}
           />
-          <ExcelExportButton
+          <ExcelExportButton // Corrected to ExcelExportButton
             buttonLabel={t('exportExcelFile')}
             data={outgoingPayments.map(p => {
               let linkedOrderDisplay = '';
@@ -827,7 +828,7 @@ const DataImportExport: React.FC = () => {
             onImport={handleImportProductMovements}
             requiredColumns={['Source Warehouse Name', 'Destination Warehouse Name', 'Movement Date']}
           />
-          <ExcelExportButton
+          <ExcelExportButton // Corrected to ExcelExportButton
             buttonLabel={t('exportExcelFile')}
             data={productMovements.map(pm => ({
               ...pm,

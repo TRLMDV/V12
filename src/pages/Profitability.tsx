@@ -292,7 +292,7 @@ const Profitability: React.FC = () => {
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('qtySold')}>
                   {t('qtySold')} {getSortIndicator('qtySold')}
                 </TableHead>
-                <TableHead className className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalSales')}>
+                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalSales')}>
                   {t('totalSales')} (Excl. VAT) {getSortIndicator('totalSales')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalCOGS')}>

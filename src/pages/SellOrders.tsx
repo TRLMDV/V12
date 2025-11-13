@@ -84,7 +84,7 @@ const SellOrders: React.FC = () => {
     }, {} as { [key: number]: number });
   }, [incomingPayments]);
 
-  const getPaymentStatus = useCallback((order: SellOrder) => {
+  const getPaymentStatus = useCallback((order: SellOrder): 'Paid' | 'Partially Paid' | 'Unpaid' => {
     const totalPaid = paymentsByOrder[order.id] || 0;
     if (totalPaid >= order.total - 0.001) return 'Paid'; // Use tolerance for float comparison
     if (totalPaid > 0) return 'Partially Paid';

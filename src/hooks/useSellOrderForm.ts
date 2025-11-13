@@ -6,7 +6,7 @@ import { useSellOrderState } from './useSellOrderState';
 import { useSellOrderCalculations } from './useSellOrderCalculations';
 import { useSellOrderHandlers } from './useSellOrderHandlers';
 import { useSellOrderActions } from './useSellOrderActions';
-import { Currency } from '@/types'; // Import Currency type
+import { Currency, Settings } from '@/types'; // Import Currency and Settings type
 
 interface UseSellOrderFormProps {
   orderId?: number;
@@ -17,7 +17,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
   const { settings, packingUnits, packingUnitMap } = useData();
 
   // Ensure settings and its properties are always valid, with fallbacks
-  const safeSettings = settings || {};
+  const safeSettings: Settings = settings || {} as Settings; // Explicitly type as Settings
   const mainCurrency: Currency = safeSettings.mainCurrency || 'AZN';
   const activeCurrencies: Currency[] = Array.isArray(safeSettings.activeCurrencies) ? safeSettings.activeCurrencies : [mainCurrency];
 

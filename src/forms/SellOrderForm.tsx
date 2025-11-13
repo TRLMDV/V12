@@ -49,11 +49,6 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
 
-  // --- Debug Log for Button States passed to the form ---
-  console.log("DEBUG: [SellOrderForm] Button States Passed In:");
-  console.log("  - isGenerateMovementDisabled:", isGenerateMovementDisabled);
-  console.log("  - isGeneratePaymentDisabled:", isGeneratePaymentDisabled);
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
@@ -214,16 +209,12 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
         </div>
       </div>
       <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700 space-x-2">
-        {/* --- Debug Log for Button State at Render Time --- */}
-        {console.log("DEBUG: [SellOrderForm] Button States at Render:")}
-        {console.log("  - Movement Button Disabled:", isGenerateMovementDisabled)}
-        {console.log("  - Payment Button Disabled:", isGeneratePaymentDisabled)}
         <Button
           type="button"
           onClick={handleGenerateIncomingPayment}
           variant="secondary"
           className="flex items-center"
-          disabled={isGeneratePaymentDisabled}
+          disabled={isGeneratePaymentDisabled as boolean}
         >
           <DollarSign className="w-4 h-4 mr-2" />
           {t('generateIncomingPayment')}
@@ -233,7 +224,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           onClick={handleGenerateProductMovement}
           variant="secondary"
           className="flex items-center"
-          disabled={isGenerateMovementDisabled}
+          disabled={isGenerateMovementDisabled as boolean}
         >
           <ArrowRight className="w-4 h-4 mr-2" />
           {t('generateProductMovement')}
