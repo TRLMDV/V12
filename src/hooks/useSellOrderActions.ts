@@ -99,6 +99,10 @@ export const useSellOrderActions = ({
       };
     });
 
+    // --- Log finalOrderItems for inspection ---
+    console.log("DEBUG: finalOrderItems (Product Movement) constructed:", finalOrderItems);
+    // --- End Log ---
+
     // --- Explicitly check for undefined properties from 'order' ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
@@ -110,6 +114,23 @@ export const useSellOrderActions = ({
     const orderExchangeRate = selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined);
     const orderProductMovementId = order.productMovementId !== undefined ? order.productMovementId : undefined;
     const orderIncomingPaymentId = order.incomingPaymentId !== undefined ? order.incomingPaymentId : undefined;
+
+    // --- Log individual components before object creation ---
+    console.log("DEBUG: Components for orderToSave (Product Movement):", {
+        id: orderId,
+        contactId: orderContactId,
+        warehouseId: orderWarehouseId,
+        orderDate: orderDate,
+        status: orderStatus,
+        items: 'LOGGED_ABOVE', // Avoid logging items again
+        vatPercent: orderVatPercent,
+        total: order.total,
+        currency: orderCurrency,
+        exchangeRate: orderExchangeRate,
+        productMovementId: orderProductMovementId,
+        incomingPaymentId: orderIncomingPaymentId,
+    });
+    // --- End Log ---
 
     const orderToSave: SellOrder = {
       id: orderId,
@@ -125,6 +146,10 @@ export const useSellOrderActions = ({
       productMovementId: orderProductMovementId,
       incomingPaymentId: orderIncomingPaymentId,
     };
+
+    // --- Log orderToSave for inspection ---
+    console.log("DEBUG: orderToSave (Product Movement) constructed:", JSON.parse(JSON.stringify(orderToSave))); // <-- This is the line that caused the original error
+    // --- End Log ---
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
       showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating a product movement.');
