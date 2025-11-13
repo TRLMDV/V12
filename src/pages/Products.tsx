@@ -49,13 +49,21 @@ const Products: React.FC = () => {
       );
     }
 
-    const sortableItems = filteredItems.map(p => ({
-      ...p,
-      totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
-      priceWithMarkupCalc: (p.averageLandedCost || 0) * (1 + defaultMarkup),
-      priceWithMarkupAndVatCalc: (p.averageLandedCost || 0) * (1 + defaultMarkup) * (1 + defaultVat),
-      defaultPackingUnitName: p.defaultPackingUnitId ? packingUnitMap[p.defaultPackingUnitId]?.name || t('none') : t('none'),
-    }));
+    const sortableItems = filteredItems.map(p => {
+      // Find the 'Piece' packing unit for default display
+      const piecePackingUnit = packingUnits.find(pu => pu.name === 'Piece');
+      const defaultPackingUnitDisplay = p.defaultPackingUnitId
+        ? `${packingUnitMap[p.defaultPackingUnitId]?.name || t('none')} (${packingUnitMap[p.defaultPackingUnitId]?.conversionFactor || 1} ${t(packingUnitMap[p.defaultPackingUnitId]?.baseUnit || 'piece')})`
+        : (piecePackingUnit ? `${piecePackingUnit.name} (${piecePackingUnit.conversionFactor} ${t(piecePackingUnit.baseUnit)})` : t('none'));
+
+      return {
+        ...p,
+        totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
+        priceWithMarkupCalc: (p.averageLandedCost || 0) * (1 + defaultMarkup),
+        priceWithMarkupAndVatCalc: (p.averageLandedCost || 0) * (1 + defaultMarkup) * (1 + defaultVat),
+        defaultPackingUnitName: defaultPackingUnitDisplay,
+      };
+    });
 
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
@@ -74,7 +82,7 @@ const Products: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [products, sortConfig, defaultMarkup, defaultVat, searchSku, packingUnitMap]);
+  }, [products, sortConfig, defaultMarkup, defaultVat, searchSku, packingUnitMap, packingUnits, t]);
 
   // Apply pagination to the filtered and sorted products
   const paginatedProducts = useMemo(() => {

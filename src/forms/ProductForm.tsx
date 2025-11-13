@@ -25,6 +25,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
   const [defaultPackingUnitId, setDefaultPackingUnitId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
+    // Find the 'Piece' packing unit
+    const piecePackingUnit = packingUnits.find(pu => pu.name === 'Piece');
+
     if (isEdit) {
       const existingProduct = products.find(p => p.id === productId);
       if (existingProduct) {
@@ -35,9 +38,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
     } else {
       setProduct({});
       setImageUrl(null);
-      setDefaultPackingUnitId(undefined);
+      // Set default to 'Piece' packing unit for new products
+      setDefaultPackingUnitId(piecePackingUnit ? piecePackingUnit.id : undefined);
     }
-  }, [productId, isEdit, products]);
+  }, [productId, isEdit, products, packingUnits]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
