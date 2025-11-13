@@ -67,33 +67,26 @@ export const useSellOrderActions = ({
       return;
     }
 
-    const finalOrderItems: OrderItem[] = validOrderItems.map((item, index) => {
-      // --- Add defensive checks and logging for the current item ---
-      console.log(`DEBUG: Processing item ${index} in handleGenerateProductMovement map:`, item);
-      
+    const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
       // Ensure item.packingUnitId is a valid number or null/undefined before accessing packingUnitMap
       let packingUnit;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
           if (typeof item.packingUnitId === 'number') {
               packingUnit = packingUnitMap[item.packingUnitId];
-              if (!packingUnit) {
-                  console.warn(`DEBUG: Packing unit with ID ${item.packingUnitId} not found in packingUnitMap for item ${index}.`);
-              }
+              // Optional: Log warning if packing unit not found?
+              // if (!packingUnit) {
+              //     console.warn(`DEBUG: Packing unit with ID ${item.packingUnitId} not found.`);
+              // }
           } else {
-              console.error(`DEBUG: item.packingUnitId is not a number for item ${index}:`, item.packingUnitId);
               // Default to undefined if type is wrong
-              item.packingUnitId = undefined; 
+              item.packingUnitId = undefined;
           }
       } else {
           packingUnit = undefined; // Explicitly set if null/undefined
       }
-      
+
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
       const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum; // Calculate base quantity
-
-      console.log(`DEBUG: Calculated values for item ${index}: packingQtyNum=${packingQtyNum}, baseQty=${baseQty}, packingUnit=`, packingUnit);
-
-      // --- End defensive checks and logging ---
 
       return {
         productId: item.productId as number,
@@ -105,14 +98,6 @@ export const useSellOrderActions = ({
         packingQuantity: packingQtyNum, // Store quantity in packing units
       };
     });
-
-    console.log("DEBUG: order object before orderToSave construction (Product Movement):", order);
-    let finalTotalForMovement = 0;
-    if (typeof order.total === 'number') {
-      finalTotalForMovement = order.total;
-    } else {
-      console.warn("DEBUG: order.total is not a number in Product Movement generation, defaulting to 0:", order.total);
-    }
 
     // --- Explicitly check for undefined properties from 'order' ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
@@ -134,21 +119,18 @@ export const useSellOrderActions = ({
       status: orderStatus,
       items: finalOrderItems,
       vatPercent: orderVatPercent,
-      total: finalTotalForMovement,
+      total: order.total || 0,
       currency: orderCurrency,
       exchangeRate: orderExchangeRate,
       productMovementId: orderProductMovementId,
       incomingPaymentId: orderIncomingPaymentId,
     };
 
-    // --- Log orderToSave for inspection ---
-    console.log("DEBUG: orderToSave (Product Movement) constructed:", JSON.parse(JSON.stringify(orderToSave)));
-
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
       showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating a product movement.');
       return;
     }
-    
+
     saveItem('sellOrders', orderToSave);
 
     if (orderToSave.productMovementId) {
@@ -214,7 +196,7 @@ export const useSellOrderActions = ({
     };
 
     saveItem('productMovements', newMovement);
-    
+
     // Update the order with the new productMovementId
     const updatedOrderWithMovement = { ...orderToSave, productMovementId: newMovementId };
     saveItem('sellOrders', updatedOrderWithMovement);
@@ -252,14 +234,6 @@ export const useSellOrderActions = ({
       };
     });
 
-    console.log("DEBUG: order object before orderToSave construction (Incoming Payment):", order);
-    let finalTotalForPayment = 0;
-    if (typeof order.total === 'number') {
-      finalTotalForPayment = order.total;
-    } else {
-      console.warn("DEBUG: order.total is not a number in Incoming Payment generation, defaulting to 0:", order.total);
-    }
-
     // --- Explicitly check for undefined properties from 'order' ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
@@ -280,21 +254,18 @@ export const useSellOrderActions = ({
       status: orderStatus,
       items: finalOrderItems,
       vatPercent: orderVatPercent,
-      total: finalTotalForPayment,
+      total: order.total || 0,
       currency: orderCurrency,
       exchangeRate: orderExchangeRate,
       productMovementId: orderProductMovementId,
       incomingPaymentId: orderIncomingPaymentId,
     };
 
-    // --- Log orderToSave for inspection ---
-    console.log("DEBUG: orderToSave (Incoming Payment) constructed:", JSON.parse(JSON.stringify(orderToSave)));
-
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
       showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating an incoming payment.');
       return;
     }
-    
+
     if (orderToSave.total === 0) {
       showAlertModal('Validation Error', 'Order total must be greater than zero to generate an incoming payment.');
       return;
@@ -421,18 +392,6 @@ export const useSellOrderActions = ({
       };
     });
 
-    // --- Log finalOrderItems for inspection ---
-    console.log("DEBUG: finalOrderItems (handleSubmit) constructed:", finalOrderItems);
-    // --- End Log ---
-
-    console.log("DEBUG: order object before orderToSave construction (handleSubmit):", order);
-    let finalTotalForSubmit = 0;
-    if (typeof order.total === 'number') {
-      finalTotalForSubmit = order.total;
-    } else {
-      console.warn("DEBUG: order.total is not a number in handleSubmit, defaulting to 0:", order.total);
-    }
-
     // --- Explicitly check for undefined properties from 'order' ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
@@ -453,15 +412,12 @@ export const useSellOrderActions = ({
       status: orderStatus,
       items: finalOrderItems,
       vatPercent: orderVatPercent,
-      total: finalTotalForSubmit,
+      total: order.total || 0,
       currency: orderCurrency,
       exchangeRate: orderExchangeRate,
       productMovementId: orderProductMovementId,
       incomingPaymentId: orderIncomingPaymentId,
     };
-
-    // --- Log orderToSave for inspection ---
-    console.log("DEBUG: orderToSave (handleSubmit) constructed:", JSON.parse(JSON.stringify(orderToSave)));
 
     const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
 
