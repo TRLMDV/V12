@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { Payment, Currency, BankAccount } from '@/types';
+import { t } from '@/utils/i18n'; // Import the t function
 
 interface UsePaymentFormStateProps {
   paymentId?: number;
