@@ -44,13 +44,13 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
   return (
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
-      <div className="grid grid-cols-14 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300"> {/* Changed to grid-cols-14 */}
-        <Label className="col-span-3">{t('product')}</Label>
+      <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300"> {/* Changed to grid-cols-12 */}
+        <Label className="col-span-2">{t('product')}</Label> {/* Adjusted col-span */}
         <Label className="col-span-2">{t('packingUnit')}</Label>
         <Label className="col-span-1">{t('qty')}</Label>
         <Label className="col-span-2">{t('price')}</Label>
         <Label className="col-span-2">{t('itemTotal')}</Label>
-        <Label className="col-span-2">{t('landedCostPerUnit')}</Label> {/* New Label */}
+        <Label className="col-span-2">{t('landedCostPerUnit')}</Label>
         <Label className="col-span-1"></Label>
       </div>
       <div id="order-items">
@@ -60,14 +60,14 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
           const stockInBaseUnits = selectedProduct?.stock?.[warehouseId as number] || 0;
 
           return (
-            <div key={index} className="grid grid-cols-14 gap-2 mb-2 items-center"> {/* Changed to grid-cols-14 */}
+            <div key={index} className="grid grid-cols-12 gap-2 mb-2 items-center"> {/* Changed to grid-cols-12 */}
               <Popover open={openComboboxIndex === index} onOpenChange={(open) => setOpenComboboxIndex(open ? index : null)}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-3 justify-between"
+                    className="col-span-2 justify-between" {/* Adjusted col-span */}
                   >
                     {item.productId
                       ? selectedProduct?.name || t('selectProduct')
