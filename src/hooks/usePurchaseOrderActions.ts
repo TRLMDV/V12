@@ -3,23 +3,12 @@
 import { useCallback } from 'react';
 import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
 import { toast } from 'sonner';
-import { PurchaseOrder, Product, OrderItem, Currency } from '@/types';
+import { PurchaseOrder, Product, OrderItem, Currency, PackingUnit } from '@/types';
 import { t } from '@/utils/i18n';
-
-interface PurchaseOrderItemState {
-  productId: number | '';
-  qty: number | string; // This will be the quantity in base units
-  price: number | string;
-  itemTotal: number | string;
-  currency?: Currency;
-  landedCostPerUnit?: number;
-  packingUnitId?: number; // New: ID of the selected packing unit
-  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
-}
 
 interface UsePurchaseOrderActionsProps {
   order: Partial<PurchaseOrder>;
-  orderItems: PurchaseOrderItemState[];
+  orderItems: OrderItem[]; // Changed from PurchaseOrderItemState[] to OrderItem[]
   selectedCurrency: Currency;
   manualExchangeRate?: number;
   currentExchangeRate: number;
@@ -43,7 +32,7 @@ export const usePurchaseOrderActions = ({
     updateAverageCosts,
     showAlertModal,
     getNextId,
-    packingUnitMap, // New: Access packingUnitMap
+    packingUnitMap,
   } = useData();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -54,9 +43,15 @@ export const usePurchaseOrderActions = ({
       return;
     }
 
-    const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
+    // Filter for valid items. Since orderItems are already OrderItem[], productId, qty, price are numbers.
+    const validOrderItems = orderItems.filter(item =>
+      item.productId !== undefined && item.productId !== null && // Ensure productId is a number
+      item.qty > 0 &&
+      item.price >= 0
+    );
+
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero.');
+      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
       return;
     }
 
@@ -65,21 +60,8 @@ export const usePurchaseOrderActions = ({
       return;
     }
 
-    const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
-      const packingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
-      const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum; // Calculate base quantity
-
-      return {
-        productId: item.productId as number,
-        qty: baseQty, // Store quantity in base units
-        price: parseFloat(String(item.price)) || 0,
-        currency: selectedCurrency,
-        landedCostPerUnit: item.landedCostPerUnit,
-        packingUnitId: item.packingUnitId, // Store packing unit ID
-        packingQuantity: packingQtyNum, // Store quantity in packing units
-      };
-    });
+    // validOrderItems are already in the correct OrderItem structure, no need to re-map
+    const finalOrderItems: OrderItem[] = validOrderItems;
 
     const orderToSave: PurchaseOrder = {
       ...order,
