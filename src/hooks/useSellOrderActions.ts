@@ -92,7 +92,6 @@ export const useSellOrderActions = ({
     }
 
     const orderToSave: SellOrder = {
-      ...order,
       id: order.id ?? getNextId('sellOrders'),
       contactId: order.contactId ?? 0, // Ensure contactId is a number
       warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
@@ -103,6 +102,8 @@ export const useSellOrderActions = ({
       total: finalTotalForMovement,
       currency: selectedCurrency,
       exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
+      productMovementId: order.productMovementId, // Explicitly include
+      incomingPaymentId: order.incomingPaymentId, // Explicitly include
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -222,7 +223,6 @@ export const useSellOrderActions = ({
     }
 
     const orderToSave: SellOrder = {
-      ...order,
       id: order.id ?? getNextId('sellOrders'),
       contactId: order.contactId ?? 0, // Ensure contactId is a number
       warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
@@ -233,6 +233,8 @@ export const useSellOrderActions = ({
       total: finalTotalForPayment,
       currency: selectedCurrency,
       exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
+      productMovementId: order.productMovementId, // Explicitly include
+      incomingPaymentId: order.incomingPaymentId, // Explicitly include
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -375,7 +377,6 @@ export const useSellOrderActions = ({
     }
 
     const orderToSave: SellOrder = {
-      ...order,
       id: order.id ?? getNextId('sellOrders'),
       contactId: order.contactId ?? 0, // Ensure contactId is a number
       warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
@@ -386,6 +387,8 @@ export const useSellOrderActions = ({
       total: finalTotalForSubmit,
       currency: selectedCurrency,
       exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
+      productMovementId: order.productMovementId, // Explicitly include
+      incomingPaymentId: order.incomingPaymentId, // Explicitly include
     };
 
     const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
