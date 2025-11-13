@@ -9,8 +9,8 @@ interface SellOrderItemState {
   qty: number | string; // This will be the quantity in base units
   price: number | string;
   itemTotal: number | string;
-  cleanProfit?: number;
-  landedCost?: number;
+  cleanProfit?: number; // New field for calculated clean profit per item
+  landedCost?: number; // Added: Landed cost for the product
   packingUnitId?: number; // New: ID of the selected packing unit
   packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
 }
@@ -34,7 +34,10 @@ export const useSellOrderHandlers = ({
   productMap,
   packingUnitMap, // Destructure new prop
 }: UseSellOrderHandlersProps) => {
-  const { currencyRates } = useData();
+  const { currencyRates, packingUnits } = useData(); // Get packingUnits to find 'Piece'
+
+  // Find the 'Piece' packing unit ID once
+  const piecePackingUnitId = packingUnits.find(pu => pu.name === 'Piece')?.id;
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -72,8 +75,16 @@ export const useSellOrderHandlers = ({
   }, [setManualExchangeRate, setManualExchangeRateInput]);
 
   const addOrderItem = useCallback(() => {
-    setOrderItems(prev => [...prev, { productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined, packingUnitId: undefined, packingQuantity: '' }]);
-  }, [setOrderItems]);
+    setOrderItems(prev => [...prev, {
+      productId: '',
+      qty: '',
+      price: '',
+      itemTotal: '',
+      landedCost: undefined,
+      packingUnitId: piecePackingUnitId, // Default to 'Piece'
+      packingQuantity: '',
+    }]);
+  }, [setOrderItems, piecePackingUnitId]);
 
   const removeOrderItem = useCallback((index: number) => {
     setOrderItems(prev => prev.filter((_, i) => i !== index));
@@ -88,13 +99,15 @@ export const useSellOrderHandlers = ({
         item.productId = value;
         const selectedProduct = productMap[value as number];
         item.landedCost = selectedProduct?.averageLandedCost;
-        // Set default packing unit if product has one
-        item.packingUnitId = selectedProduct?.defaultPackingUnitId;
+        // Set default packing unit to 'Piece' if not already set
+        if (item.packingUnitId === undefined || item.packingUnitId === null) {
+          item.packingUnitId = piecePackingUnitId;
+        }
       } else if (field === 'packingUnitId') {
         item.packingUnitId = value === 'none-selected' ? undefined : parseInt(value);
         // Recalculate base qty if packing quantity exists
         const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-        const selectedPackingUnit = packingUnitMap[item.packingUnitId as number];
+        const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
           item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
         } else {
@@ -103,7 +116,7 @@ export const useSellOrderHandlers = ({
       } else if (field === 'packingQuantity') {
         item.packingQuantity = value;
         const packingQtyNum = parseFloat(value) || 0;
-        const selectedPackingUnit = packingUnitMap[item.packingUnitId as number];
+        const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
           item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
         } else {
@@ -130,7 +143,7 @@ export const useSellOrderHandlers = ({
       newItems[index] = item;
       return newItems;
     });
-  }, [setOrderItems, productMap, packingUnitMap]);
+  }, [setOrderItems, productMap, packingUnitMap, piecePackingUnitId]);
 
   return {
     handleChange,
