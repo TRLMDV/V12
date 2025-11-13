@@ -118,6 +118,9 @@ export const useSellOrderActions = ({
       incomingPaymentId: orderIncomingPaymentId,
     };
 
+    // --- Log orderToSave for inspection ---
+    console.log("DEBUG: orderToSave (Product Movement) constructed:", JSON.parse(JSON.stringify(orderToSave)));
+
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
       showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating a product movement.');
       return;
@@ -260,6 +263,9 @@ export const useSellOrderActions = ({
       productMovementId: orderProductMovementId,
       incomingPaymentId: orderIncomingPaymentId,
     };
+
+    // --- Log orderToSave for inspection ---
+    console.log("DEBUG: orderToSave (Incoming Payment) constructed:", JSON.parse(JSON.stringify(orderToSave)));
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
       showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating an incoming payment.');
@@ -426,6 +432,9 @@ export const useSellOrderActions = ({
       productMovementId: orderProductMovementId,
       incomingPaymentId: orderIncomingPaymentId,
     };
+
+    // --- Log orderToSave for inspection ---
+    console.log("DEBUG: orderToSave (handleSubmit) constructed:", JSON.parse(JSON.stringify(orderToSave)));
 
     const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
 
