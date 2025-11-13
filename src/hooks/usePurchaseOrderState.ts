@@ -8,7 +8,7 @@ interface PurchaseOrderItemState {
   productId: number | '';
   qty: number | string; // This will be the quantity in base units
   price: number | string;
-  itemTotal: number | string;
+  itemTotal?: number | string; // Made optional
   currency?: Currency;
   landedCostPerUnit?: number;
   packingUnitId?: number; // New: ID of the selected packing unit
