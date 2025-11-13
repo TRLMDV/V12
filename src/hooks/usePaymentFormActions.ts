@@ -84,7 +84,7 @@ export const usePaymentFormActions = ({
       ...payment,
       id: payment.id || 0,
       orderId: payment.orderId || 0,
-      bankAccountId: selectedBankAccountId,
+      bankAccountId: selectedBankAccountId, // Ensure bankAccountId is set
       date: payment.date || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       amount: payment.amount,
       paymentCurrency: selectedPaymentCurrency,

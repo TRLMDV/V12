@@ -69,7 +69,66 @@ export interface ProductMovement {
   date: string;
 }
 
+// New interfaces/types added
+export interface PaymentCategorySetting {
+  id: number;
+  name: string;
+}
+
+export type BaseUnit = 'piece' | 'ml' | 'liter';
+
+export interface PackingUnit {
+  id: number;
+  name: string;
+  baseUnit: BaseUnit;
+  conversionFactor: number; // e.g., 1 pack = 10 pieces
+}
+
+export interface OrderItem {
+  productId: number;
+  qty: number; // Always in base units
+  price: number; // Price per base unit
+  currency: Currency; // Currency of the item price (for purchase orders)
+  landedCostPerUnit?: number; // Landed cost per base unit in Main Currency (for purchase orders)
+  packingUnitId?: number; // Optional: ID of the packing unit used for this item
+  packingQuantity?: number; // Optional: Quantity in terms of the packing unit
+}
+
+export interface PurchaseOrder {
+  id: number;
+  contactId: number; // Supplier ID
+  warehouseId: number;
+  orderDate: string;
+  status: 'Draft' | 'Ordered' | 'Received';
+  items: OrderItem[];
+  currency: Currency; // Currency of the order (for product prices)
+  exchangeRate?: number; // Exchange rate to AZN if currency is not AZN
+  transportationFees: number;
+  transportationFeesCurrency: Currency;
+  customFees: number;
+  customFeesCurrency: Currency;
+  additionalFees: number;
+  additionalFeesCurrency: Currency;
+  total: number; // Total landed cost in Main Currency
+}
+
+export interface SellOrder {
+  id: number;
+  contactId: number; // Customer ID
+  warehouseId: number;
+  orderDate: string;
+  status: 'Draft' | 'Confirmed' | 'Shipped';
+  items: OrderItem[];
+  vatPercent: number;
+  total: number; // Total selling price in Main Currency (including VAT)
+  currency: Currency; // Currency of the order (for product prices)
+  exchangeRate?: number; // Exchange rate to AZN if currency is not AZN
+  productMovementId?: number; // Link to generated product movement
+  incomingPaymentId?: number; // Link to generated incoming payment
+}
+
 export interface CurrencyRates {
+  [key: string]: number; // Added index signature
   USD: number;
   EUR: number;
   RUB: number;
@@ -238,4 +297,16 @@ export interface RecycleBinItem {
   collectionKey: CollectionKey; // The original collection key (e.g., 'products')
   data: any; // The actual deleted item object
   deletedAt: string; // ISO string timestamp of deletion
+}
+
+// Internal type for purchase order form items, exported because usePurchaseOrderForm returns it.
+export interface PurchaseOrderItemState {
+  productId: number | '';
+  qty: number | string; // This will be the quantity in base units
+  price: number | string;
+  itemTotal: number | string;
+  currency?: Currency;
+  landedCostPerUnit?: number;
+  packingUnitId?: number; // New: ID of the selected packing unit
+  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
 }

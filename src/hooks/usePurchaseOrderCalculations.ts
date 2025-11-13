@@ -68,7 +68,7 @@ export const usePurchaseOrderCalculations = ({
       const priceNum = parseFloat(String(item.price)) || 0;
 
       if (!item.productId || qtyNum <= 0 || priceNum <= 0) {
-        return { productId: item.productId as number, qty: qtyNum, price: priceNum, currency: item.currency };
+        return { productId: item.productId as number, qty: qtyNum, price: priceNum, currency: item.currency || selectedCurrency };
       }
 
       const itemValueNative = qtyNum * priceNum;

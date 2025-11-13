@@ -2,18 +2,7 @@
 
 import { useCallback } from 'react';
 import { useData } from '@/context/DataContext';
-import { PurchaseOrder, Product, Currency, PackingUnit } from '@/types';
-
-interface PurchaseOrderItemState {
-  productId: number | '';
-  qty: number | string; // This will be the quantity in base units
-  price: number | string;
-  itemTotal: number | string;
-  currency?: Currency;
-  landedCostPerUnit?: number;
-  packingUnitId?: number; // New: ID of the selected packing unit
-  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
-}
+import { PurchaseOrder, Product, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
 
 interface UsePurchaseOrderHandlersProps {
   setOrder: React.Dispatch<React.SetStateAction<Partial<PurchaseOrder>>>;
