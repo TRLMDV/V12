@@ -283,6 +283,13 @@ const Bank: React.FC = () => {
         </div>
       </div>
 
+      {bankAccountsWithBalances.length === 0 && (
+        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-800 dark:text-blue-200">
+          <p className="font-medium">{t('noBankAccountsFound')}</p>
+          <p>{t('pleaseAddBankAccountInstruction')}</p>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto mb-6">
         <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('yourBankAccounts')}</h2>
         <Table>

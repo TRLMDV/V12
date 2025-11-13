@@ -222,6 +222,7 @@ const i18n = {
     depositMoney: 'Deposit Money', // New
     withdrawMoney: 'Withdraw Money', // New
     withdrawal: 'Withdrawal', // New
+    pleaseAddBankAccountInstruction: 'To view transactions, please add a bank account first using the "Add Bank Account" button.',
   }
 };
 
