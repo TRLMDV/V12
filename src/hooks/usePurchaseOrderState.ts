@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
-import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit, PurchaseOrderItemState } from '@/types'; // Import PurchaseOrderItemState
+import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
 
 interface UsePurchaseOrderStateProps {
   orderId?: number;
