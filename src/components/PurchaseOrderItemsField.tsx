@@ -44,12 +44,13 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
   return (
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
-      <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
+      <div className="grid grid-cols-14 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300"> {/* Changed to grid-cols-14 */}
         <Label className="col-span-3">{t('product')}</Label>
-        <Label className="col-span-2">{t('packingUnit')}</Label> {/* New column */}
-        <Label className="col-span-1">{t('qty')}</Label> {/* Now refers to packing quantity */}
+        <Label className="col-span-2">{t('packingUnit')}</Label>
+        <Label className="col-span-1">{t('qty')}</Label>
         <Label className="col-span-2">{t('price')}</Label>
         <Label className="col-span-2">{t('itemTotal')}</Label>
+        <Label className="col-span-2">{t('landedCostPerUnit')}</Label> {/* New Label */}
         <Label className="col-span-1"></Label>
       </div>
       <div id="order-items">
@@ -59,7 +60,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
           const stockInBaseUnits = selectedProduct?.stock?.[warehouseId as number] || 0;
 
           return (
-            <div key={index} className="grid grid-cols-12 gap-2 mb-2 items-center">
+            <div key={index} className="grid grid-cols-14 gap-2 mb-2 items-center"> {/* Changed to grid-cols-14 */}
               <Popover open={openComboboxIndex === index} onOpenChange={(open) => setOpenComboboxIndex(open ? index : null)}>
                 <PopoverTrigger asChild>
                   <Button
@@ -134,6 +135,12 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 type="text"
                 step="0.01"
                 value={item.itemTotal}
+                readOnly
+                className="col-span-2 bg-gray-50 dark:bg-slate-700"
+              />
+              <Input // New Input for Landed Cost per Unit
+                type="text"
+                value={item.landedCostPerUnit !== undefined ? `${item.landedCostPerUnit.toFixed(2)} AZN` : 'N/A'}
                 readOnly
                 className="col-span-2 bg-gray-50 dark:bg-slate-700"
               />
