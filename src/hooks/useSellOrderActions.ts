@@ -55,6 +55,12 @@ export const useSellOrderActions = ({
   const currentExchangeRateToAZN = selectedCurrency === 'AZN' ? 1 : (manualExchangeRate !== undefined ? manualExchangeRate : currencyRates[selectedCurrency]);
 
   const handleGenerateProductMovement = useCallback(() => {
+    if (!order) {
+      console.error("DEBUG: Order object is null or undefined in handleGenerateProductMovement.");
+      showAlertModal('Error', 'Order data is missing. Please try again.');
+      return;
+    }
+
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
       showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero before generating a product movement.');
@@ -179,6 +185,12 @@ export const useSellOrderActions = ({
   }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap]);
 
   const handleGenerateIncomingPayment = useCallback(() => {
+    if (!order) {
+      console.error("DEBUG: Order object is null or undefined in handleGenerateIncomingPayment.");
+      showAlertModal('Error', 'Order data is missing. Please try again.');
+      return;
+    }
+
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
       showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero before generating an incoming payment.');
@@ -274,6 +286,12 @@ export const useSellOrderActions = ({
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!order) {
+      console.error("DEBUG: Order object is null or undefined in handleSubmit.");
+      showAlertModal('Error', 'Order data is missing. Please try again.');
+      return;
+    }
 
     if (!order.contactId || !order.warehouseId || !order.orderDate) {
       showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required.');
