@@ -109,7 +109,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
                   </span>
                 </TableCell>
                 <TableCell className="p-3 font-bold text-gray-700 dark:text-slate-300">{order.totalExclVat.toFixed(2)} AZN</TableCell>
-                <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalInclVat.toFixed(2)} AZN}</TableCell>
+                <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalInclVat.toFixed(2)} AZN</TableCell>
                 <TableCell className="p-3">
                   <Button variant="link" onClick={() => viewOrderDetails(order.id)} className="mr-2 p-0 h-auto">
                     {t('view')}

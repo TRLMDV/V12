@@ -268,7 +268,7 @@ const Warehouses: React.FC = () => {
                         <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
                           <TableCell colSpan={6} className="p-2 text-right">{t('totals')}:</TableCell>
                           <TableCell className="p-2">{warehouseTotalValue.toFixed(2)} AZN</TableCell>
-                          <TableCell className="p-2 text-sky-600 dark:text-sky-400">{warehouseTotalValueInclVat.toFixed(2)} AZN}</TableCell>
+                          <TableCell className="p-2 text-sky-600 dark:text-sky-400">{warehouseTotalValueInclVat.toFixed(2)} AZN</TableCell>
                         </TableRow>
                       </TableFooter>
                     </Table>
