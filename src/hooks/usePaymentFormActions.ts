@@ -95,6 +95,7 @@ export const usePaymentFormActions = ({
     if (selectedOrderIdentifier === '0') {
       paymentToSave.orderId = 0;
       paymentToSave.paymentCategory = selectedManualCategory === "none-selected" ? undefined : selectedManualCategory;
+      // Manual description is required unless the category is 'initialCapital'
       if (!paymentToSave.manualDescription?.trim() && paymentToSave.paymentCategory !== 'initialCapital') {
         showAlertModal('Error', 'Manual Expense requires a description.');
         return;

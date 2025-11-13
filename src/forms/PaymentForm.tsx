@@ -125,6 +125,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
   const isManualExpense = selectedOrderIdentifier === '0';
   const activeCurrencies = settings.activeCurrencies || ['AZN'];
 
+  // Determine if manual description should be disabled
+  const isManualDescriptionDisabled = selectedManualCategory === 'initialCapital';
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
@@ -189,7 +192,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
                 value={payment.manualDescription || ''}
                 onChange={handleChange}
                 className="col-span-3"
-                disabled={selectedManualCategory === 'initialCapital'}
+                disabled={isManualDescriptionDisabled} // Apply disabled state
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">

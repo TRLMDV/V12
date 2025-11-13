@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Eye, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Eye, Edit, Trash2, DollarSign, MinusCircle } from 'lucide-react'; // Added DollarSign and MinusCircle
 import FormModal from '@/components/FormModal';
 import BankAccountForm from '@/forms/BankAccountForm'; // New: BankAccountForm
 import PaymentForm from '@/forms/PaymentForm';
@@ -48,6 +48,10 @@ const Bank: React.FC = () => {
   const [selectedBankAccountId, setSelectedBankAccountId] = useState<number | undefined>(undefined);
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
+
+  // New states for deposit/withdrawal modals
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 
   // Map bank accounts for easy lookup
   const bankAccountMap = useMemo(() => {
@@ -220,6 +224,19 @@ const Bank: React.FC = () => {
     setEndDateFilter('');
   };
 
+  const handleDeposit = () => {
+    setIsDepositModalOpen(true);
+  };
+
+  const handleWithdrawal = () => {
+    setIsWithdrawalModalOpen(true);
+  };
+
+  const handleDepositWithdrawalModalClose = () => {
+    setIsDepositModalOpen(false);
+    setIsWithdrawalModalOpen(false);
+  };
+
   const currentAccountBalanceInModal = useMemo(() => {
     if (!selectedBankAccountId) return 0;
     const account = bankAccountsWithBalances.find(acc => acc.id === selectedBankAccountId);
@@ -236,10 +253,20 @@ const Bank: React.FC = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200">{t('bankAccounts')}</h1>
-        <Button onClick={handleAddAccount}>
-          <PlusCircle className="w-4 h-4 mr-2" />
-          {t('addBankAccount')}
-        </Button>
+        <div className="flex space-x-2">
+          <Button onClick={handleDeposit} variant="secondary">
+            <DollarSign className="w-4 h-4 mr-2" />
+            {t('depositMoney')}
+          </Button>
+          <Button onClick={handleWithdrawal} variant="secondary">
+            <MinusCircle className="w-4 h-4 mr-2" />
+            {t('withdrawMoney')}
+          </Button>
+          <Button onClick={handleAddAccount}>
+            <PlusCircle className="w-4 h-4 mr-2" />
+            {t('addBankAccount')}
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto mb-6">
@@ -296,6 +323,32 @@ const Bank: React.FC = () => {
           bankAccountId={editingBankAccountId}
           onSuccess={handleAccountModalClose}
           onCancel={handleAccountModalClose}
+        />
+      </FormModal>
+
+      {/* Deposit Money Modal */}
+      <FormModal
+        isOpen={isDepositModalOpen}
+        onClose={handleDepositWithdrawalModalClose}
+        title={t('depositMoney')}
+      >
+        <PaymentForm
+          type="incoming"
+          onSuccess={handleDepositWithdrawalModalClose}
+          initialManualCategory="initialCapital"
+        />
+      </FormModal>
+
+      {/* Withdraw Money Modal */}
+      <FormModal
+        isOpen={isWithdrawalModalOpen}
+        onClose={handleDepositWithdrawalModalClose}
+        title={t('withdrawMoney')}
+      >
+        <PaymentForm
+          type="outgoing"
+          onSuccess={handleDepositWithdrawalModalClose}
+          initialManualCategory="Withdrawal"
         />
       </FormModal>
 

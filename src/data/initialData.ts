@@ -63,6 +63,7 @@ export const initialSettings: Settings = {
     { id: 7, name: 'Maintenance' },
     { id: 8, name: 'Software Subscriptions' },
     { id: 9, name: 'initialCapital' },
+    { id: 10, name: 'Withdrawal' }, // New: Withdrawal category
   ],
   mainCurrency: 'AZN',
   activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD'],

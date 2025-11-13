@@ -51,24 +51,28 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
         setSelectedBankAccountId(existingPayment.bankAccountId);
       }
     } else {
+      // For new payments, apply initialManualCategory if provided
+      const defaultCategory = initialManualCategory || 'manual';
+      const defaultDescription = defaultCategory === 'initialCapital' ? t('initialCapital') : ''; // Pre-fill for initialCapital
+
       setPayment({
         date: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
         amount: 0,
         method: '',
-        orderId: 0,
-        paymentCategory: initialManualCategory || 'manual',
-        manualDescription: '',
+        orderId: 0, // Default to manual
+        paymentCategory: defaultCategory,
+        manualDescription: defaultDescription,
         paymentCurrency: 'AZN',
         bankAccountId: bankAccounts.length > 0 ? bankAccounts[0].id : undefined,
       });
       setSelectedPaymentCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
-      setSelectedOrderIdentifier('0');
-      setSelectedManualCategory(initialManualCategory || 'none-selected');
+      setSelectedOrderIdentifier('0'); // Always '0' for manual payments
+      setSelectedManualCategory(defaultCategory);
       setSelectedBankAccountId(bankAccounts.length > 0 ? bankAccounts[0].id : undefined);
     }
-  }, [paymentId, isEdit, allPayments, currencyRates, initialManualCategory, bankAccounts, isIncoming]);
+  }, [paymentId, isEdit, allPayments, currencyRates, initialManualCategory, bankAccounts, isIncoming, t]);
 
   return {
     payment,
