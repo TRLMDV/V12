@@ -399,20 +399,51 @@ export const useSellOrderActions = ({
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
   }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap]);
 
+  // --- Debug Logs for Button States ---
   const isGenerateMovementDisabled = useMemo(() => {
-    if (!order || !order.warehouseId || !mainWarehouse || order.warehouseId === mainWarehouse.id || order.status !== 'Shipped' || order.productMovementId) {
-      return true;
+    const disabled =
+      !order ||
+      !order.warehouseId ||
+      !mainWarehouse ||
+      order.warehouseId === mainWarehouse.id ||
+      order.status !== 'Shipped' ||
+      order.productMovementId ||
+      orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
+
+    console.log("DEBUG: [Button State] Generate Product Movement Button:");
+    console.log("  - order exists:", !!order);
+    if (order) {
+      console.log("  - order.warehouseId:", order.warehouseId);
+      console.log("  - order.status:", order.status);
+      console.log("  - order.productMovementId:", order.productMovementId);
     }
-    const validItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0);
-    return validItems.length === 0;
+    console.log("  - mainWarehouse exists:", !!mainWarehouse);
+    if (mainWarehouse && order) {
+      console.log("  - order.warehouseId === mainWarehouse.id:", order.warehouseId === mainWarehouse.id);
+    }
+    console.log("  - valid items count:", orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length);
+    console.log("  -> DISABLED:", disabled);
+
+    return disabled;
   }, [order, mainWarehouse, orderItems]);
 
   const isGeneratePaymentDisabled = useMemo(() => {
-    if (!order || order.status !== 'Shipped' || order.incomingPaymentId) {
-      return true;
+    const disabled =
+      !order ||
+      order.status !== 'Shipped' ||
+      order.incomingPaymentId ||
+      orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
+
+    console.log("DEBUG: [Button State] Generate Incoming Payment Button:");
+    console.log("  - order exists:", !!order);
+    if (order) {
+      console.log("  - order.status:", order.status);
+      console.log("  - order.incomingPaymentId:", order.incomingPaymentId);
     }
-    const validItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0);
-    return validItems.length === 0;
+    console.log("  - valid items count:", orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length);
+    console.log("  -> DISABLED:", disabled);
+
+    return disabled;
   }, [order, orderItems]);
 
   return {

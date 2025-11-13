@@ -5,12 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, DollarSign } from 'lucide-react'; // Added DollarSign icon
+import { ArrowRight, DollarSign } from 'lucide-react';
 import { t } from '@/utils/i18n';
 import { useSellOrderForm } from '@/hooks/useSellOrderForm';
 import SellOrderItemsField from '@/components/SellOrderItemsField';
-import { Product, Customer, Warehouse, Currency } from '@/types'; // Import types from types file
-import { useData } from '@/context/DataContext'; // Import useData
+import { Product, Customer, Warehouse, Currency } from '@/types';
+import { useData } from '@/context/DataContext';
 
 interface SellOrderFormProps {
   orderId?: number;
@@ -25,8 +25,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     warehouses,
     products,
     productMap,
-    packingUnits, // New: packingUnits
-    packingUnitMap, // New: packingUnitMap
+    packingUnits,
+    packingUnitMap,
     isGenerateMovementDisabled,
     isGeneratePaymentDisabled,
     handleChange,
@@ -48,6 +48,11 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     subtotalInOrderCurrency,
     activeCurrencies,
   } = useSellOrderForm({ orderId, onSuccess });
+
+  // --- Debug Log for Button States passed to the form ---
+  console.log("DEBUG: [SellOrderForm] Button States Passed In:");
+  console.log("  - isGenerateMovementDisabled:", isGenerateMovementDisabled);
+  console.log("  - isGeneratePaymentDisabled:", isGeneratePaymentDisabled);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -159,8 +164,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           addOrderItem={addOrderItem}
           products={products}
           productMap={productMap}
-          packingUnits={packingUnits} // Pass packingUnits
-          packingUnitMap={packingUnitMap} // Pass packingUnitMap
+          packingUnits={packingUnits}
+          packingUnitMap={packingUnitMap}
           warehouseId={order.warehouseId as number}
         />
 
@@ -209,20 +214,24 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
         </div>
       </div>
       <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700 space-x-2">
-        <Button 
-          type="button" 
-          onClick={handleGenerateIncomingPayment} 
-          variant="secondary" 
+        {/* --- Debug Log for Button State at Render Time --- */}
+        {console.log("DEBUG: [SellOrderForm] Button States at Render:")}
+        {console.log("  - Movement Button Disabled:", isGenerateMovementDisabled)}
+        {console.log("  - Payment Button Disabled:", isGeneratePaymentDisabled)}
+        <Button
+          type="button"
+          onClick={handleGenerateIncomingPayment}
+          variant="secondary"
           className="flex items-center"
           disabled={isGeneratePaymentDisabled}
         >
           <DollarSign className="w-4 h-4 mr-2" />
           {t('generateIncomingPayment')}
         </Button>
-        <Button 
-          type="button" 
-          onClick={handleGenerateProductMovement} 
-          variant="secondary" 
+        <Button
+          type="button"
+          onClick={handleGenerateProductMovement}
+          variant="secondary"
           className="flex items-center"
           disabled={isGenerateMovementDisabled}
         >
