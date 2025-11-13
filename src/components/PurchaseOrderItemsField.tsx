@@ -6,11 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
-import { Product, Currency, PackingUnit, PurchaseOrderItemState } from '@/types'; // Import PurchaseOrderItemState
+import { Product, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
 
 interface PurchaseOrderItemsFieldProps {
   orderItems: PurchaseOrderItemState[];
@@ -19,8 +19,8 @@ interface PurchaseOrderItemsFieldProps {
   addOrderItem: () => void;
   products: Product[];
   productMap: { [key: number]: Product };
-  packingUnits: PackingUnit[]; // New: Pass packingUnits array
-  packingUnitMap: { [key: number]: PackingUnit }; // New: Pass packingUnitMap
+  packingUnits: PackingUnit[];
+  packingUnitMap: { [key: number]: PackingUnit };
   warehouseId?: number;
   selectedCurrency: Currency;
   openComboboxIndex: number | null;
@@ -34,8 +34,8 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
   addOrderItem,
   products,
   productMap,
-  packingUnits, // Destructure new prop
-  packingUnitMap, // Destructure new prop
+  packingUnits,
+  packingUnitMap,
   warehouseId,
   selectedCurrency,
   openComboboxIndex,
@@ -138,7 +138,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 readOnly
                 className="col-span-2 bg-gray-50 dark:bg-slate-700"
               />
-              <Input // New Input for Landed Cost per Unit
+              <Input
                 type="text"
                 value={item.landedCostPerUnit !== undefined ? `${item.landedCostPerUnit.toFixed(2)} AZN` : 'N/A'}
                 readOnly
