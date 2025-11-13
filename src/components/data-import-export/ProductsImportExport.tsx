@@ -22,7 +22,7 @@ const ProductsImportExport: React.FC<ProductsImportExportProps> = ({
       id: getNextId('products'),
       name: String(row['Product Name'] || ''),
       sku: String(row['SKU'] || ''),
-      category: String(row['Category'] || ''),
+      // category: String(row['Category'] || ''), // Removed category import
       description: String(row['Description'] || ''),
       stock: {},
       minStock: parseInt(row['Min. Stock'] || '0'),
@@ -56,7 +56,7 @@ const ProductsImportExport: React.FC<ProductsImportExportProps> = ({
           buttonLabel={t('importExcelFile')}
           description={t('importProductsDescription')}
           onImport={handleImportProducts}
-          requiredColumns={['Product Name', 'SKU', 'Category', 'Description', 'Min. Stock', 'Avg. Landed Cost', 'Image URL']}
+          requiredColumns={['Product Name', 'SKU', 'Description', 'Min. Stock', 'Avg. Landed Cost', 'Image URL']} // Removed 'Category'
         />
         <ExcelExportButton
           buttonLabel={t('exportExcelFile')}
@@ -70,7 +70,7 @@ const ProductsImportExport: React.FC<ProductsImportExportProps> = ({
             { header: 'ID', accessor: 'id' },
             { header: 'Product Name', accessor: 'name' },
             { header: 'SKU', accessor: 'sku' },
-            { header: 'Category', accessor: 'category' },
+            // { header: 'Category', accessor: 'category' }, // Removed 'Category'
             { header: 'Description', accessor: 'description' },
             { header: 'Min. Stock', accessor: 'minStock' },
             { header: 'Avg. Landed Cost', accessor: 'averageLandedCost' },

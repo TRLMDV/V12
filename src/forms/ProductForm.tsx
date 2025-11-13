@@ -64,7 +64,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
       id: product.id || 0, // Will be overwritten by saveItem if new
       name: product.name,
       sku: product.sku,
-      category: product.category || '',
+      category: product.category || '', // Keep category as empty string if not provided
       description: product.description || '',
       minStock: product.minStock || 0,
       imageUrl: imageUrl || '',
@@ -104,17 +104,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
             required
           />
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="category" className="text-right">
-            {t('category')}
-          </Label>
-          <Input
-            id="category"
-            value={product.category || ''}
-            onChange={handleChange}
-            className="col-span-3"
-          />
-        </div>
+        {/* Removed Category Input Field */}
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="description" className="text-right">
             {t('description')}

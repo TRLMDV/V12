@@ -174,9 +174,7 @@ const Products: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('sku')}>
                 {t('sku')} {sortConfig.key === 'sku' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('category')}>
-                {t('category')} {sortConfig.key === 'category' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-              </TableHead>
+              {/* Removed Category TableHead */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('defaultPackingUnitName')}>
                 {t('defaultPacking')} {sortConfig.key === 'defaultPackingUnitName' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
@@ -220,7 +218,7 @@ const Products: React.FC = () => {
                     </TableCell>
                     <TableCell className="p-3">{p.name}</TableCell>
                     <TableCell className="p-3">{p.sku}</TableCell>
-                    <TableCell className="p-3">{p.category}</TableCell>
+                    {/* Removed Category TableCell */}
                     <TableCell className="p-3">{p.defaultPackingUnitName}</TableCell>
                     <TableCell className={`p-3 font-semibold ${stockIsLow ? 'text-red-500' : ''}`}>
                       {p.totalStock}
@@ -245,7 +243,7 @@ const Products: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>
