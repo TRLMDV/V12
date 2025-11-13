@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
+import { useData } from '@/context/DataContext';
+import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
