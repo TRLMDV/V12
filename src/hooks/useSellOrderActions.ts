@@ -38,6 +38,7 @@ export const useSellOrderActions = ({
   onSuccess,
   isEdit,
 }: UseSellOrderActionsProps) => {
+  // --- Get all necessary data from useData at the top level ---
   const {
     sellOrders,
     saveItem,
@@ -51,6 +52,7 @@ export const useSellOrderActions = ({
     currencyRates,
     settings,
     convertCurrency,
+    incomingPayments, // Get incomingPayments here
   } = useData();
 
   const mainCurrency = settings.mainCurrency;
@@ -71,11 +73,13 @@ export const useSellOrderActions = ({
     }
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
+      // --- Safely get packing unit ---
       let packingUnit;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
           if (typeof item.packingUnitId === 'number') {
               packingUnit = packingUnitMap[item.packingUnitId];
           } else {
+              // If it's not a number, treat it as if no packing unit is selected
               item.packingUnitId = undefined;
           }
       } else {
@@ -83,19 +87,21 @@ export const useSellOrderActions = ({
       }
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
+      // Calculate base quantity based on packing unit
       const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum;
 
       return {
         productId: item.productId as number,
-        qty: baseQty,
+        qty: baseQty, // Store base unit quantity
         price: parseFloat(String(item.price)) || 0,
         currency: selectedCurrency,
         landedCostPerUnit: item.landedCost,
-        packingUnitId: item.packingUnitId,
-        packingQuantity: packingQtyNum,
+        packingUnitId: item.packingUnitId, // Store the selected packing unit ID
+        packingQuantity: packingQtyNum, // Store the packing quantity entered by the user
       };
     });
 
+    // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
@@ -154,10 +160,11 @@ export const useSellOrderActions = ({
     }
 
     const newMovementItems: { productId: number; quantity: number }[] = [];
+    // Deep copy products for stock validation/update
     const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
 
     for (const item of finalOrderItems) {
-      const qtyNum = item.qty;
+      const qtyNum = item.qty; // This is now the base unit quantity
       if (!item.productId || qtyNum <= 0) {
         continue;
       }
@@ -177,6 +184,7 @@ export const useSellOrderActions = ({
 
       newMovementItems.push({ productId: item.productId as number, quantity: qtyNum });
 
+      // Update stock in productsCopy
       if (!product.stock) product.stock = {};
       product.stock[mainWarehouse.id] = sourceStock - qtyNum;
       product.stock[orderToSave.warehouseId as number] = (product.stock[orderToSave.warehouseId as number] || 0) + qtyNum;
@@ -228,6 +236,7 @@ export const useSellOrderActions = ({
     }
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
+      // --- Safely get packing unit ---
       let packingUnit;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
           if (typeof item.packingUnitId === 'number') {
@@ -253,6 +262,7 @@ export const useSellOrderActions = ({
       };
     });
 
+    // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
@@ -291,7 +301,8 @@ export const useSellOrderActions = ({
       return;
     }
 
-    const existingIncomingPayment = useData().incomingPayments.find(p => p.orderId === orderToSave.id);
+    // --- Use incomingPayments from the top-level useData call ---
+    const existingIncomingPayment = incomingPayments.find(p => p.orderId === orderToSave.id);
     if (existingIncomingPayment) {
       showAlertModal('Info', t('incomingPaymentAlreadyExists'));
       const updatedOrderWithPayment = { ...orderToSave, incomingPaymentId: existingIncomingPayment.id };
@@ -318,7 +329,8 @@ export const useSellOrderActions = ({
 
     toast.success(t('success'), { description: `Incoming Payment #${newPaymentId} generated successfully for ${t('orderId')} #${orderToSave.id}.` });
 
-  }, [order, orderItems, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap]);
+  }, [order, orderItems, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, incomingPayments, mainCurrency]); // Add incomingPayments and mainCurrency to dependencies
+
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -340,6 +352,7 @@ export const useSellOrderActions = ({
     }
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
+      // --- Safely get packing unit ---
       let packingUnit;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
           if (typeof item.packingUnitId === 'number') {
@@ -365,6 +378,7 @@ export const useSellOrderActions = ({
       };
     });
 
+    // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
