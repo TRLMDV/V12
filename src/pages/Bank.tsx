@@ -19,11 +19,12 @@ interface Transaction {
   id: string; // Unique ID for transaction (payment.id + type)
   date: string;
   description: string;
-  amount: number; // Always in mainCurrency
-  type: 'incoming' | 'outgoing';
-  originalPaymentId: number;
+  amount: number; // Always in the account's currency
+  type: 'incoming' | 'outgoing' | 'initial'; // Added 'initial' type
+  originalPaymentId: number; // Link to the actual payment if applicable
   originalPaymentCurrency: Currency; // Added original currency
   originalPaymentAmount: number; // Added original amount
+  runningBalance?: number; // New: Running balance after this transaction
 }
 
 const Bank: React.FC = () => {
@@ -81,9 +82,9 @@ const Bank: React.FC = () => {
     });
   }, [bankAccounts, incomingPayments, outgoingPayments, convertCurrency]);
 
-  // Aggregate all transactions for a specific bank account
+  // Aggregate all transactions for a specific bank account with running balance
   const allTransactionsForSelectedAccount = useMemo(() => {
-    const transactions: Transaction[] = [];
+    const transactions: Omit<Transaction, 'runningBalance'>[] = [];
     const selectedAccount = bankAccountMap[selectedBankAccountId as number];
 
     if (!selectedAccount) return [];
@@ -94,7 +95,7 @@ const Bank: React.FC = () => {
       date: format(new Date(0), 'yyyy-MM-dd'), // Use epoch for initial balance date
       description: t('initialBalance'),
       amount: selectedAccount.initialBalance,
-      type: 'incoming',
+      type: 'initial',
       originalPaymentId: 0,
       originalPaymentCurrency: selectedAccount.currency,
       originalPaymentAmount: selectedAccount.initialBalance,
@@ -148,10 +149,35 @@ const Bank: React.FC = () => {
       }
     });
 
-    // Sort all transactions by date
-    transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Sort all transactions by date, then by type (initial first, then incoming, then outgoing)
+    transactions.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
 
-    return transactions;
+      if (dateA !== dateB) {
+        return dateA - dateB;
+      }
+
+      // If dates are the same, sort 'initial' first, then 'incoming', then 'outgoing'
+      const typeOrder = { 'initial': 0, 'incoming': 1, 'outgoing': 2 };
+      return typeOrder[a.type] - typeOrder[b.type];
+    });
+
+    let currentRunningBalance = 0;
+    const transactionsWithRunningBalance: Transaction[] = [];
+
+    transactions.forEach(t => {
+      if (t.type === 'initial') {
+        currentRunningBalance = t.amount;
+      } else if (t.type === 'incoming') {
+        currentRunningBalance += t.amount;
+      } else if (t.type === 'outgoing') {
+        currentRunningBalance -= t.amount;
+      }
+      transactionsWithRunningBalance.push({ ...t, runningBalance: currentRunningBalance });
+    });
+
+    return transactionsWithRunningBalance;
   }, [selectedBankAccountId, bankAccountMap, incomingPayments, outgoingPayments, convertCurrency, t]);
 
   const filteredTransactions = useMemo(() => {
@@ -165,18 +191,6 @@ const Bank: React.FC = () => {
     }
     return filtered;
   }, [allTransactionsForSelectedAccount, startDateFilter, endDateFilter]);
-
-  const transactionsWithRunningBalance = useMemo(() => {
-    const transactionsWithBalance: (Transaction & { runningBalance: number })[] = [];
-    let currentBalance = 0;
-
-    filteredTransactions.forEach(t => {
-      currentBalance += (t.type === 'incoming' ? t.amount : -t.amount);
-      transactionsWithBalance.push({ ...t, runningBalance: currentBalance });
-    });
-
-    return transactionsWithBalance;
-  }, [filteredTransactions]);
 
   const handleAddAccount = () => {
     setEditingBankAccountId(undefined);
@@ -401,19 +415,19 @@ const Bank: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactionsWithRunningBalance.length > 0 ? (
-                transactionsWithRunningBalance.map((t, index) => (
+              {filteredTransactions.length > 0 ? (
+                filteredTransactions.map((t, index) => (
                   <TableRow key={t.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                     <TableCell className="p-3">{format(new Date(t.date), 'yyyy-MM-dd')}</TableCell>
                     <TableCell className="p-3">{t.description}</TableCell>
                     <TableCell className="p-3 text-right text-green-600">
-                      {t.type === 'incoming' ? t.amount.toFixed(2) : '-'} {t.type === 'incoming' ? selectedAccountCurrency : ''}
+                      {(t.type === 'incoming' || t.type === 'initial') ? t.amount.toFixed(2) : '-'} {((t.type === 'incoming' || t.type === 'initial') && t.amount > 0) ? selectedAccountCurrency : ''}
                     </TableCell>
                     <TableCell className="p-3 text-right text-red-600">
-                      {t.type === 'outgoing' ? t.amount.toFixed(2) : '-'} {t.type === 'outgoing' ? selectedAccountCurrency : ''}
+                      {t.type === 'outgoing' ? t.amount.toFixed(2) : '-'} {((t.type === 'outgoing') && t.amount > 0) ? selectedAccountCurrency : ''}
                     </TableCell>
-                    <TableCell className={`p-3 text-right font-bold ${t.runningBalance >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                      {t.runningBalance.toFixed(2)} {selectedAccountCurrency}
+                    <TableCell className={`p-3 text-right font-bold ${t.runningBalance && t.runningBalance >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                      {t.runningBalance?.toFixed(2) || '0.00'} {selectedAccountCurrency}
                     </TableCell>
                   </TableRow>
                 ))
