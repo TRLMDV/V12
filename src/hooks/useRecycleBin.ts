@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Import MOCK_CURRENT_DATE
+import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import {
   RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount

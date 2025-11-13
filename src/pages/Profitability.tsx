@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
+import { useData } from '@/context/DataContext';
+import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';

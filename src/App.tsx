@@ -20,7 +20,7 @@ import DataImportExport from "./pages/DataImportExport";
 import SettingsPage from "./pages/Settings";
 import Bank from "./pages/Bank"; // New import for Bank page
 import NotFound from "./pages/NotFound";
-import { MOCK_CURRENT_DATE } from "./context/DataContext";
+// MOCK_CURRENT_DATE is not used directly in App.tsx, removing import
 
 const queryClient = new QueryClient();
 

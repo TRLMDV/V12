@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback } from 'react';
-import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
+import { useData } from '@/context/DataContext';
+import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { toast } from 'sonner';
 import { PurchaseOrder, Product, OrderItem, Currency, PackingUnit } from '@/types';
 import { t } from '@/utils/i18n';

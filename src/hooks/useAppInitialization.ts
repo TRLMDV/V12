@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { initialData, initialSettings, defaultCurrencyRates } from '@/data/initialData';
+import { initialData, initialSettings, defaultCurrencyRates, MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
   CurrencyRates, Settings, RecycleBinItem, PackingUnit, BankAccount

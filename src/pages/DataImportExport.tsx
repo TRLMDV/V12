@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useRef, useMemo, useCallback } from 'react'; // Added useCallback
-import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
+import { useData } from '@/context/DataContext';
+import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
