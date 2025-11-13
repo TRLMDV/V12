@@ -77,6 +77,14 @@ export const useSellOrderActions = ({
       };
     });
 
+    console.log("DEBUG: order object before orderToSave construction (Product Movement):", order);
+    let finalTotalForMovement = 0;
+    if (typeof order.total === 'number') {
+      finalTotalForMovement = order.total;
+    } else {
+      console.warn("DEBUG: order.total is not a number in Product Movement generation, defaulting to 0:", order.total);
+    }
+
     const orderToSave: SellOrder = {
       ...order,
       id: order.id ?? getNextId('sellOrders'),
@@ -86,7 +94,7 @@ export const useSellOrderActions = ({
       status: order.status ?? 'Draft',
       items: finalOrderItems,
       vatPercent: order.vatPercent ?? 0,
-      total: order.total ?? 0,
+      total: finalTotalForMovement,
       currency: selectedCurrency,
       exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
     };
@@ -193,6 +201,14 @@ export const useSellOrderActions = ({
       };
     });
 
+    console.log("DEBUG: order object before orderToSave construction (Incoming Payment):", order);
+    let finalTotalForPayment = 0;
+    if (typeof order.total === 'number') {
+      finalTotalForPayment = order.total;
+    } else {
+      console.warn("DEBUG: order.total is not a number in Incoming Payment generation, defaulting to 0:", order.total);
+    }
+
     const orderToSave: SellOrder = {
       ...order,
       id: order.id ?? getNextId('sellOrders'),
@@ -202,7 +218,7 @@ export const useSellOrderActions = ({
       status: order.status ?? 'Draft',
       items: finalOrderItems,
       vatPercent: order.vatPercent ?? 0,
-      total: order.total ?? 0,
+      total: finalTotalForPayment,
       currency: selectedCurrency,
       exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
     };
@@ -332,6 +348,14 @@ export const useSellOrderActions = ({
       };
     });
 
+    console.log("DEBUG: order object before orderToSave construction (handleSubmit):", order);
+    let finalTotalForSubmit = 0;
+    if (typeof order.total === 'number') {
+      finalTotalForSubmit = order.total;
+    } else {
+      console.warn("DEBUG: order.total is not a number in handleSubmit, defaulting to 0:", order.total);
+    }
+
     const orderToSave: SellOrder = {
       ...order,
       id: order.id ?? getNextId('sellOrders'),
@@ -341,7 +365,7 @@ export const useSellOrderActions = ({
       status: order.status ?? 'Draft',
       items: finalOrderItems,
       vatPercent: order.vatPercent ?? 0,
-      total: order.total ?? 0,
+      total: finalTotalForSubmit,
       currency: selectedCurrency,
       exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
     };

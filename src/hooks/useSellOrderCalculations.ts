@@ -46,6 +46,7 @@ export const useSellOrderCalculations = ({
   }, [selectedCurrency, mainCurrency, currentExchangeRateToAZN, currencyRates]);
 
   const calculateOrderFinancials = useCallback(() => {
+    console.log("DEBUG: order object in useSellOrderCalculations:", order); // Add this log
     let subtotalInOrderCurrency = 0;
     let totalCleanProfitInMainCurrency = 0;
     const updatedOrderItemsWithProfit: SellOrderItemState[] = [];
