@@ -39,7 +39,7 @@ export interface Warehouse {
   type: 'Main' | 'Secondary'; // Added type field
 }
 
-export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF' | 'DOP' | 'EGP' | 'ERN' | 'SZL' | 'ZAR' | 'ETB' | 'FKP' | 'FJD' | 'XPF' | 'GMD' | 'GEL' | 'GHS' | 'GTQ' | 'GNF' | 'GYD' | 'HTG' | 'HNL' | 'HKD' | 'HUF' | 'ISK' | 'IDR' | 'IRR' | 'IQD' | 'ILS' | 'JMD' | 'KZT' | 'KES' | 'KPW' | 'KGS' | 'LAK' | 'LBP' | 'LSL' | 'LRD' | 'LYD' | 'MDL' | 'MOP' | 'MGA' | 'MWK' | 'MYR' | 'MVR' | 'MRU' | 'MZN' | 'MMK' | 'NAD' | 'NPR' | 'NIO' | 'NGN' | 'NOK' | 'PKR' | 'PGK' | 'PYG' | 'PEN' | 'PHP' | 'PLN' | 'QAR' | 'RON' | 'RSD' | 'SCR' | 'SLE' | 'SBD' | 'SOS' | 'SSP' | 'STN' | 'SRD' | 'SYP' | 'TWD' | 'TJS' | 'TZS' | 'TTD' | 'TND' | 'TRY' | 'TMT' | 'UGX' | 'UAH' | 'AED' | 'UYU' | 'UZS' | 'VUV' | 'VES' | 'VED' | 'VND' | 'YER' | 'ZMW' | 'ZWG';
+export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'XPF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF' | 'DOP' | 'EGP' | 'ERN' | 'SZL' | 'ZAR' | 'ETB' | 'FKP' | 'FJD' | 'GMD' | 'GEL' | 'GHS' | 'GTQ' | 'GNF' | 'GYD' | 'HTG' | 'HNL' | 'HKD' | 'HUF' | 'ISK' | 'IDR' | 'IRR' | 'IQD' | 'ILS' | 'JMD' | 'KZT' | 'KES' | 'KPW' | 'KGS' | 'LAK' | 'LBP' | 'LSL' | 'LRD' | 'LYD' | 'MDL' | 'MOP' | 'MGA' | 'MWK' | 'MYR' | 'MVR' | 'MRU' | 'MZN' | 'MMK' | 'NAD' | 'NPR' | 'NIO' | 'NGN' | 'NOK' | 'PKR' | 'PGK' | 'PYG' | 'PEN' | 'PHP' | 'PLN' | 'QAR' | 'RON' | 'RSD' | 'SCR' | 'SLE' | 'SBD' | 'SOS' | 'SSP' | 'STN' | 'SRD' | 'SYP' | 'TWD' | 'TJS' | 'TZS' | 'TTD' | 'TND' | 'TRY' | 'TMT' | 'UGX' | 'UAH' | 'AED' | 'UYU' | 'UZS' | 'VUV' | 'VES' | 'VED' | 'VND' | 'YER' | 'ZMW' | 'ZWG';
 
 export type BaseUnit = 'piece' | 'ml' | 'liter';
 
@@ -54,6 +54,7 @@ export interface OrderItem {
   productId: number;
   qty: number; // This will now always be the quantity in the product's base unit
   price: number;
+  itemTotal?: number; // Added for easier calculation/display in forms
   currency?: Currency; // For PO items
   landedCostPerUnit?: number; // For PO items (in Main Currency)
   packingUnitId?: number; // New: The ID of the selected packing unit for this order item
@@ -108,6 +109,14 @@ export interface Payment {
   paymentCurrency: Currency; // New: Currency of the payment
   paymentExchangeRate?: number; // New: Exchange rate to AZN if not AZN
   method: string;
+}
+
+export interface ProductMovement {
+  id: number;
+  sourceWarehouseId: number;
+  destWarehouseId: number;
+  items: { productId: number; quantity: number }[];
+  date: string;
 }
 
 export interface CurrencyRates {
@@ -271,7 +280,7 @@ export interface Settings {
 }
 
 // --- Recycle Bin Types ---
-export type CollectionKey = keyof Omit<typeof initialData, 'settings' | 'currencyRates'>; // Exclude settings/currencyRates from direct deletion
+export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories';
 
 export interface RecycleBinItem {
   id: string; // Unique ID for the recycle bin entry

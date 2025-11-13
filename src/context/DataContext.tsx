@@ -99,16 +99,16 @@ interface DataContextType {
   // Recycle Bin
   recycleBin: RecycleBinItem[];
   setRecycleBin: React.Dispatch<React.SetStateAction<RecycleBinItem[]>>;
-  addToRecycleBin: (item: any, collectionKey: CollectionKey | 'packingUnits' | 'paymentCategories') => void;
+  addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
   restoreFromRecycleBin: (recycleItemId: string) => void;
   deletePermanentlyFromRecycleBin: (recycleItemId: string) => void;
   cleanRecycleBin: () => void;
 
   // CRUD operations
-  saveItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', item: any) => void;
-  deleteItem: (key: CollectionKey | 'packingUnits' | 'paymentCategories', id: number) => void;
-  getNextId: (key: CollectionKey | 'packingUnits' | 'paymentCategories') => number;
-  setNextIdForCollection: (key: CollectionKey | 'packingUnits' | 'paymentCategories', nextId: number) => void;
+  saveItem: (key: CollectionKey, item: any) => void;
+  deleteItem: (key: CollectionKey, id: number) => void;
+  getNextId: (key: CollectionKey) => number;
+  setNextIdForCollection: (key: CollectionKey, nextId: number) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
 
@@ -208,12 +208,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const landedCostInMainCurrency = item.landedCostPerUnit || 0;
           if (landedCostInMainCurrency <= 0) return;
 
-          const totalStock = Object.values(product.stock || {}).reduce((a, b) => a + b, 0);
-          const stockBeforeThisOrder = totalStock - item.qty;
+          const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0);
+          const stockBeforeThisOrder = totalStock - (item.qty as number);
 
           if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {
-            const oldTotalValue = stockBeforeThisOrder * product.averageLandedCost;
-            const newItemsValue = item.qty * landedCostInMainCurrency;
+            const oldTotalValue = stockBeforeThisOrder * (product.averageLandedCost as number);
+            const newItemsValue = (item.qty as number) * landedCostInMainCurrency;
             if (totalStock > 0) {
               product.averageLandedCost = parseFloat(((oldTotalValue + newItemsValue) / totalStock).toFixed(4));
             } else {
@@ -235,8 +235,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   // --- Recycle Bin Operations ---
-  const addToRecycleBin = useCallback((item: any, collectionKey: CollectionKey | 'packingUnits' | 'paymentCategories') => {
-    const recycleItemId = `${collectionKey}-${item.id}-${Date.now()}`;
+  const addToRecycleBin = useCallback((item: any, collectionKey: CollectionKey) => {
+    const recycleItemId = `${String(collectionKey)}-${item.id}-${Date.now()}`;
     const newItem: RecycleBinItem = {
       id: recycleItemId,
       originalId: item.id,
@@ -340,7 +340,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIncomingPayments,
     setOutgoingPayments,
     setProductMovements,
-    setPackingUnits,
+    setPackingUnits, // Pass setter
+    setSettings, // Pass setter
     setNextIds,
     // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
     products: Array.isArray(products) ? products : [],
@@ -352,7 +353,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [],
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [],
     productMovements: Array.isArray(productMovements) ? productMovements : [],
-    packingUnits: Array.isArray(packingUnits) ? packingUnits : [],
+    packingUnits: Array.isArray(packingUnits) ? packingUnits : [], // Pass current state
+    settings, // Pass current state
     // Other stable dependencies
     nextIds,
     showAlertModal,
@@ -395,7 +397,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const productsWithTotalStock = useMemo(() => {
     return Array.isArray(products) ? products.map(p => ({
       ...p,
-      totalStock: Object.values(p.stock || {}).reduce((a, b) => a + b, 0),
+      totalStock: Object.values(p.stock || {}).reduce((a: number, b: number) => a + b, 0),
     })) : [];
   }, [products]);
 

@@ -24,7 +24,7 @@ export function useInventoryManagement({ products, setProducts }: UseInventoryMa
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
           if (p) {
             if (!p.stock) p.stock = {};
-            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + (isSell ? item.qty : -item.qty);
+            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + (isSell ? (item.qty as number) : -(item.qty as number));
             if (p.stock[oldOrder.warehouseId] < 0) p.stock[oldOrder.warehouseId] = 0;
           }
         });
@@ -36,7 +36,7 @@ export function useInventoryManagement({ products, setProducts }: UseInventoryMa
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
           if (p) {
             if (!p.stock) p.stock = {};
-            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - (isSell ? item.qty : -item.qty);
+            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - (isSell ? (item.qty as number) : -(item.qty as number));
             if (p.stock[newOrder.warehouseId] < 0) p.stock[newOrder.warehouseId] = 0;
           }
         });
@@ -54,12 +54,12 @@ export function useInventoryManagement({ products, setProducts }: UseInventoryMa
           const landedCostInAZN = item.landedCostPerUnit || 0;
           if (landedCostInAZN <= 0) return;
 
-          const totalStock = Object.values(product.stock || {}).reduce((a, b) => a + b, 0);
-          const stockBeforeThisOrder = totalStock - item.qty;
+          const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0);
+          const stockBeforeThisOrder = totalStock - (item.qty as number);
 
           if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {
-            const oldTotalValue = stockBeforeThisOrder * product.averageLandedCost;
-            const newItemsValue = item.qty * landedCostInAZN;
+            const oldTotalValue = stockBeforeThisOrder * (product.averageLandedCost as number);
+            const newItemsValue = (item.qty as number) * landedCostInAZN;
             if (totalStock > 0) {
               product.averageLandedCost = parseFloat(((oldTotalValue + newItemsValue) / totalStock).toFixed(4));
             } else {
