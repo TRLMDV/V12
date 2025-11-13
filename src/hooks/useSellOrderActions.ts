@@ -79,16 +79,16 @@ export const useSellOrderActions = ({
 
     const orderToSave: SellOrder = {
       ...order,
-      id: order.id || getNextId('sellOrders'),
-      contactId: order.contactId as number,
-      warehouseId: order.warehouseId as number,
-      orderDate: order.orderDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
-      status: order.status || 'Draft',
+      id: order.id ?? getNextId('sellOrders'),
+      contactId: order.contactId ?? 0, // Ensure contactId is a number
+      warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
+      orderDate: order.orderDate ?? MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      status: order.status ?? 'Draft',
       items: finalOrderItems,
-      vatPercent: order.vatPercent || 0,
-      total: order.total || 0,
+      vatPercent: order.vatPercent ?? 0,
+      total: order.total ?? 0,
       currency: selectedCurrency,
-      exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRateToAZN,
+      exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -195,16 +195,16 @@ export const useSellOrderActions = ({
 
     const orderToSave: SellOrder = {
       ...order,
-      id: order.id || getNextId('sellOrders'),
-      contactId: order.contactId as number,
-      warehouseId: order.warehouseId as number,
-      orderDate: order.orderDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
-      status: order.status || 'Draft',
+      id: order.id ?? getNextId('sellOrders'),
+      contactId: order.contactId ?? 0, // Ensure contactId is a number
+      warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
+      orderDate: order.orderDate ?? MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      status: order.status ?? 'Draft',
       items: finalOrderItems,
-      vatPercent: order.vatPercent || 0,
-      total: order.total || 0,
+      vatPercent: order.vatPercent ?? 0,
+      total: order.total ?? 0,
       currency: selectedCurrency,
-      exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRateToAZN,
+      exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -334,16 +334,16 @@ export const useSellOrderActions = ({
 
     const orderToSave: SellOrder = {
       ...order,
-      id: order.id || getNextId('sellOrders'),
-      contactId: order.contactId as number,
-      warehouseId: order.warehouseId as number,
-      orderDate: order.orderDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
-      status: order.status || 'Draft',
+      id: order.id ?? getNextId('sellOrders'),
+      contactId: order.contactId ?? 0, // Ensure contactId is a number
+      warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
+      orderDate: order.orderDate ?? MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      status: order.status ?? 'Draft',
       items: finalOrderItems,
-      vatPercent: order.vatPercent || 0,
-      total: order.total || 0,
+      vatPercent: order.vatPercent ?? 0,
+      total: order.total ?? 0,
       currency: selectedCurrency,
-      exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRateToAZN,
+      exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
     };
 
     const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
@@ -355,7 +355,7 @@ export const useSellOrderActions = ({
   }, [order, orderItems, products, isEdit, sellOrders, showAlertModal, productMap, getNextId, saveItem, updateStockFromOrder, onSuccess, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, packingUnitMap]);
 
   const isGenerateMovementDisabled = !!order.productMovementId;
-  const isGeneratePaymentDisabled = !!order.incomingPaymentId || (order.total || 0) <= 0;
+  const isGeneratePaymentDisabled = !!order.incomingPaymentId || (order.total ?? 0) <= 0;
 
   return {
     handleGenerateProductMovement,

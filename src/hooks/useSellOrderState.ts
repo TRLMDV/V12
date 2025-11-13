@@ -48,7 +48,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
   const [orderItems, setOrderItems] = useState<SellOrderItemState[]>(() => {
     if (isEdit && orderId !== undefined) {
       const existingOrder = sellOrders.find(o => o.id === orderId);
-      if (existingOrder) return existingOrder.items.map(item => ({
+      if (existingOrder) return (existingOrder.items || []).map(item => ({ // Added defensive || []
         productId: item.productId,
         qty: String(item.qty), // Base unit quantity
         price: String(item.price),
@@ -72,7 +72,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) {
         setOrder(existingOrder);
-        setOrderItems(existingOrder.items.map(item => ({
+        setOrderItems((existingOrder.items || []).map(item => ({ // Added defensive || []
           productId: item.productId,
           qty: String(item.qty),
           price: String(item.price),
