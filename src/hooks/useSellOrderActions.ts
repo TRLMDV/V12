@@ -91,19 +91,31 @@ export const useSellOrderActions = ({
       console.warn("DEBUG: order.total is not a number in Product Movement generation, defaulting to 0:", order.total);
     }
 
+    // --- Explicitly check for undefined properties from 'order' ---
+    const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
+    const orderContactId = order.contactId !== undefined ? order.contactId : 0;
+    const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
+    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString().slice(0, 10);
+    const orderStatus = order.status !== undefined ? order.status : 'Draft';
+    const orderVatPercent = order.vatPercent !== undefined ? order.vatPercent : 0;
+    const orderCurrency = selectedCurrency;
+    const orderExchangeRate = selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined);
+    const orderProductMovementId = order.productMovementId !== undefined ? order.productMovementId : undefined;
+    const orderIncomingPaymentId = order.incomingPaymentId !== undefined ? order.incomingPaymentId : undefined;
+
     const orderToSave: SellOrder = {
-      id: order.id ?? getNextId('sellOrders'),
-      contactId: order.contactId ?? 0, // Ensure contactId is a number
-      warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
-      orderDate: order.orderDate ?? MOCK_CURRENT_DATE.toISOString().slice(0, 10),
-      status: order.status ?? 'Draft',
+      id: orderId,
+      contactId: orderContactId,
+      warehouseId: orderWarehouseId,
+      orderDate: orderDate,
+      status: orderStatus,
       items: finalOrderItems,
-      vatPercent: order.vatPercent ?? 0,
+      vatPercent: orderVatPercent,
       total: finalTotalForMovement,
-      currency: selectedCurrency,
-      exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
-      productMovementId: order.productMovementId, // Explicitly include
-      incomingPaymentId: order.incomingPaymentId, // Explicitly include
+      currency: orderCurrency,
+      exchangeRate: orderExchangeRate,
+      productMovementId: orderProductMovementId,
+      incomingPaymentId: orderIncomingPaymentId,
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -222,19 +234,31 @@ export const useSellOrderActions = ({
       console.warn("DEBUG: order.total is not a number in Incoming Payment generation, defaulting to 0:", order.total);
     }
 
+    // --- Explicitly check for undefined properties from 'order' ---
+    const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
+    const orderContactId = order.contactId !== undefined ? order.contactId : 0;
+    const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
+    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString().slice(0, 10);
+    const orderStatus = order.status !== undefined ? order.status : 'Draft';
+    const orderVatPercent = order.vatPercent !== undefined ? order.vatPercent : 0;
+    const orderCurrency = selectedCurrency;
+    const orderExchangeRate = selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined);
+    const orderProductMovementId = order.productMovementId !== undefined ? order.productMovementId : undefined;
+    const orderIncomingPaymentId = order.incomingPaymentId !== undefined ? order.incomingPaymentId : undefined;
+
     const orderToSave: SellOrder = {
-      id: order.id ?? getNextId('sellOrders'),
-      contactId: order.contactId ?? 0, // Ensure contactId is a number
-      warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
-      orderDate: order.orderDate ?? MOCK_CURRENT_DATE.toISOString().slice(0, 10),
-      status: order.status ?? 'Draft',
+      id: orderId,
+      contactId: orderContactId,
+      warehouseId: orderWarehouseId,
+      orderDate: orderDate,
+      status: orderStatus,
       items: finalOrderItems,
-      vatPercent: order.vatPercent ?? 0,
+      vatPercent: orderVatPercent,
       total: finalTotalForPayment,
-      currency: selectedCurrency,
-      exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
-      productMovementId: order.productMovementId, // Explicitly include
-      incomingPaymentId: order.incomingPaymentId, // Explicitly include
+      currency: orderCurrency,
+      exchangeRate: orderExchangeRate,
+      productMovementId: orderProductMovementId,
+      incomingPaymentId: orderIncomingPaymentId,
     };
 
     if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
@@ -376,19 +400,31 @@ export const useSellOrderActions = ({
       console.warn("DEBUG: order.total is not a number in handleSubmit, defaulting to 0:", order.total);
     }
 
+    // --- Explicitly check for undefined properties from 'order' ---
+    const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
+    const orderContactId = order.contactId !== undefined ? order.contactId : 0;
+    const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
+    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString().slice(0, 10);
+    const orderStatus = order.status !== undefined ? order.status : 'Draft';
+    const orderVatPercent = order.vatPercent !== undefined ? order.vatPercent : 0;
+    const orderCurrency = selectedCurrency;
+    const orderExchangeRate = selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined);
+    const orderProductMovementId = order.productMovementId !== undefined ? order.productMovementId : undefined;
+    const orderIncomingPaymentId = order.incomingPaymentId !== undefined ? order.incomingPaymentId : undefined;
+
     const orderToSave: SellOrder = {
-      id: order.id ?? getNextId('sellOrders'),
-      contactId: order.contactId ?? 0, // Ensure contactId is a number
-      warehouseId: order.warehouseId ?? 0, // Ensure warehouseId is a number
-      orderDate: order.orderDate ?? MOCK_CURRENT_DATE.toISOString().slice(0, 10),
-      status: order.status ?? 'Draft',
+      id: orderId,
+      contactId: orderContactId,
+      warehouseId: orderWarehouseId,
+      orderDate: orderDate,
+      status: orderStatus,
       items: finalOrderItems,
-      vatPercent: order.vatPercent ?? 0,
+      vatPercent: orderVatPercent,
       total: finalTotalForSubmit,
-      currency: selectedCurrency,
-      exchangeRate: selectedCurrency === 'AZN' ? undefined : (currentExchangeRateToAZN ?? undefined),
-      productMovementId: order.productMovementId, // Explicitly include
-      incomingPaymentId: order.incomingPaymentId, // Explicitly include
+      currency: orderCurrency,
+      exchangeRate: orderExchangeRate,
+      productMovementId: orderProductMovementId,
+      incomingPaymentId: orderIncomingPaymentId,
     };
 
     const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
