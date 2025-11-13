@@ -102,7 +102,12 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                               item.productId === product.id ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
+                          {product.name} ({product.sku})
+                          {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined && (
+                            <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
+                              ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
+                            </span>
+                          )}
                         </CommandItem>
                       ))}
                     </CommandGroup>
