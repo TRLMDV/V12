@@ -2,16 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { PurchaseOrder, Product, OrderItem, Currency, CurrencyRates, Settings } from '@/types';
-
-interface PurchaseOrderItemState {
-  productId: number | '';
-  qty: number | string;
-  price: number | string;
-  itemTotal: number | string;
-  currency?: Currency;
-  landedCostPerUnit?: number;
-}
+import { PurchaseOrder, Product, OrderItem, Currency, CurrencyRates, Settings, PurchaseOrderItemState } from '@/types';
 
 interface UsePurchaseOrderCalculationsProps {
   order: Partial<PurchaseOrder>;
@@ -98,6 +89,8 @@ export const usePurchaseOrderCalculations = ({
         price: priceNum,
         currency: selectedCurrency,
         landedCostPerUnit: parseFloat(landedCostPerUnit.toFixed(4)),
+        packingUnitId: item.packingUnitId,
+        packingQuantity: parseFloat(String(item.packingQuantity)) || 0,
       };
     });
 
