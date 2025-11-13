@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input'; // Import Input component
 import { Label } from '@/components/ui/label'; // Import Label component
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
+import ImageEnlargerModal from '@/components/ImageEnlargerModal'; // New import
 import { Product } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -26,6 +27,11 @@ const Products: React.FC = () => {
   const [editingProductId, setEditingProductId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'sku', direction: 'ascending' });
   const [searchSku, setSearchSku] = useState<string>(''); // New state for SKU search
+
+  // States for image enlarger modal
+  const [isImageEnlargerModalOpen, setIsImageEnlargerModalOpen] = useState(false);
+  const [enlargedImageUrl, setEnlargedImageUrl] = useState('');
+  const [enlargedProductName, setEnlargedProductName] = useState('');
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -118,26 +124,10 @@ const Products: React.FC = () => {
     setEditingProductId(undefined);
   };
 
-  const showImageModal = (imageUrl: string, productName: string) => {
-    const defaultImage = 'https://placehold.co/600x600/e2e8f0/e2e8f0?text=No-Image';
-    const finalImageUrl = imageUrl && imageUrl.startsWith('data:image') ? imageUrl : defaultImage;
-
-    toast.info(productName, {
-      duration: 5000,
-      description: (
-        <div className="flex justify-center">
-          <img
-            src={finalImageUrl}
-            className="max-w-full max-h-[70vh] rounded-lg object-contain"
-            alt={productName}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = defaultImage;
-            }}
-          />
-        </div>
-      ),
-    });
+  const showImageEnlargerModal = (imageUrl: string, productName: string) => {
+    setEnlargedImageUrl(imageUrl);
+    setEnlargedProductName(productName);
+    setIsImageEnlargerModalOpen(true);
   };
 
   return (
@@ -220,7 +210,7 @@ const Products: React.FC = () => {
                           e.currentTarget.src = defaultImage;
                         }}
                         className="w-16 h-16 rounded-md object-cover cursor-pointer"
-                        onClick={() => showImageModal(p.imageUrl, p.name)}
+                        onClick={() => showImageEnlargerModal(p.imageUrl, p.name)}
                         alt={p.name}
                       />
                     </TableCell>
@@ -273,6 +263,13 @@ const Products: React.FC = () => {
       >
         <ProductForm productId={editingProductId} onSuccess={handleModalClose} />
       </FormModal>
+
+      <ImageEnlargerModal
+        isOpen={isImageEnlargerModalOpen}
+        onClose={() => setIsImageEnlargerModalOpen(false)}
+        imageUrl={enlargedImageUrl}
+        productName={enlargedProductName}
+      />
     </div>
   );
 };
