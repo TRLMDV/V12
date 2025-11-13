@@ -29,6 +29,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
     customers,
     suppliers,
     settings,
+    bankAccounts, // New: Get bank accounts
   }
     = useData();
 
@@ -41,6 +42,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
 
   const [selectedOrderIdentifier, setSelectedOrderIdentifier] = useState<string>('0');
   const [selectedManualCategory, setSelectedManualCategory] = useState<string>('none-selected');
+  const [selectedBankAccountId, setSelectedBankAccountId] = useState<number | undefined>(undefined); // New: State for selected bank account
 
   const allOrders = isIncoming ? sellOrders : purchaseOrders;
   const allPayments = isIncoming ? incomingPayments : outgoingPayments;
@@ -49,6 +51,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
   const sellOrderMap = useMemo(() => sellOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: SellOrder }), [sellOrders]);
   const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string }), [customers]);
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as { [key: number]: string }), [suppliers]);
+  const bankAccountMap = useMemo(() => bankAccounts.reduce((acc, ba) => ({ ...acc, [ba.id]: ba }), {} as { [key: number]: BankAccount }), [bankAccounts]); // New: Bank account map
 
   const activeCurrencies = useMemo(() => settings.activeCurrencies || ['AZN'], [settings.activeCurrencies]);
 
@@ -96,6 +99,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
           setSelectedOrderIdentifier(`${existingPayment.orderId}-${category}`);
           setSelectedManualCategory('none-selected');
         }
+        setSelectedBankAccountId(existingPayment.bankAccountId); // Set existing bank account
       }
     } else {
       setPayment({
@@ -106,14 +110,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
         paymentCategory: initialManualCategory || 'manual', // Use initialManualCategory if provided
         manualDescription: '',
         paymentCurrency: 'AZN',
+        bankAccountId: bankAccounts.length > 0 ? bankAccounts[0].id : undefined, // Default to first bank account if available
       });
       setSelectedPaymentCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
       setSelectedOrderIdentifier('0');
       setSelectedManualCategory(initialManualCategory || 'none-selected'); // Set initial manual category
+      setSelectedBankAccountId(bankAccounts.length > 0 ? bankAccounts[0].id : undefined); // Default to first bank account if available
     }
-  }, [paymentId, isEdit, allPayments, currencyRates, initialManualCategory]);
+  }, [paymentId, isEdit, allPayments, currencyRates, initialManualCategory, bankAccounts]);
 
   const currentPaymentExchangeRate = useMemo(() => {
     if (selectedPaymentCurrency === 'AZN') return 1;
@@ -320,8 +326,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
     setPayment(prev => ({ ...prev, paymentCategory: value === "none-selected" ? undefined : value }));
   };
 
+  const handleBankAccountChange = (value: string) => {
+    const accountId = parseInt(value);
+    setSelectedBankAccountId(accountId);
+    setPayment(prev => ({ ...prev, bankAccountId: accountId }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedBankAccountId) {
+      showAlertModal('Validation Error', t('selectBankAccount'));
+      return;
+    }
 
     if (payment.amount === undefined || payment.amount <= 0) {
       showAlertModal('Error', 'Please enter a valid positive amount.');
@@ -339,6 +356,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
       ...payment,
       id: payment.id || 0,
       orderId: payment.orderId || 0, // Ensure orderId is always a number
+      bankAccountId: selectedBankAccountId, // New: Save selected bank account ID
       date: payment.date || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       amount: payment.amount,
       paymentCurrency: selectedPaymentCurrency,
@@ -409,6 +427,30 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="bankAccount" className="text-right">
+            {t('bankAccount')}
+          </Label>
+          <Select onValueChange={handleBankAccountChange} value={String(selectedBankAccountId || '')}>
+            <SelectTrigger className="col-span-3">
+              <SelectValue placeholder={t('selectBankAccount')} />
+            </SelectTrigger>
+            <SelectContent>
+              {bankAccounts.length > 0 ? (
+                bankAccounts.map(acc => (
+                  <SelectItem key={acc.id} value={String(acc.id)}>
+                    {acc.name} ({acc.currency})
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-accounts" disabled>
+                  {t('noBankAccountsAvailable')}
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="orderId" className="text-right">
             {t('linkedOrder')} / {t('manualExpense')}

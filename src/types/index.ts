@@ -39,80 +39,104 @@ export interface Warehouse {
   type: 'Main' | 'Secondary'; // Added type field
 }
 
-export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF' | 'DOP' | 'EGP' | 'ERN' | 'SZL' | 'ZAR' | 'ETB' | 'FKP' | 'FJD' | 'XPF' | 'GMD' | 'GEL' | 'GHS' | 'GTQ' | 'GNF' | 'GYD' | 'HTG' | 'HNL' | 'HKD' | 'HUF' | 'ISK' | 'IDR' | 'IRR' | 'IQD' | 'ILS' | 'JMD' | 'KZT' | 'KES' | 'KPW' | 'KGS' | 'LAK' | 'LBP' | 'LSL' | 'LRD' | 'LYD' | 'MDL' | 'MOP' | 'MGA' | 'MWK' | 'MYR' | 'MVR' | 'MRU' | 'MZN' | 'MMK' | 'NAD' | 'NPR' | 'NIO' | 'NGN' | 'NOK' | 'PKR' | 'PGK' | 'PYG' | 'PEN' | 'PHP' | 'PLN' | 'QAR' | 'RON' | 'RSD' | 'SCR' | 'SLE' | 'SBD' | 'SOS' | 'SSP' | 'STN' | 'SRD' | 'SYP' | 'TWD' | 'TJS' | 'TZS' | 'TTD' | 'TND' | 'TRY' | 'TMT' | 'UGX' | 'UAH' | 'AED' | 'UYU' | 'UZS' | 'VUV' | 'VES' | 'VED' | 'VND' | 'YER' | 'ZMW' | 'ZWG';
-
-export type BaseUnit = 'piece' | 'ml' | 'liter';
-
-export interface PackingUnit {
-  id: number;
-  name: string; // e.g., "Piece", "Box", "Bottle"
-  baseUnit: BaseUnit; // The fundamental unit this packing converts to
-  conversionFactor: number; // How many base units are in one of this packing unit (e.g., 10 for a box of 10 pieces)
+export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF: number;
+  DOP: number;
+  EGP: number;
+  ERN: number;
+  SZL: number;
+  ZAR: number;
+  ETB: number;
+  FKP: number;
+  FJD: number;
+  XPF: number;
+  GMD: number;
+  GEL: number;
+  GHS: number;
+  GTQ: number;
+  GNF: number;
+  GYD: number;
+  HTG: number;
+  HNL: number;
+  HKD: number;
+  HUF: number;
+  ISK: number;
+  IDR: number;
+  IRR: number;
+  IQD: number;
+  ILS: number;
+  JMD: number;
+  KZT: number;
+  KES: number;
+  KPW: number;
+  KGS: number;
+  LAK: number;
+  LBP: number;
+  LSL: number;
+  LRD: number;
+  LYD: number;
+  MDL: number;
+  MOP: number;
+  MGA: number;
+  MWK: number;
+  MYR: number;
+  MVR: number;
+  MRU: number;
+  MZN: number;
+  MMK: number;
+  NAD: number;
+  NPR: number;
+  NIO: number;
+  NGN: number;
+  NOK: number;
+  PKR: number;
+  PGK: number;
+  PYG: number;
+  PEN: number;
+  PHP: number;
+  PLN: number;
+  QAR: number;
+  RON: number;
+  RSD: number;
+  SCR: number;
+  SLE: number;
+  SBD: number;
+  SOS: number;
+  SSP: number;
+  STN: number;
+  SRD: number;
+  SYP: number;
+  TWD: number;
+  TJS: number;
+  TZS: number;
+  TTD: number;
+  TND: number;
+  TRY: number;
+  TMT: number;
+  UGX: number;
+  UAH: number;
+  AED: number;
+  UYU: number;
+  UZS: number;
+  VUV: number;
+  VES: number;
+  VED: number;
+  VND: number;
+  YER: number;
+  ZMW: number;
+  ZWG: number;
 }
 
-export interface PurchaseOrderItemState {
-  productId: number | '';
-  qty: number | string; // This will be the quantity in base units
-  price: number | string;
-  itemTotal?: number | string; // Made optional
-  currency?: Currency;
-  landedCostPerUnit?: number;
-  packingUnitId?: number; // New: ID of the selected packing unit
-  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
-}
-
-export interface OrderItem {
-  productId: number;
-  qty: number; // This will now always be the quantity in the product's base unit
-  price: number;
-  itemTotal?: number; // Added for easier calculation/display in forms
-  currency?: Currency; // For PO items
-  landedCostPerUnit?: number; // For PO items (in Main Currency)
-  packingUnitId?: number; // New: The ID of the selected packing unit for this order item
-  packingQuantity?: number; // New: The quantity in terms of the selected packing unit
-}
-
-export interface PurchaseOrder {
-  id: number;
-  contactId: number; // Supplier ID
-  orderDate: string;
-  warehouseId: number;
-  status: 'Draft' | 'Ordered' | 'Received';
-  items: OrderItem[];
-  currency: Currency;
-  exchangeRate?: number; // Manual rate if entered (foreign to AZN)
-  transportationFees: number;
-  transportationFeesCurrency: Currency;
-  customFees: number;
-  customFeesCurrency: Currency;
-  additionalFees: number;
-  additionalFeesCurrency: Currency;
-  total: number; // Total Landed Cost in Main Currency
-}
-
-export interface SellOrder {
-  id: number;
-  contactId: number; // Customer ID
-  orderDate: string;
-  warehouseId: number;
-  status: 'Draft' | 'Confirmed' | 'Shipped';
-  items: OrderItem[];
-  vatPercent: number;
-  total: number; // Total in Main Currency (incl. VAT)
-  productMovementId?: number; // New field to link to a generated product movement
-  incomingPaymentId?: number; // New field to link to a generated incoming payment
-  currency: Currency; // New: Currency of the sell order
-  exchangeRate?: number; // New: Exchange rate to AZN if not AZN
-}
-
-export interface PaymentCategorySetting {
+export interface BankAccount {
   id: number;
   name: string;
+  currency: Currency;
+  initialBalance: number; // The starting balance when the account is created
 }
 
 export interface Payment {
   id: number;
   orderId: number; // Linked order ID, 0 for manual expense
+  bankAccountId: number; // New: Link to a specific bank account
   paymentCategory?: 'products' | 'transportationFees' | 'customFees' | 'additionalFees' | 'manual' | string; // Updated to allow custom string categories
   manualDescription?: string; // For manual expenses
   date: string;
@@ -291,7 +315,7 @@ export interface Settings {
 }
 
 // --- Recycle Bin Types ---
-export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories';
+export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories' | 'bankAccounts';
 
 export interface RecycleBinItem {
   id: string; // Unique ID for the recycle bin entry

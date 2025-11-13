@@ -142,8 +142,6 @@ const i18n = {
     movement: 'Movement',
     programDisplayScaling: 'Program Display Scaling',
     displayScale: 'Display Scale',
-    saveDisplayScale: 'Save Display Scale',
-    displayScaleUpdated: 'Display scale updated.',
     additionalCosts: 'Additional Costs',
     filterBySupplier: 'Filter by Supplier',
     searchSupplierByName: 'Search supplier by name...',
@@ -206,6 +204,23 @@ const i18n = {
     conversionFactorPositive: 'Conversion factor must be a positive number.',
     pieceConversionFactor: 'A "Piece" packing unit must have a conversion factor of 1.',
     defaultPacking: 'Default Packing',
+    // New Bank Account related translations
+    bankAccounts: 'Bank Accounts',
+    yourBankAccounts: 'Your Bank Accounts',
+    addBankAccount: 'Add Bank Account',
+    editBankAccount: 'Edit Bank Account',
+    deleteBankAccount: 'Delete Bank Account',
+    bankAccountName: 'Account Name',
+    selectCurrency: 'Select Currency',
+    saveBankAccount: 'Save Bank Account',
+    noBankAccountsFound: 'No bank accounts found. Add one to start tracking your finances!',
+    bankAccountNameRequired: 'Bank account name is required.',
+    bankAccountCurrencyRequired: 'Bank account currency is required.',
+    invalidInitialBalance: 'Initial balance must be a valid number.',
+    deleteBankAccountWarning: 'Are you sure you want to delete the bank account "{accountName}"? This action cannot be undone.',
+    cannotDeleteBankAccountWithPayments: 'Cannot delete bank account because it has associated payments. Please delete all payments linked to this account first.',
+    selectBankAccount: 'Select Bank Account',
+    noBankAccountsAvailable: 'No bank accounts available. Please create one first.',
   }
 };
 

@@ -9,7 +9,7 @@ import { useCrudOperations } from '@/hooks/useCrudOperations';
 
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit, BankAccount
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -26,6 +26,7 @@ export const initialData = {
   incomingPayments: [] as Payment[],
   outgoingPayments: [] as Payment[],
   productMovements: [] as ProductMovement[],
+  bankAccounts: [] as BankAccount[], // New: Bank Accounts
 };
 
 const defaultCurrencyRates: CurrencyRates = {
@@ -33,7 +34,24 @@ const defaultCurrencyRates: CurrencyRates = {
   'JPY': 0.011, 'GBP': 2.15, 'AUD': 1.10, 'CAD': 1.25, 'CHF': 1.85, 'CNY': 0.24,
   'KWD': 5.50, 'BHD': 4.50, 'OMR': 4.40, 'JOD': 2.40, 'GIP': 2.15, 'KYD': 2.05,
   'KRW': 0.0013, 'SGD': 1.28, 'INR': 0.020, 'MXN': 0.095, 'SEK': 0.18, 'THB': 0.048,
-  'AFN': 1.00, 'ALL': 1.00, 'DZD': 1.00, 'AOA': 1.00, 'XCD': 1.00, 'ARS': 1.00, 'AMD': 1.00, 'AWG': 1.00, 'SHP': 1.00, 'BSD': 1.00, 'BDT': 1.00, 'BBD': 1.00, 'BYN': 1.00, 'BZD': 1.00, 'XOF': 1.00, 'BMD': 1.00, 'BTN': 1.00, 'BOB': 1.00, 'BAM': 1.00, 'BWP': 1.00, 'BRL': 1.00, 'BND': 1.00, 'BGN': 1.00, 'BIF': 1.00, 'KHR': 1.00, 'XAF': 1.00, 'CVE': 1.00, 'CDF': 1.00, 'KMF': 1.00, 'NZD': 1.00, 'CRC': 1.00, 'CUP': 1.00, 'XCG': 1.00, 'CZK': 1.00, 'DKK': 1.00, 'DJF': 1.00, 'DOP': 1.00, 'EGP': 1.00, 'ERN': 1.00, 'SZL': 1.00, 'ZAR': 1.00, 'ETB': 1.00, 'FKP': 1.00, 'FJD': 1.00, 'XPF': 1.00, 'GMD': 1.00, 'GEL': 1.00, 'GHS': 1.00, 'GTQ': 1.00, 'GNF': 1.00, 'GYD': 1.00, 'HTG': 1.00, 'HNL': 1.00, 'HKD': 1.00, 'HUF': 1.00, 'ISK': 1.00, 'IDR': 1.00, 'IRR': 1.00, 'IQD': 1.00, 'ILS': 1.00, 'JMD': 1.00, 'KZT': 1.00, 'KES': 1.00, 'KPW': 1.00, 'KGS': 1.00, 'LAK': 1.00, 'LBP': 1.00, 'LSL': 1.00, 'LRD': 1.00, 'LYD': 1.00, 'MDL': 1.00, 'MOP': 1.00, 'MGA': 1.00, 'MWK': 1.00, 'MYR': 1.00, 'MVR': 1.00, 'MRU': 1.00, 'MZN': 1.00, 'MMK': 1.00, 'NAD': 1.00, 'NPR': 1.00, 'NIO': 1.00, 'NGN': 1.00, 'NOK': 1.00, 'PKR': 1.00, 'PGK': 1.00, 'PYG': 1.00, 'PEN': 1.00, 'PHP': 1.00, 'PLN': 1.00, 'QAR': 1.00, 'RON': 1.00, 'RSD': 1.00, 'SCR': 1.00, 'SLE': 1.00, 'SBD': 1.00, 'SOS': 1.00, 'SSP': 1.00, 'STN': 1.00, 'SRD': 1.00, 'SYP': 1.00, 'TWD': 1.00, 'TJS': 1.00, 'TZS': 1.00, 'TTD': 1.00, 'TND': 1.00, 'TRY': 1.00, 'TMT': 1.00, 'UGX': 1.00, 'UAH': 1.00, 'AED': 1.00, 'UYU': 1.00, 'UZS': 1.00, 'VUV': 1.00, 'VES': 1.00, 'VED': 1.00, 'VND': 1.00, 'YER': 1.00, 'ZMW': 1.00, 'ZWG': 1.00,
+  'AFN': 1.00, 'ALL': 1.00, 'DZD': 1.00, 'AOA': 1.00, 'XCD': 1.00, 'ARS': 1.00, 'AMD': 1.00, 'AWG': 1.00, 'SHP': 1.00, 'BSD': 1.00, 'BDT': 1.00, 'BBD': 1.00, 'BYN': 1.00, 'BZD': 1.00, 'XOF': 1.00, 'BMD': 1.00, 'BTN': 1.00, 'BOB': 1.00, 'BAM': 1.00, 'BWP': 1.00, 'BRL': 1.00, 'BND': 1.00, 'BGN': 1.00, 'BIF': 1.00, 'KHR': 1.00, 'XAF': 1.00, 'CVE': 1.00, 'CDF': 1.00, 'KMF': 1.00, 'NZD': 1.00, 'CRC': 1.00, 'CUP': 1.00, 'XCG': 1.00, 'CZK': 1.00, 'DKK': 1.00, 'DJF': 1.00, 'DOP': 1.00, 'EGP': 1.00, 'ERN': 1.00, 'SZL': 1.00, 'ZAR': 1.00, 'ETB': 1.00, 'FKP': 1.00, 'FJD': 1.00, 'XPF': 1.00, 'GMD': 1.00, 'GEL': 1.00, 'GHS': 1.00, 'GTQ': 1.00, 'GNF': 1.00, 'GYD': 1.00, 'HTG': 1.00, 'HNL': 1.00, 'HKD': 1.00, 'HUF': 1.00, 'ISK': 1.00, 'IDR': 1.00, 'IRR': 1.00, 'IQD': 1.00, 'ILS': 1.00, 'JMD': 1.00, 'KZT': 1.00, 'KES': 1.00, 'KPW': 1.00, 'KGS': 1.00, 'LAK': 1.00, 'LBP': 1.00, 'LSL': 1.00, 'LRD': 1.00, 'LYD': 1.00, 'MDL': 1.00, 'MOP': 1.00, 'MGA': 1.00, 'MWK': 1.00, 'MYR': 1.00, 'MVR': 1.00, 'MRU': 1.00, 'MZN': 1.00, 'MMK': 1.00, 'NAD': 1.00, 'NPR': 1.00, 'NIO': 1.00, 'NGN': 1.00, 'NOK': 1.00, 'PKR': 1.00, 'PGK': 1.00, 'PYG': 1.00, 'PEN': 1.00, 'PHP': 1.00, 'PLN': 1.00, 'QAR': 1.00, 'RON': 1.00, 'RSD': 1.00, 'SCR': 1.00, 'SLE': 1.00, 'SBD': 1.00, 'SOS': 1.00, 'SSP': 1.00, 'STN': 1.00, 'SRD': 1.00, 'SYP': 1.00, 'TWD': 1.00, 'TJS: number;
+  TZS: number;
+  TTD: number;
+  TND: number;
+  TRY: number;
+  TMT: number;
+  UGX: number;
+  UAH: number;
+  AED: number;
+  UYU: number;
+  UZS: number;
+  VUV: number;
+  VES: number;
+  VED: number;
+  VND: number;
+  YER: number;
+  ZMW: number;
+  ZWG: number;
 };
 
 const initialSettings: Settings = {
@@ -88,6 +106,8 @@ interface DataContextType {
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   productMovements: ProductMovement[];
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
+  bankAccounts: BankAccount[]; // New: Bank Accounts
+  setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>; // New: Setter for Bank Accounts
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   currencyRates: CurrencyRates;
@@ -138,6 +158,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [incomingPayments, setIncomingPayments] = useLocalStorage<Payment[]>('incomingPayments', initialData.incomingPayments);
   const [outgoingPayments, setOutgoingPayments] = useLocalStorage<Payment[]>('outgoingPayments', initialData.outgoingPayments);
   const [productMovements, setProductMovements] = useLocalStorage<ProductMovement[]>('productMovements', initialData.productMovements);
+  const [bankAccounts, setBankAccounts] = useLocalStorage<BankAccount[]>('bankAccounts', initialData.bankAccounts); // New: Bank Accounts state
 
   const [settings, setSettings] = useLocalStorage<Settings>('settings', initialSettings);
   const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', defaultCurrencyRates);
@@ -146,7 +167,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Internal state for next IDs, managed by DataProvider
   const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
-    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1,
+    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1, bankAccounts: 1, // New: Bank Accounts next ID
     paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
     packingUnits: initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1,
   });
@@ -162,6 +183,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] outgoingPayments:", outgoingPayments);
   console.log("[DataContext] productMovements:", productMovements);
   console.log("[DataContext] packingUnits:", packingUnits);
+  console.log("[DataContext] bankAccounts:", bankAccounts); // New: Log bank accounts
 
 
   // Use the new modals hook
@@ -271,6 +293,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         case 'outgoingPayments': setter = setOutgoingPayments; break;
         case 'productMovements': setter = setProductMovements; break;
         case 'packingUnits': setter = setPackingUnits; break;
+        case 'bankAccounts': setter = setBankAccounts; break; // New: Bank Accounts
         case 'paymentCategories':
           setSettings(prevSettings => ({
             ...prevSettings,
@@ -295,7 +318,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       showAlertModal(t('success'), t('itemRestored'));
       return prevRecycleBin.filter(item => item.id !== recycleItemId);
     });
-  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, showAlertModal]);
+  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setBankAccounts, setSettings, showAlertModal]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
     showConfirmationModal(
@@ -347,6 +370,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOutgoingPayments,
     setProductMovements,
     setPackingUnits, // Pass setter
+    setBankAccounts, // New: Pass setter
     setSettings, // Pass setter
     setNextIds,
     // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
@@ -359,6 +383,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [],
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [],
     productMovements: Array.isArray(productMovements) ? productMovements : [],
+    bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [], // New: Pass current state
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], // Pass current state
     settings, // Pass current state
     // Other stable dependencies
@@ -383,6 +408,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIncomingPayments(initialData.incomingPayments);
       setOutgoingPayments(initialData.outgoingPayments);
       setProductMovements(initialData.productMovements);
+      setBankAccounts(initialData.bankAccounts); // New: Initialize bank accounts
       setSettings(initialSettings);
       setCurrencyRates(defaultCurrencyRates);
       setPackingUnits(initialSettings.packingUnits);
@@ -395,10 +421,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       initialNextIds.paymentCategories = initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1;
       initialNextIds.packingUnits = initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1;
+      initialNextIds.bankAccounts = initialData.bankAccounts.length > 0 ? Math.max(...initialData.bankAccounts.map(ba => ba.id)) + 1 : 1; // New: Bank Accounts next ID
       setNextIds(initialNextIds);
       setInitialized(true);
     }
-  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setSettings, setCurrencyRates, setPackingUnits, setNextIds, setRecycleBin]);
+  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setSettings, setCurrencyRates, setPackingUnits, setNextIds, setRecycleBin]);
 
   const productsWithTotalStock = useMemo(() => {
     return Array.isArray(products) ? products.map(p => ({
@@ -417,6 +444,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], setIncomingPayments,
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], setOutgoingPayments,
     productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements,
+    bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [], setBankAccounts, // New: Bank Accounts
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits,
@@ -438,6 +466,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     incomingPayments, setIncomingPayments,
     outgoingPayments, setOutgoingPayments,
     productMovements, setProductMovements,
+    bankAccounts, setBankAccounts, // New: Bank Accounts
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits, setPackingUnits,
