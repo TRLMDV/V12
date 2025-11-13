@@ -44,8 +44,8 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
   return (
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
-      <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300"> {/* Changed to grid-cols-12 */}
-        <Label className="col-span-2">{t('product')}</Label> {/* Adjusted col-span */}
+      <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
+        <Label className="col-span-2">{t('product')}</Label>
         <Label className="col-span-2">{t('packingUnit')}</Label>
         <Label className="col-span-1">{t('qty')}</Label>
         <Label className="col-span-2">{t('price')}</Label>
@@ -60,14 +60,14 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
           const stockInBaseUnits = selectedProduct?.stock?.[warehouseId as number] || 0;
 
           return (
-            <div key={index} className="grid grid-cols-12 gap-2 mb-2 items-center"> {/* Changed to grid-cols-12 */}
+            <div key={index} className="grid grid-cols-12 gap-2 mb-2 items-center">
               <Popover open={openComboboxIndex === index} onOpenChange={(open) => setOpenComboboxIndex(open ? index : null)}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-2 justify-between" {/* Adjusted col-span */}
+                    className="col-span-2 justify-between"
                   >
                     {item.productId
                       ? selectedProduct?.name || t('selectProduct')
