@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 
 interface UseEraseAllDataProps {
   showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;

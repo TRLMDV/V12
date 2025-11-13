@@ -261,7 +261,7 @@ const PurchaseOrders: React.FC = () => {
         handleEditOrder={handleEditOrder}
         handleDeleteOrder={handleDeleteOrder}
         viewOrderDetails={viewOrderDetails}
-        sortConfig={sortConfig}
+        sortConfig={sortConfig as { key: string; direction: 'ascending' | 'descending' }}
         handleSortClick={handleSortClick}
         getSortIndicator={getSortIndicator}
       />
