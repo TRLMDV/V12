@@ -9,7 +9,7 @@ import { useCrudOperations } from '@/hooks/useCrudOperations';
 import { useRecycleBin } from '@/hooks/useRecycleBin'; // New import
 import { useAppInitialization } from '@/hooks/useAppInitialization'; // New import
 
-import { initialData, initialSettings, defaultCurrencyRates, MOCK_CURRENT_DATE } from '@/data/initialData'; // New import
+import { initialData, initialSettings, defaultCurrencyRates, MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import path for MOCK_CURRENT_DATE
 
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
