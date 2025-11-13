@@ -10,18 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
-import { Product, Currency, PackingUnit } from '@/types';
-
-interface PurchaseOrderItemState {
-  productId: number | '';
-  qty: number | string; // This will be the quantity in base units
-  price: number | string;
-  itemTotal?: number | string; // Made optional
-  currency?: Currency;
-  landedCostPerUnit?: number;
-  packingUnitId?: number; // New: ID of the selected packing unit
-  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
-}
+import { Product, Currency, PackingUnit, PurchaseOrderItemState } from '@/types'; // Import PurchaseOrderItemState
 
 interface PurchaseOrderItemsFieldProps {
   orderItems: PurchaseOrderItemState[];

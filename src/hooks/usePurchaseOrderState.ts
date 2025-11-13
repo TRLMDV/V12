@@ -2,18 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useData, MOCK_CURRENT_DATE } from '@/context/DataContext';
-import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit } from '@/types';
-
-interface PurchaseOrderItemState {
-  productId: number | '';
-  qty: number | string; // This will be the quantity in base units
-  price: number | string;
-  itemTotal?: number | string; // Made optional
-  currency?: Currency;
-  landedCostPerUnit?: number;
-  packingUnitId?: number; // New: ID of the selected packing unit
-  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
-}
+import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit, PurchaseOrderItemState } from '@/types'; // Import PurchaseOrderItemState
 
 interface UsePurchaseOrderStateProps {
   orderId?: number;
