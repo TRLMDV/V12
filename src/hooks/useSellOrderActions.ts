@@ -398,6 +398,10 @@ export const useSellOrderActions = ({
       };
     });
 
+    // --- Log finalOrderItems for inspection ---
+    console.log("DEBUG: finalOrderItems (handleSubmit) constructed:", finalOrderItems);
+    // --- End Log ---
+
     console.log("DEBUG: order object before orderToSave construction (handleSubmit):", order);
     let finalTotalForSubmit = 0;
     if (typeof order.total === 'number') {
