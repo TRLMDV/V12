@@ -5,7 +5,7 @@ import { toast as sonnerToast } from 'sonner';
 import { t } from '@/utils/i18n';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CollectionKey, PackingUnit, PaymentCategorySetting, Settings
+  CollectionKey, PackingUnit, PaymentCategorySetting, Settings, BankAccount
 } from '@/types';
 
 interface UseCrudOperationsProps {
@@ -20,6 +20,7 @@ interface UseCrudOperationsProps {
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // Added
   setSettings: React.Dispatch<React.SetStateAction<Settings>>; // Added for paymentCategories
+  setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>; // Added
   nextIds: { [key: string]: number }; // Still need nextIds value for getNextId
   setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
   showAlertModal: (title: string, message: string) => void;
@@ -39,6 +40,7 @@ interface UseCrudOperationsProps {
   productMovements: ProductMovement[];
   packingUnits: PackingUnit[]; // Added
   settings: Settings; // Added for paymentCategories
+  bankAccounts: BankAccount[]; // Added
 }
 
 export function useCrudOperations({
@@ -53,12 +55,14 @@ export function useCrudOperations({
   setProductMovements,
   setPackingUnits, // Destructure new prop
   setSettings, // Destructure new prop
+  setBankAccounts, // Destructure new prop
   nextIds, setNextIds,
   showAlertModal, showConfirmationModal,
   updateStockFromOrder,
+  updateAverageCosts,
   addToRecycleBin,
   // Current state values for validation, not for useCallback dependencies
-  products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings,
+  products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings, bankAccounts,
 }: UseCrudOperationsProps) {
 
   const getNextId = useCallback((key: CollectionKey) => {
@@ -70,7 +74,8 @@ export function useCrudOperations({
   }, [setNextIds]); // setNextIds is stable.
 
   const saveItem = useCallback((key: CollectionKey, item: any) => {
-    let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>>;
+    console.log(`useCrudOperations: saveItem called for key: ${key}, item:`, item);
+    let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>> | React.Dispatch<React.SetStateAction<BankAccount[]>>;
     let currentCollection: any[] = []; // To be populated for validation
 
     switch (key) {
@@ -84,6 +89,11 @@ export function useCrudOperations({
       case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
       case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
       case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
+      case 'bankAccounts':
+        setter = setBankAccounts;
+        currentCollection = bankAccounts;
+        console.log("useCrudOperations: Matched 'bankAccounts' case.");
+        break;
       case 'paymentCategories':
         setSettings((prevSettings: Settings) => {
           const existingCategories = prevSettings.paymentCategories || [];
@@ -101,7 +111,9 @@ export function useCrudOperations({
         });
         sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
         return;
-      default: return;
+      default:
+        console.log(`useCrudOperations: Unknown collection key: ${key}`);
+        return;
     }
 
     // Specific validation for warehouses (needs currentCollection)
@@ -121,18 +133,20 @@ export function useCrudOperations({
         const newItemId = getNextId(key);
         updatedItems = [...prevItems, { ...item, id: newItemId }];
         setNextIdForCollection(key, newItemId + 1); // Increment next ID for this collection
+        console.log(`useCrudOperations: Added new item with ID ${newItemId} to ${key}. Next ID for ${key}: ${newItemId + 1}`);
       } else { // Existing item, update it
         updatedItems = prevItems.map(i => i.id === item.id ? item : i);
+        console.log(`useCrudOperations: Updated existing item with ID ${item.id} in ${key}.`);
       }
       return updatedItems;
     });
     sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings,
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts,
     getNextId, setNextIdForCollection, showAlertModal,
     // Include current state values for validation, but not as dependencies for useCallback
-    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings,
+    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings, bankAccounts,
   ]);
 
   const deleteItem = useCallback((key: CollectionKey, id: number) => {
@@ -151,6 +165,7 @@ export function useCrudOperations({
         case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
         case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
         case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
+        case 'bankAccounts': setter = setBankAccounts; currentCollection = bankAccounts; break; // Added
         case 'paymentCategories':
           const categoryToDelete = (settings.paymentCategories || []).find((c: PaymentCategorySetting) => c.id === id);
           if (!categoryToDelete) {
@@ -216,6 +231,14 @@ export function useCrudOperations({
           return;
         }
       }
+      if (key === 'bankAccounts') { // New validation for bank accounts
+        const hasIncomingPayments = incomingPayments.some(p => p.bankAccountId === id);
+        const hasOutgoingPayments = outgoingPayments.some(p => p.bankAccountId === id);
+        if (hasIncomingPayments || hasOutgoingPayments) {
+          showAlertModal(t('deletionFailed'), t('cannotDeleteBankAccountWithPayments'));
+          return;
+        }
+      }
 
       // Reverse stock change if deleting a completed order/movement
       if (key === 'purchaseOrders' || key === 'sellOrders') {
@@ -262,10 +285,10 @@ export function useCrudOperations({
     showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete);
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings,
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts,
     showAlertModal, showConfirmationModal, updateStockFromOrder, addToRecycleBin,
     // Include current state values for validation, but not as dependencies for useCallback
-    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings,
+    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings, bankAccounts,
   ]);
 
   return {

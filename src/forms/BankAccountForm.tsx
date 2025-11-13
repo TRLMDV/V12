@@ -45,17 +45,21 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("BankAccountForm: handleSubmit triggered.");
 
     if (!name.trim()) {
+      console.log("BankAccountForm: Validation failed - name required.");
       showAlertModal(t('validationError'), t('bankAccountNameRequired'));
       return;
     }
     if (!currency) {
+      console.log("BankAccountForm: Validation failed - currency required.");
       showAlertModal(t('validationError'), t('bankAccountCurrencyRequired'));
       return;
     }
     const parsedInitialBalance = parseFloat(initialBalance);
     if (isNaN(parsedInitialBalance)) {
+      console.log("BankAccountForm: Validation failed - invalid initial balance.");
       showAlertModal(t('validationError'), t('invalidInitialBalance'));
       return;
     }
@@ -67,7 +71,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
       initialBalance: parsedInitialBalance,
     };
 
+    console.log("BankAccountForm: Calling saveItem with:", accountToSave);
     saveItem('bankAccounts', accountToSave);
+    console.log("BankAccountForm: saveItem called, calling onSuccess.");
     onSuccess();
   };
 
