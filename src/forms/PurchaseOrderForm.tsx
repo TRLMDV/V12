@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { t } from '@/utils/i18n';
 import { usePurchaseOrderForm } from '@/hooks/usePurchaseOrderForm';
 import PurchaseOrderItemsField from '@/components/PurchaseOrderItemsField'; // New component
+import { Currency } from '@/types'; // Import Currency type
 
 interface PurchaseOrderFormProps {
   orderId?: number;

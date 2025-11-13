@@ -241,7 +241,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
       }
     });
     return list;
-  }, [allOrders, paymentsByOrderAndCategoryAZN, isIncoming, isEdit, payment, supplierMap, currencyRates]);
+  }, [allOrders, paymentsByOrderAndCategoryAZN, isIncoming, isEdit, payment, supplierMap, customerMap, currencyRates, t]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -338,6 +338,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
     const paymentToSave: Payment = {
       ...payment,
       id: payment.id || 0,
+      orderId: payment.orderId || 0, // Ensure orderId is always a number
       date: payment.date || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       amount: payment.amount,
       paymentCurrency: selectedPaymentCurrency,

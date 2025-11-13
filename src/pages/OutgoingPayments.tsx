@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
-import { Payment, PurchaseOrder } from '@/types'; // Import types from types file
+import { Payment, PurchaseOrder, Currency } from '@/types'; // Import types from types file
 
 type SortConfig = {
   key: keyof Payment | 'linkedOrderDisplay' | 'categoryDisplay'; // Added categoryDisplay
@@ -99,7 +99,7 @@ const OutgoingPayments: React.FC = () => {
         if (order) {
           let totalCategoryValueNative = 0;
           let totalPaidForCategoryNative = 0;
-          let categoryCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB' = 'AZN';
+          let categoryCurrency: Currency = 'AZN'; // Changed to Currency
 
           if (p.paymentCategory === 'products') {
             totalCategoryValueNative = order.items?.reduce((sum, item) => sum + (item.qty * item.price), 0) || 0;

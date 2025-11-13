@@ -4,7 +4,7 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportButton';
 import { t } from '@/utils/i18n';
-import { PurchaseOrder, Product, Supplier, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
+import { PurchaseOrder, Product, Supplier, Warehouse, CurrencyRates, PackingUnit, Currency } from '@/types'; // Import PackingUnit and Currency
 
 interface PurchaseOrderDetailsProps {
   order: PurchaseOrder;
@@ -27,7 +27,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
   const productsSubtotalNative = order.items?.reduce((sum, item) => sum + (item.price * item.qty), 0) || 0;
   const orderNativeToAznRate = order.currency === 'AZN' ? 1 : (order.exchangeRate || currencyRates[order.currency] || 1);
 
-  const convertFeeToOrderNativeCurrency = (amount: number, feeCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB') => {
+  const convertFeeToOrderNativeCurrency = (amount: number, feeCurrency: Currency) => { // Changed feeCurrency to Currency
     if (amount === 0) return 0;
     const feeInAzn = amount * (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
     return feeInAzn / orderNativeToAznRate;

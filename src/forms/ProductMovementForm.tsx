@@ -134,7 +134,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="sourceWarehouseId" className="text-right">
-            {t('from')}
+            {t('fromWarehouse')}
           </Label>
           <Select onValueChange={(value) => setSourceWarehouseId(parseInt(value))} value={String(sourceWarehouseId)}>
             <SelectTrigger className="col-span-3">
@@ -152,7 +152,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
 
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="destWarehouseId" className="text-right">
-            {t('to')}
+            {t('toWarehouse')}
           </Label>
           <Select onValueChange={(value) => setDestWarehouseId(parseInt(value))} value={String(destWarehouseId)}>
             <SelectTrigger className="col-span-3">

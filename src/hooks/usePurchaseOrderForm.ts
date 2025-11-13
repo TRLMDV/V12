@@ -6,7 +6,7 @@ import { usePurchaseOrderState } from './usePurchaseOrderState';
 import { usePurchaseOrderCalculations } from './usePurchaseOrderCalculations';
 import { usePurchaseOrderHandlers } from './usePurchaseOrderHandlers';
 import { usePurchaseOrderActions } from './usePurchaseOrderActions';
-import { Currency } from '@/types';
+import { Currency, OrderItem } from '@/types'; // Import OrderItem
 
 interface UsePurchaseOrderFormProps {
   orderId?: number;
@@ -100,7 +100,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     handleSubmit,
   } = usePurchaseOrderActions({
     order,
-    orderItems: calculatedOrderItems, // Pass calculated items with landed cost
+    orderItems: calculatedOrderItems as OrderItem[], // Cast to OrderItem[]
     selectedCurrency,
     manualExchangeRate,
     currentExchangeRate,

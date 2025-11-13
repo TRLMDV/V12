@@ -14,7 +14,7 @@ import PurchaseOrdersTable from '@/components/PurchaseOrdersTable';
 import PurchaseOrderDetails from '@/components/PurchaseOrderDetails';
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 
-import { PurchaseOrder, Product, Supplier, Warehouse } from '@/types'; // Import types from types file
+import { PurchaseOrder, Product, Supplier, Warehouse, Currency } from '@/types'; // Import types from types file
 
 type SortConfig = {
   key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'productsSubtotalNative' | 'totalAdditionalCostsAZN';
@@ -22,7 +22,7 @@ type SortConfig = {
 };
 
 const PurchaseOrders: React.FC = () => {
-  const { purchaseOrders, suppliers, warehouses, products, deleteItem, showAlertModal, currencyRates } = useData();
+  const { purchaseOrders, suppliers, warehouses, products, deleteItem, showAlertModal, currencyRates, packingUnitMap } = useData(); // Added packingUnitMap
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState<number | undefined>(undefined);
@@ -78,7 +78,7 @@ const PurchaseOrders: React.FC = () => {
 
   // Helper function to format fees for display
   const formatFeesDisplay = useCallback((order: PurchaseOrder) => {
-    const fees: { amount: number; currency: 'AZN' | 'USD' | 'EUR' | 'RUB' }[] = [];
+    const fees: { amount: number; currency: Currency }[] = []; // Changed to Currency
     if (order.transportationFees > 0) fees.push({ amount: order.transportationFees, currency: order.transportationFeesCurrency });
     if (order.customFees > 0) fees.push({ amount: order.customFees, currency: order.customFeesCurrency });
     if (order.additionalFees > 0) fees.push({ amount: order.additionalFees, currency: order.additionalFeesCurrency });
@@ -138,7 +138,7 @@ const PurchaseOrders: React.FC = () => {
       const productsSubtotalNative = order.items?.reduce((sum, item) => sum + (item.qty * item.price), 0) || 0;
 
       // Helper to convert a fee to AZN
-      const convertFeeToAZN = (amount: number, feeCurrency: 'AZN' | 'USD' | 'EUR' | 'RUB') => {
+      const convertFeeToAZN = (amount: number, feeCurrency: Currency) => { // Changed feeCurrency to Currency
         if (amount === 0) return 0;
         return amount * (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
       };
@@ -291,6 +291,7 @@ const PurchaseOrders: React.FC = () => {
             supplierMap={supplierMap}
             warehouseMap={warehouseMap}
             productMap={productMap}
+            packingUnitMap={packingUnitMap} // Pass packingUnitMap
             currencyRates={currencyRates}
           />
         )}
