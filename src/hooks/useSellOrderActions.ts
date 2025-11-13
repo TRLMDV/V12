@@ -26,6 +26,7 @@ interface UseSellOrderActionsProps {
   productMap: { [key: number]: Product };
   onSuccess: () => void;
   isEdit: boolean;
+  setOrder: React.Dispatch<React.SetStateAction<Partial<SellOrder>>>; // Added setOrder
 }
 
 export const useSellOrderActions = ({
@@ -37,6 +38,7 @@ export const useSellOrderActions = ({
   productMap,
   onSuccess,
   isEdit,
+  setOrder, // Destructure setOrder
 }: UseSellOrderActionsProps) => {
   // --- Get all necessary data from useData at the top level ---
   const {
@@ -217,10 +219,11 @@ export const useSellOrderActions = ({
 
     const updatedOrderWithMovement = { ...orderToSave, productMovementId: newMovementId };
     saveItem('sellOrders', updatedOrderWithMovement);
+    setOrder(updatedOrderWithMovement); // Update local state to disable button
 
     toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[orderToSave.warehouseId as number]?.name}.` });
 
-  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap]);
+  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, setOrder]);
 
 
   const handleGenerateIncomingPayment = useCallback(() => {
@@ -307,6 +310,7 @@ export const useSellOrderActions = ({
       showAlertModal('Info', t('incomingPaymentAlreadyExists'));
       const updatedOrderWithPayment = { ...orderToSave, incomingPaymentId: existingIncomingPayment.id };
       saveItem('sellOrders', updatedOrderWithPayment);
+      setOrder(updatedOrderWithPayment); // Update local state to disable button
       return;
     }
 
@@ -326,10 +330,11 @@ export const useSellOrderActions = ({
 
     const updatedOrderWithPayment = { ...orderToSave, incomingPaymentId: newPaymentId };
     saveItem('sellOrders', updatedOrderWithPayment);
+    setOrder(updatedOrderWithPayment); // Update local state to disable button
 
     toast.success(t('success'), { description: `Incoming Payment #${newPaymentId} generated successfully for ${t('orderId')} #${orderToSave.id}.` });
 
-  }, [order, orderItems, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, incomingPayments, mainCurrency]); // Add incomingPayments and mainCurrency to dependencies
+  }, [order, orderItems, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, incomingPayments, mainCurrency, setOrder]);
 
 
   const handleSubmit = useCallback((e: React.FormEvent) => {

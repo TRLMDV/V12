@@ -112,6 +112,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     productMap,
     onSuccess,
     isEdit,
+    setOrder, // Pass setOrder here
   });
 
   return {
