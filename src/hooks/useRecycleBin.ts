@@ -124,12 +124,12 @@ export function useRecycleBin({
   }, [setRecycleBin, showAlertModal, t]);
 
   const restoreFromRecycleBin = useCallback((recycleItemId: string) => {
-    console.log("useRecycleBin: restoreFromRecycleBin called for ID:", recycleItemId);
+    console.log("DEBUG: useRecycleBin - restoreFromRecycleBin called for ID:", recycleItemId); // New log
     showConfirmationModal(
       t('restoreData'),
       t('restoreWarning'),
       () => {
-        console.log("useRecycleBin: restoreFromRecycleBin - Confirmation callback executed.");
+        console.log("DEBUG: useRecycleBin - restoreFromRecycleBin - Confirmation callback executed."); // New log
         setRecycleBin(prevRecycleBin => {
           const itemToRestore = prevRecycleBin.find(item => item.id === recycleItemId);
           if (!itemToRestore) {
@@ -187,12 +187,12 @@ export function useRecycleBin({
   }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setBankAccounts, setUtilizationOrders, setSettings, showAlertModal, showConfirmationModal, t]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
-    console.log("useRecycleBin: deletePermanentlyFromRecycleBin called for ID:", recycleItemId);
+    console.log("DEBUG: useRecycleBin - deletePermanentlyFromRecycleBin called for ID:", recycleItemId); // New log
     showConfirmationModal(
       t('deletePermanently'),
       t('deletePermanentlyWarning'),
       () => {
-        console.log("useRecycleBin: deletePermanentlyFromRecycleBin - Confirmation callback executed.");
+        console.log("DEBUG: useRecycleBin - deletePermanentlyFromRecycleBin - Confirmation callback executed."); // New log
         setRecycleBin(prev => prev.filter(item => item.id !== recycleItemId));
         showAlertModal(t('success'), t('itemDeletedPermanently'));
         console.log("useRecycleBin: Item permanently deleted:", recycleItemId);
@@ -202,12 +202,12 @@ export function useRecycleBin({
   }, [setRecycleBin, showConfirmationModal, showAlertModal, t]);
 
   const cleanRecycleBin = useCallback(() => {
-    console.log("useRecycleBin: cleanRecycleBin called.");
+    console.log("DEBUG: useRecycleBin - cleanRecycleBin called."); // New log
     showConfirmationModal(
       t('cleanRecycleBin'),
       t('cleanRecycleBinWarning'),
       () => {
-        console.log("useRecycleBin: cleanRecycleBin - Confirmation callback executed.");
+        console.log("DEBUG: useRecycleBin - cleanRecycleBin - Confirmation callback executed."); // New log
         setRecycleBin([]);
         showAlertModal(t('success'), t('recycleBinCleaned'));
         console.log("useRecycleBin: Recycle bin cleaned.");
