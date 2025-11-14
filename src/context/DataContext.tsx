@@ -371,9 +371,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <DataContext.Provider value={value}>
       {children}
-      {confirmationModalProps && (
-        <AlertDialog open={isConfirmationModalOpen} onOpenChange={closeConfirmationModal}>
-          <AlertDialogContent>
+      {/* Always render AlertDialog, but conditionally render its content */}
+      <AlertDialog open={isConfirmationModalOpen} onOpenChange={closeConfirmationModal}>
+        {confirmationModalProps && (
+          <AlertDialogContent className="z-50"> {/* Added z-50 for visibility */}
             <AlertDialogHeader>
               <AlertDialogTitle>{confirmationModalProps.title}</AlertDialogTitle>
               <AlertDialogDescription>{confirmationModalProps.message}</AlertDialogDescription>
@@ -394,8 +395,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
-        </AlertDialog>
-      )}
+        )}
+      </AlertDialog>
     </DataContext.Provider>
   );
 };

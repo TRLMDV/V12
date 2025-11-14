@@ -30,6 +30,7 @@ export function useModals() {
     console.log("useModals: showConfirmationModal called. Title:", title, "Action Label:", actionLabel);
     setConfirmationModalProps({ title, message, onConfirm, actionLabel });
     setIsConfirmationModalOpen(true);
+    console.log("useModals: isConfirmationModalOpen set to true."); // Added this log
   }, []);
 
   const closeConfirmationModal = useCallback(() => {
