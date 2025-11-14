@@ -18,6 +18,7 @@ import PaymentCategoriesSettings from '@/components/settings/PaymentCategoriesSe
 import EraseAllDataSection from '@/components/settings/EraseAllDataSection';
 import DashboardCurrencyRatesToggle from '@/components/settings/DashboardCurrencyRatesToggle';
 import PackingSettings from '@/components/settings/PackingSettings';
+import QuickButtonsSettings from '@/components/settings/QuickButtonsSettings'; // New import
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -115,6 +116,15 @@ const SettingsPage: React.FC = () => {
         showConfirmationModal={showConfirmationModal}
         getNextId={(key) => getNextId(key as 'packingUnits')} // Cast key
         setNextIdForCollection={(key, nextId) => setNextIdForCollection(key as 'packingUnits', nextId)} // Cast key
+      />
+
+      <QuickButtonsSettings
+        settings={settings}
+        setSettings={setSettings}
+        t={t}
+        showConfirmationModal={showConfirmationModal}
+        getNextId={(key) => getNextId(key as 'quickButtons')}
+        setNextIdForCollection={(key, nextId) => setNextIdForCollection(key as 'quickButtons', nextId)}
       />
 
       <DashboardCurrencyRatesToggle

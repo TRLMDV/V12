@@ -5,7 +5,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import {
-  RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder
+  RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder, QuickButton
 } from '@/types';
 // Removed: import { useModals } from './useModals'; // No longer needed here
 
@@ -108,6 +108,9 @@ export function useRecycleBin({
       case 'bankAccounts':
         const ba = item as BankAccount;
         return `${ba.name} (${ba.currency})`;
+      case 'quickButtons':
+        const qb = item as QuickButton;
+        return `${qb.label} (${t(qb.action as keyof typeof t)})`;
       default:
         return JSON.stringify(item);
     }
@@ -166,6 +169,14 @@ export function useRecycleBin({
               }));
               showAlertModal(t('success'), t('itemRestored'));
               console.log("useRecycleBin: Payment category restored:", data);
+              return prevRecycleBin.filter(item => item.id !== recycleItemId);
+            case 'quickButtons':
+              setSettings(prevSettings => ({
+                ...prevSettings,
+                quickButtons: [...(prevSettings.quickButtons || []), data],
+              }));
+              showAlertModal(t('success'), t('itemRestored'));
+              console.log("useRecycleBin: Quick button restored:", data);
               return prevRecycleBin.filter(item => item.id !== recycleItemId);
             default:
               showAlertModal(t('error'), t('unknownCollectionType'));

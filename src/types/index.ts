@@ -284,6 +284,31 @@ export interface CurrencyRates {
   ZWG: number;
 }
 
+export type QuickButtonAction =
+  | 'addPurchaseOrder'
+  | 'addSellOrder'
+  | 'addProductMovement'
+  | 'addProduct'
+  | 'addSupplier'
+  | 'addCustomer'
+  | 'addIncomingPayment'
+  | 'addOutgoingPayment'
+  | 'addWarehouse'
+  | 'addUtilizationOrder'
+  | 'bankDeposit'
+  | 'bankWithdrawal';
+
+export type QuickButtonSize = 'sm' | 'md' | 'lg';
+export type QuickButtonColor = string; // Tailwind class like 'bg-blue-500'
+
+export interface QuickButton {
+  id: number;
+  label: string;
+  action: QuickButtonAction;
+  size: QuickButtonSize;
+  color: QuickButtonColor;
+}
+
 export interface Settings {
   companyName: string;
   companyLogo: string;
@@ -297,10 +322,11 @@ export interface Settings {
   activeCurrencies: Currency[]; // New: Currencies the user wants to actively use
   showDashboardCurrencyRates: boolean; // New: Toggle for dashboard currency rates visibility
   packingUnits: PackingUnit[]; // New: Custom packing units
+  quickButtons: QuickButton[]; // New: Quick buttons for the dashboard
 }
 
 // --- Recycle Bin Types ---
-export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories' | 'bankAccounts' | 'utilizationOrders'; // Added 'utilizationOrders'
+export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories' | 'bankAccounts' | 'utilizationOrders' | 'quickButtons'; // Added 'utilizationOrders' and 'quickButtons'
 
 export interface RecycleBinItem {
   id: string; // Unique ID for the recycle bin entry

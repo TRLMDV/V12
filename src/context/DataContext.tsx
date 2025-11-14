@@ -99,7 +99,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Internal state for next IDs, managed by DataProvider
   const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
-    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1, bankAccounts: 1, utilizationOrders: 1, // Added utilizationOrders
+    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1, bankAccounts: 1, utilizationOrders: 1, quickButtons: 1, // Added utilizationOrders and quickButtons
     paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
     packingUnits: initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1,
   });

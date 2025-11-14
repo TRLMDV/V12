@@ -5,7 +5,7 @@ import { toast as sonnerToast } from 'sonner';
 import { t } from '@/utils/i18n';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CollectionKey, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder
+  CollectionKey, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder, QuickButton
 } from '@/types';
 
 interface UseCrudOperationsProps {
@@ -30,7 +30,7 @@ interface UseCrudOperationsProps {
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void; // Added
   updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void; // New: updateStockForUtilization
   addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
-  // Pass current state values for validation checks where needed, but not as dependencies for useCallback
+  // Pass current state values for validation where needed, but not as dependencies for useCallback
   products: Product[];
   suppliers: Supplier[];
   customers: Customer[];
@@ -80,7 +80,7 @@ export function useCrudOperations({
 
   const saveItem = useCallback((key: CollectionKey, item: any) => {
     console.log(`useCrudOperations: saveItem called for key: ${key}, item:`, item);
-    let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>> | React.Dispatch<React.SetStateAction<BankAccount[]>>;
+    let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>> | React.Dispatch<React.SetStateAction<BankAccount[]>> | React.Dispatch<React.SetStateAction<QuickButton[]>>;
     let currentCollection: any[] = []; // To be populated for validation
 
     switch (key) {
@@ -114,6 +114,23 @@ export function useCrudOperations({
             updatedCategories = existingCategories.map((i: any) => i.id === item.id ? item : i);
           }
           return { ...prevSettings, paymentCategories: updatedCategories };
+        });
+        sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
+        return;
+      case 'quickButtons':
+        setSettings((prevSettings: Settings) => {
+          const existingButtons = prevSettings.quickButtons || [];
+          const existingItemIndex = existingButtons.findIndex((i: any) => i.id === item.id);
+          let updatedButtons;
+
+          if (item.id === 0 || existingItemIndex === -1) { // New item
+            const newItemId = getNextId(key);
+            updatedButtons = [...existingButtons, { ...item, id: newItemId }];
+            setNextIdForCollection(key, newItemId + 1);
+          } else { // Existing item, update it
+            updatedButtons = existingButtons.map((i: any) => i.id === item.id ? item : i);
+          }
+          return { ...prevSettings, quickButtons: updatedButtons };
         });
         sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
         return;
@@ -219,6 +236,18 @@ export function useCrudOperations({
           setSettings((prevSettings: Settings) => ({
             ...prevSettings,
             paymentCategories: (prevSettings.paymentCategories || []).filter((c: PaymentCategorySetting) => c.id !== id),
+          }));
+          return;
+        case 'quickButtons':
+          const buttonToDelete = (settings.quickButtons || []).find((b: QuickButton) => b.id === id);
+          if (!buttonToDelete) {
+            showAlertModal(t('error'), t('itemNotFound'));
+            return;
+          }
+          addToRecycleBin(buttonToDelete, key);
+          setSettings((prevSettings: Settings) => ({
+            ...prevSettings,
+            quickButtons: (prevSettings.quickButtons || []).filter((b: QuickButton) => b.id !== id),
           }));
           return;
         default: return;

@@ -1,6 +1,6 @@
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, PaymentCategorySetting, Currency, PackingUnit, BankAccount, UtilizationOrder
+  CurrencyRates, Settings, PaymentCategorySetting, Currency, PackingUnit, BankAccount, UtilizationOrder, QuickButton
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -76,5 +76,11 @@ export const initialSettings: Settings = {
     { id: 4, name: 'Bottle (ml)', baseUnit: 'ml', conversionFactor: 1 },
     { id: 5, name: 'Bottle (liter)', baseUnit: 'liter', conversionFactor: 1 },
     { id: 6, name: 'Barrel (liter)', baseUnit: 'liter', conversionFactor: 200 },
+  ],
+  quickButtons: [
+    { id: 1, label: 'Quick PO', action: 'addPurchaseOrder', size: 'md', color: 'bg-blue-500 hover:bg-blue-600' },
+    { id: 2, label: 'Quick SO', action: 'addSellOrder', size: 'md', color: 'bg-green-500 hover:bg-green-600' },
+    { id: 3, label: 'Add Product', action: 'addProduct', size: 'sm', color: 'bg-purple-500 hover:bg-purple-600' },
+    { id: 4, label: 'Bank Deposit', action: 'bankDeposit', size: 'lg', color: 'bg-emerald-500 hover:bg-emerald-600' },
   ],
 };

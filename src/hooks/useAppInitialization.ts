@@ -62,6 +62,7 @@ export function useAppInitialization({
       initialNextIds.packingUnits = initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1;
       initialNextIds.bankAccounts = initialData.bankAccounts.length > 0 ? Math.max(...initialData.bankAccounts.map(ba => ba.id)) + 1 : 1;
       initialNextIds.utilizationOrders = initialData.utilizationOrders.length > 0 ? Math.max(...initialData.utilizationOrders.map(uo => uo.id)) + 1 : 1; // New: Initialize utilizationOrders nextId
+      initialNextIds.quickButtons = initialSettings.quickButtons.length > 0 ? Math.max(...initialSettings.quickButtons.map(qb => qb.id)) + 1 : 1; // New: Initialize quickButtons nextId
       setNextIds(initialNextIds);
       setInitialized(true);
     }

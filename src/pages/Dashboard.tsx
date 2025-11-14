@@ -6,12 +6,14 @@ import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import { AlertCircle } from 'lucide-react';
 import { Product, SellOrder, Payment, CurrencyRates, Currency } from '@/types'; // Import types from types file
+import QuickButtonsGrid from '@/components/QuickButtonsGrid'; // New import
 
 const Dashboard: React.FC = () => {
   const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
   const activeCurrencies = settings.activeCurrencies || []; // Ensure it's an array
   const showDashboardCurrencyRates = settings.showDashboardCurrencyRates; // New setting
+  const quickButtons = settings.quickButtons || []; // Get quick buttons from settings
 
   const getOverdueSellOrders = () => {
     const customers = useData().customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
@@ -74,7 +76,12 @@ const Dashboard: React.FC = () => {
   return (
     <>
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('dashboard')}</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      {quickButtons.length > 0 && (
+        <QuickButtonsGrid quickButtons={quickButtons} />
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('totalRevenueShipped')}</h2>
           <p className="text-3xl font-bold text-green-500 mt-2">{totalRevenueInMainCurrency.toFixed(2)} {mainCurrency}</p>
