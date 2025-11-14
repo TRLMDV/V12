@@ -33,7 +33,7 @@ interface DataContextType {
   incomingPayments: Payment[];
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   outgoingPayments: Payment[];
-  setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>; // Corrected type here
+  setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   productMovements: ProductMovement[];
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   bankAccounts: BankAccount[];
@@ -326,7 +326,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     customers: Array.isArray(customers) ? customers : [], setCustomers,
     warehouses: Array.isArray(warehouses) ? warehouses : [], setWarehouses,
     purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [], setPurchaseOrders,
-    sellOrders: Array.isArray(sellがいませんlOrders) ? sellOrders : [], setSellOrders,
+    sellOrders: Array.isArray(sellOrders) ? sellOrders : [], setSellOrders,
     incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [], setIncomingPayments,
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], setOutgoingPayments,
     productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements,
@@ -406,4 +406,4 @@ export const useData = () => {
     throw new Error('useData must be used within a DataProvider');
   }
   return context;
-};
+;
