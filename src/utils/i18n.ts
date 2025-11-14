@@ -238,6 +238,7 @@ const i18n = {
     comment: 'Comment', // New: Comment label
     utilizationCommentPlaceholder: 'e.g., Damaged goods, expired products, internal use', // New: Placeholder for comment
     noComment: 'No comment provided', // New: Display when no comment
+    confirm: 'Confirm', // New translation
   }
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Download, UploadCloud } from 'lucide-react';
@@ -48,6 +48,9 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
   setUtilizationOrders, setSettings, setCurrencyRates, showConfirmationModal, t
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uniqueId = useId(); // Generate a unique ID for this component instance
+
+  const importInputId = `import-file-${uniqueId}`; // Use uniqueId in the ID
 
   const handleExportData = () => {
     const dataToExport = {
@@ -118,7 +121,8 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
             setCurrencyRates(importedData.currencyRates || currencyRates);
             toast.success(t('restoreSuccess'));
             setTimeout(() => window.location.reload(), 1000);
-          }
+          },
+          t('restore') // Pass action label
         );
 
       } catch (error) {
@@ -145,12 +149,13 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
         </p>
         <div className="flex flex-col space-y-4">
           <Input
-            id="import-file"
+            id={importInputId}
             type="file"
             accept=".json"
             onChange={handleImportData}
             ref={fileInputRef}
             className="hidden"
+            aria-label={t('importJsonFile')} // Add aria-label
           />
           <Button onClick={handleImportButtonClick} className="bg-sky-500 hover:bg-sky-600 text-white w-full">
             <UploadCloud className="w-4 h-4 mr-2" />

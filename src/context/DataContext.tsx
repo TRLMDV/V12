@@ -69,9 +69,9 @@ interface DataContextType {
 
   // Modals
   showAlertModal: (title: string, message: string) => void;
-  showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void; // Updated signature
   isConfirmationModalOpen: boolean;
-  confirmationModalProps: { title: string; message: string; onConfirm: () => void } | null;
+  confirmationModalProps: { title: string; message: string; onConfirm: () => void; actionLabel?: string } | null; // Updated signature
   closeConfirmationModal: () => void;
 
   // Currency conversion utility
@@ -317,6 +317,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })) : [];
   }, [products]);
 
+  console.log("DataContext: isConfirmationModalOpen:", isConfirmationModalOpen);
+  console.log("DataContext: confirmationModalProps:", confirmationModalProps);
+
   const value = useMemo(() => ({
     products: productsWithTotalStock, setProducts,
     suppliers: Array.isArray(suppliers) ? suppliers : [], setSuppliers,
@@ -376,9 +379,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               <AlertDialogDescription>{confirmationModalProps.message}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={closeConfirmationModal}>{t('cancel')}</AlertDialogCancel>
-              <AlertDialogAction onClick={() => { confirmationModalProps.onConfirm(); closeConfirmationModal(); }}>
-                {t('delete')}
+              <AlertDialogCancel onClick={() => {
+                console.log("DataContext: AlertDialogCancel clicked.");
+                closeConfirmationModal();
+              }}>{t('cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                console.log("DataContext: AlertDialogAction clicked. Executing onConfirm.");
+                confirmationModalProps.onConfirm();
+                closeConfirmationModal();
+              }}>
+                {confirmationModalProps.actionLabel || t('confirm')} {/* Use dynamic label or default to 'Confirm' */}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

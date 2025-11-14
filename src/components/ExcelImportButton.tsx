@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef, useId } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,9 @@ interface ExcelImportButtonProps {
 
 const ExcelImportButton: React.FC<ExcelImportButtonProps> = ({ onImport, buttonLabel, description, requiredColumns }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uniqueId = useId(); // Generate a unique ID
+
+  const inputId = `excel-import-${buttonLabel.replace(/\s/g, '-')}-${uniqueId}`; // Use uniqueId in the ID
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -63,14 +66,15 @@ const ExcelImportButton: React.FC<ExcelImportButtonProps> = ({ onImport, buttonL
   return (
     <div className="flex items-center space-x-4">
       <Input
-        id={`excel-import-${buttonLabel.replace(/\s/g, '-')}`}
+        id={inputId}
         type="file"
         accept=".xlsx, .xls"
         onChange={handleFileChange}
         ref={fileInputRef}
         className="hidden"
+        aria-label={buttonLabel} // Add aria-label for accessibility
       />
-      <Button onClick={() => document.getElementById(`excel-import-${buttonLabel.replace(/\s/g, '-')}`)?.click()} className="bg-sky-500 hover:bg-sky-600 text-white w-full">
+      <Button onClick={() => document.getElementById(inputId)?.click()} className="bg-sky-500 hover:bg-sky-600 text-white w-full">
         <UploadCloud className="w-4 h-4 mr-2" />
         {buttonLabel}
       </Button>

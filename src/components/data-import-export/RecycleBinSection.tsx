@@ -19,11 +19,15 @@ interface RecycleBinSectionProps {
 const RecycleBinSection: React.FC<RecycleBinSectionProps> = ({
   recycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary, t
 }) => {
+  console.log("RecycleBinSection: Rendered. Recycle bin items count:", recycleBin.length);
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('recycleBin')}</h2>
-        <Button onClick={cleanRecycleBin} variant="destructive" disabled={recycleBin.length === 0}>
+        <Button onClick={() => {
+          console.log("RecycleBinSection: Clean Recycle Bin button clicked.");
+          cleanRecycleBin();
+        }} variant="destructive" disabled={recycleBin.length === 0}>
           <Trash2 className="w-4 h-4 mr-2" />
           {t('cleanRecycleBin')}
         </Button>
@@ -49,10 +53,16 @@ const RecycleBinSection: React.FC<RecycleBinSectionProps> = ({
                   <TableCell className="p-3 text-sm">{getItemSummary(item.data, item.collectionKey)}</TableCell>
                   <TableCell className="p-3">{format(new Date(item.deletedAt), 'yyyy-MM-dd HH:mm')}</TableCell>
                   <TableCell className="p-3 flex space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => restoreFromRecycleBin(item.id)}>
+                    <Button variant="outline" size="sm" onClick={() => {
+                      console.log("RecycleBinSection: Restore button clicked for item ID:", item.id);
+                      restoreFromRecycleBin(item.id);
+                    }}>
                       <RotateCcw className="w-4 h-4 mr-1" /> {t('restore')}
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => deletePermanentlyFromRecycleBin(item.id)}>
+                    <Button variant="destructive" size="sm" onClick={() => {
+                      console.log("RecycleBinSection: Delete Permanently button clicked for item ID:", item.id);
+                      deletePermanentlyFromRecycleBin(item.id);
+                    }}>
                       <XCircle className="w-4 h-4 mr-1" /> {t('deletePermanently')}
                     </Button>
                   </TableCell>

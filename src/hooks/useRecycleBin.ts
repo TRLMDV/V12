@@ -120,17 +120,21 @@ export function useRecycleBin({
     };
     setRecycleBin(prev => [...prev, newItem]);
     showAlertModal(t('success'), t('itemMovedToRecycleBin'));
-  }, [setRecycleBin, showAlertModal]);
+    console.log("useRecycleBin: Item added to recycle bin:", newItem);
+  }, [setRecycleBin, showAlertModal, t]);
 
   const restoreFromRecycleBin = useCallback((recycleItemId: string) => {
+    console.log("useRecycleBin: restoreFromRecycleBin called for ID:", recycleItemId);
     showConfirmationModal(
       t('restoreData'),
       t('restoreWarning'),
       () => {
+        console.log("useRecycleBin: restoreFromRecycleBin - Confirmation callback executed.");
         setRecycleBin(prevRecycleBin => {
           const itemToRestore = prevRecycleBin.find(item => item.id === recycleItemId);
           if (!itemToRestore) {
             showAlertModal(t('error'), t('itemNotFoundInRecycleBin'));
+            console.error("useRecycleBin: Item not found in recycle bin for restore:", recycleItemId);
             return prevRecycleBin;
           }
 
@@ -147,7 +151,7 @@ export function useRecycleBin({
             case 'incomingPayments': setter = setIncomingPayments; break;
             case 'outgoingPayments': setter = setOutgoingPayments; break;
             case 'productMovements': setter = setProductMovements; break;
-            case 'utilizationOrders': setter = setUtilizationOrders; break; // New: setUtilizationOrders
+            case 'utilizationOrders': setter = setUtilizationOrders; break;
             case 'packingUnits': setter = setPackingUnits; break;
             case 'bankAccounts': setter = setBankAccounts; break;
             case 'paymentCategories':
@@ -156,49 +160,61 @@ export function useRecycleBin({
                 paymentCategories: [...(prevSettings.paymentCategories || []), data],
               }));
               showAlertModal(t('success'), t('itemRestored'));
+              console.log("useRecycleBin: Payment category restored:", data);
               return prevRecycleBin.filter(item => item.id !== recycleItemId);
             default:
               showAlertModal(t('error'), t('unknownCollectionType'));
+              console.error("useRecycleBin: Unknown collection type for restore:", collectionKey);
               return prevRecycleBin;
           }
 
           (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => {
-            // Ensure the item is not duplicated if it somehow already exists
             if (prevItems.some((i: any) => i.id === data.id)) {
               showAlertModal(t('error'), t('itemAlreadyExists'));
+              console.warn("useRecycleBin: Item already exists in active data, not restoring:", data);
               return prevItems;
             }
+            console.log(`useRecycleBin: Restoring item to ${collectionKey}:`, data);
             return [...prevItems, data];
           });
 
           showAlertModal(t('success'), t('itemRestored'));
           return prevRecycleBin.filter(item => item.id !== recycleItemId);
         });
-      }
+      },
+      t('restore') // Pass action label
     );
-  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setBankAccounts, setUtilizationOrders, setSettings, showAlertModal, showConfirmationModal]);
+  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setBankAccounts, setUtilizationOrders, setSettings, showAlertModal, showConfirmationModal, t]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
+    console.log("useRecycleBin: deletePermanentlyFromRecycleBin called for ID:", recycleItemId);
     showConfirmationModal(
       t('deletePermanently'),
       t('deletePermanentlyWarning'),
       () => {
+        console.log("useRecycleBin: deletePermanentlyFromRecycleBin - Confirmation callback executed.");
         setRecycleBin(prev => prev.filter(item => item.id !== recycleItemId));
         showAlertModal(t('success'), t('itemDeletedPermanently'));
-      }
+        console.log("useRecycleBin: Item permanently deleted:", recycleItemId);
+      },
+      t('deletePermanently') // Pass action label
     );
-  }, [setRecycleBin, showConfirmationModal, showAlertModal]);
+  }, [setRecycleBin, showConfirmationModal, showAlertModal, t]);
 
   const cleanRecycleBin = useCallback(() => {
+    console.log("useRecycleBin: cleanRecycleBin called.");
     showConfirmationModal(
       t('cleanRecycleBin'),
       t('cleanRecycleBinWarning'),
       () => {
+        console.log("useRecycleBin: cleanRecycleBin - Confirmation callback executed.");
         setRecycleBin([]);
         showAlertModal(t('success'), t('recycleBinCleaned'));
-      }
+        console.log("useRecycleBin: Recycle bin cleaned.");
+      },
+      t('cleanRecycleBin') // Pass action label
     );
-  }, [setRecycleBin, showConfirmationModal, showAlertModal]);
+  }, [setRecycleBin, showConfirmationModal, showAlertModal, t]);
 
   return {
     recycleBin,

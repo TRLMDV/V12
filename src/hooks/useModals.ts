@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
   title: string;
   message: string;
   onConfirm: () => void;
+  actionLabel?: string; // New: Optional label for the action button
 }
 
 export function useModals() {
@@ -25,12 +26,14 @@ export function useModals() {
     });
   }, []);
 
-  const showConfirmationModal = useCallback((title: string, message: string, onConfirm: () => void) => {
-    setConfirmationModalProps({ title, message, onConfirm });
+  const showConfirmationModal = useCallback((title: string, message: string, onConfirm: () => void, actionLabel?: string) => {
+    console.log("useModals: showConfirmationModal called. Title:", title, "Action Label:", actionLabel);
+    setConfirmationModalProps({ title, message, onConfirm, actionLabel });
     setIsConfirmationModalOpen(true);
   }, []);
 
   const closeConfirmationModal = useCallback(() => {
+    console.log("useModals: closeConfirmationModal called.");
     setIsConfirmationModalOpen(false);
     setConfirmationModalProps(null);
   }, []);
