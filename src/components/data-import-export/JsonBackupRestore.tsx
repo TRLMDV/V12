@@ -36,7 +36,7 @@ interface JsonBackupRestoreProps {
   setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
-  showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void; // Corrected signature here
   t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
