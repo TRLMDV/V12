@@ -406,4 +406,4 @@ export const useData = () => {
     throw new Error('useData must be used within a DataProvider');
   }
   return context;
-;
+};
