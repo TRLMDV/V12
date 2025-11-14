@@ -54,6 +54,7 @@ const UtilizationImportExport: React.FC<UtilizationImportExportProps> = ({
         warehouseId: warehouse.id,
         items: [], // Items are not imported via Excel for utilization, must be added manually
         date: String(row['Date']),
+        comment: String(row['Comment'] || '') || undefined, // Import comment
       };
       newOrders.push(newOrder);
     });
@@ -88,7 +89,7 @@ const UtilizationImportExport: React.FC<UtilizationImportExportProps> = ({
           buttonLabel={t('importExcelFile')}
           description={t('importUtilizationOrdersDescription')}
           onImport={handleImportUtilizationOrders}
-          requiredColumns={['Warehouse Name', 'Date']}
+          requiredColumns={['Warehouse Name', 'Date']} // Comment is optional, so not required
         />
         <ExcelExportButton
           buttonLabel={t('exportExcelFile')}
@@ -104,6 +105,7 @@ const UtilizationImportExport: React.FC<UtilizationImportExportProps> = ({
             { header: 'Warehouse Name', accessor: 'warehouseName' },
             { header: 'Date', accessor: 'date' },
             { header: 'Items', accessor: 'itemsString' },
+            { header: 'Comment', accessor: 'comment' }, // Export comment
           ]}
         />
       </div>

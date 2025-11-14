@@ -235,6 +235,9 @@ const i18n = {
     cannotDeleteProductInUtilizationOrders: 'Cannot delete product because it is part of one or more utilization orders.',
     utilizationOrdersImportExportDescription: 'Import new utilization orders (items must be added manually) or export your existing utilization order records.',
     importUtilizationOrdersDescription: 'Import Utilization Orders',
+    comment: 'Comment', // New: Comment label
+    utilizationCommentPlaceholder: 'e.g., Damaged goods, expired products, internal use', // New: Placeholder for comment
+    noComment: 'No comment provided', // New: Display when no comment
   }
 };
 

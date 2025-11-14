@@ -13,6 +13,7 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { UtilizationOrder, Product, Warehouse } from '@/types';
+import { Textarea } from '@/components/ui/textarea'; // Import Textarea
 
 interface UtilizationFormProps {
   orderId?: number;
@@ -31,6 +32,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
   const [date, setDate] = useState(MOCK_CURRENT_DATE.toISOString().slice(0, 10));
   const [warehouseId, setWarehouseId] = useState<number | ''>('');
   const [utilizationItems, setUtilizationItems] = useState<UtilizationItemState[]>([{ productId: '', quantity: 1 }]);
+  const [comment, setComment] = useState(''); // New state for comment
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -40,11 +42,13 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
         setDate(existingOrder.date);
         setWarehouseId(existingOrder.warehouseId);
         setUtilizationItems(existingOrder.items.map(item => ({ productId: item.productId, quantity: item.quantity })));
+        setComment(existingOrder.comment || ''); // Load existing comment
       }
     } else {
       setDate(MOCK_CURRENT_DATE.toISOString().slice(0, 10));
       setWarehouseId('');
       setUtilizationItems([{ productId: '', quantity: 1 }]);
+      setComment(''); // Reset comment for new order
     }
   }, [orderId, isEdit, utilizationOrders]);
 
@@ -81,6 +85,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
       date: date,
       warehouseId: warehouseId as number,
       items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
+      comment: comment.trim() || undefined, // Save comment, or undefined if empty
     };
 
     saveItem('utilizationOrders', orderToSave);
@@ -199,6 +204,19 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
         <Button type="button" onClick={addUtilizationItem} variant="outline" className="mt-2">
           {t('addItem')}
         </Button>
+
+        <div className="grid grid-cols-4 items-start gap-4 mt-4">
+          <Label htmlFor="comment" className="text-right">
+            {t('comment')}
+          </Label>
+          <Textarea
+            id="comment"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="col-span-3"
+            placeholder={t('utilizationCommentPlaceholder')}
+          />
+        </div>
       </div>
       <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700">
         <Button type="submit">{t('saveUtilizationOrder')}</Button>

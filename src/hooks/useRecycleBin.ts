@@ -92,7 +92,8 @@ export function useRecycleBin({
         const uo = item as UtilizationOrder;
         const uoWarehouse = warehouseMap()[uo.warehouseId]?.name || 'N/A';
         const totalUtilizedItems = uo.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
-        return `${t('utilizationOrder')} #${uo.id} (${uoWarehouse}) - ${totalUtilizedItems} ${t('items')}`;
+        const commentSummary = uo.comment ? ` - "${uo.comment}"` : '';
+        return `${t('utilizationOrder')} #${uo.id} (${uoWarehouse}) - ${totalUtilizedItems} ${t('items')}${commentSummary}`;
       case 'packingUnits':
         const pu = item as PackingUnit;
         return `${pu.name} (${pu.conversionFactor} ${t(pu.baseUnit)})`;

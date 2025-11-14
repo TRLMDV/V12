@@ -288,6 +288,7 @@ const Utilization: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalItems')}>
                 {t('totalItems')} {getSortIndicator('totalItems')}
               </TableHead>
+              <TableHead className="p-3">{t('comment')}</TableHead> {/* New: Comment column */}
               <TableHead className="p-3">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
@@ -299,6 +300,7 @@ const Utilization: React.FC = () => {
                   <TableCell className="p-3">{order.warehouseName}</TableCell>
                   <TableCell className="p-3">{order.date}</TableCell>
                   <TableCell className="p-3 font-bold">{order.totalItems}</TableCell>
+                  <TableCell className="p-3 text-sm italic">{order.comment || t('noComment')}</TableCell> {/* Display comment */}
                   <TableCell className="p-3">
                     <Button variant="link" onClick={() => viewOrderDetails(order.id)} className="mr-2 p-0 h-auto">
                       <Eye className="w-4 h-4" />
@@ -314,7 +316,7 @@ const Utilization: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noUtilizationOrdersFound')}
                 </TableCell>
               </TableRow>
@@ -342,6 +344,12 @@ const Utilization: React.FC = () => {
         onClose={() => setIsDetailsModalOpen(false)}
         title={t('detailsForUtilizationOrder') + ` #${selectedOrderDetails?.id}`}
       >
+        <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
+          <p><strong>{t('warehouse')}:</strong> {warehouseMap[selectedOrderDetails?.warehouseId as number]?.name || 'N/A'}</p>
+          <p><strong>{t('date')}:</strong> {selectedOrderDetails?.date}</p>
+          <p><strong>{t('comment')}:</strong> {selectedOrderDetails?.comment || t('noComment')}</p> {/* Display comment in details */}
+        </div>
+        <h3 className="font-semibold mt-4 mb-2">{t('items')}</h3>
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
