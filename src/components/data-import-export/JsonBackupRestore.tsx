@@ -29,7 +29,7 @@ interface JsonBackupRestoreProps {
   setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
   setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
-  setSellOrders: React.SetStateAction<SellOrder[]>>;
+  setSellOrders: React.Dispatch<React.SetStateAction<SellOrder[]>>;
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
