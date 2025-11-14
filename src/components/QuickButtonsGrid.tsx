@@ -53,10 +53,10 @@ const QuickButtonsGrid: React.FC<QuickButtonsGridProps> = ({ quickButtons }) => 
 
   const getSizeClasses = (size: QuickButtonSize) => {
     switch (size) {
-      case 'sm': return 'p-2 text-sm';
-      case 'md': return 'p-3 text-base';
-      case 'lg': return 'p-4 text-lg';
-      default: return 'p-3 text-base';
+      case 'sm': return 'w-20 h-20 p-2 text-sm'; // Smaller fixed size
+      case 'md': return 'w-28 h-28 p-3 text-base'; // Medium fixed size
+      case 'lg': return 'w-36 h-36 p-4 text-lg'; // Larger fixed size
+      default: return 'w-28 h-28 p-3 text-base'; // Default to medium
     }
   };
 
@@ -67,7 +67,8 @@ const QuickButtonsGrid: React.FC<QuickButtonsGridProps> = ({ quickButtons }) => 
         {quickButtons.map(button => (
           <Link key={button.id} to={getPathForAction(button.action)} className="block">
             <Button
-              className={`flex flex-col items-center justify-center w-full h-full aspect-square rounded-lg shadow-md transition-all duration-200 ${button.color} text-white ${getSizeClasses(button.size)}`}
+              // Removed w-full h-full aspect-square to allow getSizeClasses to control dimensions
+              className={`flex flex-col items-center justify-center rounded-lg shadow-md transition-all duration-200 ${button.color} text-white ${getSizeClasses(button.size)}`}
             >
               {getIconForAction(button.action)}
               <span className="mt-2 text-center font-medium">{button.label}</span>
