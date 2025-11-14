@@ -33,7 +33,7 @@ interface DataContextType {
   incomingPayments: Payment[];
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   outgoingPayments: Payment[];
-  setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
+  setOutgoingPayments: React.SetStateAction<Payment[]>;
   productMovements: ProductMovement[];
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   bankAccounts: BankAccount[];
@@ -385,7 +385,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }}>{t('cancel')}</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 console.log("DataContext: AlertDialogAction clicked. Executing onConfirm.");
-                confirmationModalProps.onConfirm();
+                if (confirmationModalProps.onConfirm) {
+                  confirmationModalProps.onConfirm();
+                }
                 closeConfirmationModal();
               }}>
                 {confirmationModalProps.actionLabel || t('confirm')} {/* Use dynamic label or default to 'Confirm' */}
