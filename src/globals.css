@@ -98,5 +98,13 @@
   html, body {
     @apply bg-background text-foreground;
     overflow: hidden; /* Prevent all document-level scrolling */
+    -webkit-text-size-adjust: 100%; /* For Safari */
+    text-size-adjust: 100%; /* For Chrome 54+, Chrome Android 54+, Edge 79+ */
+  }
+
+  /* Fix for sonner toast user-select in Safari */
+  [data-sonner-toast][data-swiped=true] {
+    -webkit-user-select: none; /* For Safari 3+ */
+    user-select: none;
   }
 }
