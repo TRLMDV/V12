@@ -345,7 +345,7 @@ const Utilization: React.FC = () => {
         title={t('detailsForUtilizationOrder') + ` #${selectedOrderDetails?.id}`}
       >
         <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
-          <p><strong>{t('warehouse')}:</strong> {warehouseMap[selectedOrderDetails?.warehouseId as number]?.name || 'N/A'}</p>
+          <p><strong>{t('warehouse')}:</strong> {selectedOrderDetails?.warehouseId !== undefined ? warehouseMap[selectedOrderDetails.warehouseId] : 'N/A'}</p>
           <p><strong>{t('date')}:</strong> {selectedOrderDetails?.date}</p>
           <p><strong>{t('comment')}:</strong> {selectedOrderDetails?.comment || t('noComment')}</p> {/* Display comment in details */}
         </div>
