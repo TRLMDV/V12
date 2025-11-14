@@ -245,6 +245,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     settings,
     bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [],
     utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], // Added utilizationOrders
+    showAlertModal, // Pass showAlertModal
+    showConfirmationModal, // Pass showConfirmationModal
   });
 
   // Memoized map for packing units

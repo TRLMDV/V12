@@ -7,7 +7,7 @@ import { t } from '@/utils/i18n';
 import {
   RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder
 } from '@/types';
-import { useModals } from './useModals'; // Assuming useModals is in the same hooks directory
+// Removed: import { useModals } from './useModals'; // No longer needed here
 
 interface UseRecycleBinProps {
   // Pass setters for active data collections
@@ -39,6 +39,10 @@ interface UseRecycleBinProps {
   settings: Settings;
   bankAccounts: BankAccount[];
   utilizationOrders: UtilizationOrder[]; // New: utilizationOrders
+
+  // Pass modal functions from DataContext
+  showAlertModal: (title: string, message: string) => void;
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void;
 }
 
 export function useRecycleBin({
@@ -46,9 +50,10 @@ export function useRecycleBin({
   setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts, setUtilizationOrders, // Added setUtilizationOrders
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments,
   productMovements, packingUnits, settings, bankAccounts, utilizationOrders, // Added utilizationOrders
+  showAlertModal, showConfirmationModal, // Destructure modal functions
 }: UseRecycleBinProps) {
   const [recycleBin, setRecycleBin] = useLocalStorage<RecycleBinItem[]>('recycleBin', []);
-  const { showAlertModal, showConfirmationModal } = useModals();
+  // Removed: const { showAlertModal, showConfirmationModal } = useModals(); // No longer needed here
 
   // Memoized maps for item summary generation
   const supplierMap = useCallback(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s }), {} as { [key: number]: Supplier }), [suppliers]);
