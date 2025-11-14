@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { QuickButton, QuickButtonAction } from '@/types';
+import { QuickButton, QuickButtonAction, QuickButtonSize } from '@/types';
 import { t } from '@/utils/i18n';
 import {
   ShoppingCart, DollarSign, Package, Users, ArrowLeftRight, Warehouse, Banknote, MinusCircle, PlusCircle,
