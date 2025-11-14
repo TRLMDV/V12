@@ -317,8 +317,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })) : [];
   }, [products]);
 
-  console.log("DataContext: isConfirmationModalOpen:", isConfirmationModalOpen);
-  console.log("DataContext: confirmationModalProps:", confirmationModalProps);
+  console.log("DEBUG: DataContext render - isConfirmationModalOpen:", isConfirmationModalOpen);
+  console.log("DEBUG: DataContext render - confirmationModalProps:", confirmationModalProps);
 
   const value = useMemo(() => ({
     products: productsWithTotalStock, setProducts,
