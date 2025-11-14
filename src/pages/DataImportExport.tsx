@@ -14,6 +14,7 @@ import SellOrdersImportExport from '@/components/data-import-export/SellOrdersIm
 import IncomingPaymentsImportExport from '@/components/data-import-export/IncomingPaymentsImportExport';
 import OutgoingPaymentsImportExport from '@/components/data-import-export/OutgoingPaymentsImportExport';
 import ProductMovementsImportExport from '@/components/data-import-export/ProductMovementsImportExport';
+import UtilizationImportExport from '@/components/data-import-export/UtilizationImportExport'; // New import
 import RecycleBinSection from '@/components/data-import-export/RecycleBinSection';
 
 import { Product, Customer, Supplier, Warehouse } from '@/types';
@@ -21,9 +22,9 @@ import { Product, Customer, Supplier, Warehouse } from '@/types';
 const DataImportExport: React.FC = () => {
   const {
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
-    incomingPayments, outgoingPayments, productMovements, settings, currencyRates,
+    incomingPayments, outgoingPayments, productMovements, utilizationOrders, settings, currencyRates, // Added utilizationOrders
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders,
-    setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements,
+    setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, // Added setUtilizationOrders
     setSettings, setCurrencyRates,
     showConfirmationModal,
     getNextId,
@@ -55,6 +56,7 @@ const DataImportExport: React.FC = () => {
         incomingPayments={incomingPayments}
         outgoingPayments={outgoingPayments}
         productMovements={productMovements}
+        utilizationOrders={utilizationOrders} // Added utilizationOrders
         settings={settings}
         currencyRates={currencyRates}
         setProducts={setProducts}
@@ -66,6 +68,7 @@ const DataImportExport: React.FC = () => {
         setIncomingPayments={setIncomingPayments}
         setOutgoingPayments={setOutgoingPayments}
         setProductMovements={setProductMovements}
+        setUtilizationOrders={setUtilizationOrders} // Added setUtilizationOrders
         setSettings={setSettings}
         setCurrencyRates={setCurrencyRates}
         showConfirmationModal={showConfirmationModal}
@@ -153,6 +156,18 @@ const DataImportExport: React.FC = () => {
       <ProductMovementsImportExport
         productMovements={productMovements}
         setProductMovements={setProductMovements}
+        warehouses={warehouses}
+        productMap={productMap}
+        warehouseMap={warehouseMap}
+        getNextId={getNextId}
+        setNextIdForCollection={setNextIdForCollection}
+        showAlertModal={showAlertModal}
+        t={t}
+      />
+
+      <UtilizationImportExport
+        utilizationOrders={utilizationOrders}
+        setUtilizationOrders={setUtilizationOrders}
         warehouses={warehouses}
         productMap={productMap}
         warehouseMap={warehouseMap}

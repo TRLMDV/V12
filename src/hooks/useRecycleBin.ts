@@ -5,7 +5,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import {
-  RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount
+  RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder
 } from '@/types';
 import { useModals } from './useModals'; // Assuming useModals is in the same hooks directory
 
@@ -23,6 +23,7 @@ interface UseRecycleBinProps {
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>;
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
 
   // Pass current state values for display/validation in summary
   products: Product[];
@@ -37,13 +38,14 @@ interface UseRecycleBinProps {
   packingUnits: PackingUnit[];
   settings: Settings;
   bankAccounts: BankAccount[];
+  utilizationOrders: UtilizationOrder[]; // New: utilizationOrders
 }
 
 export function useRecycleBin({
   setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-  setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts,
+  setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts, setUtilizationOrders, // Added setUtilizationOrders
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments,
-  productMovements, packingUnits, settings, bankAccounts,
+  productMovements, packingUnits, settings, bankAccounts, utilizationOrders, // Added utilizationOrders
 }: UseRecycleBinProps) {
   const [recycleBin, setRecycleBin] = useLocalStorage<RecycleBinItem[]>('recycleBin', []);
   const { showAlertModal, showConfirmationModal } = useModals();
@@ -86,6 +88,11 @@ export function useRecycleBin({
         const source = warehouseMap()[pm.sourceWarehouseId]?.name || 'N/A';
         const dest = warehouseMap()[pm.destWarehouseId]?.name || 'N/A';
         return `${t('movement')} #${pm.id} from ${source} to ${dest}`;
+      case 'utilizationOrders': // New: Utilization Order summary
+        const uo = item as UtilizationOrder;
+        const uoWarehouse = warehouseMap()[uo.warehouseId]?.name || 'N/A';
+        const totalUtilizedItems = uo.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
+        return `${t('utilizationOrder')} #${uo.id} (${uoWarehouse}) - ${totalUtilizedItems} ${t('items')}`;
       case 'packingUnits':
         const pu = item as PackingUnit;
         return `${pu.name} (${pu.conversionFactor} ${t(pu.baseUnit)})`;
@@ -139,6 +146,7 @@ export function useRecycleBin({
             case 'incomingPayments': setter = setIncomingPayments; break;
             case 'outgoingPayments': setter = setOutgoingPayments; break;
             case 'productMovements': setter = setProductMovements; break;
+            case 'utilizationOrders': setter = setUtilizationOrders; break; // New: setUtilizationOrders
             case 'packingUnits': setter = setPackingUnits; break;
             case 'bankAccounts': setter = setBankAccounts; break;
             case 'paymentCategories':
@@ -167,7 +175,7 @@ export function useRecycleBin({
         });
       }
     );
-  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setBankAccounts, setSettings, showAlertModal, showConfirmationModal]);
+  }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setBankAccounts, setUtilizationOrders, setSettings, showAlertModal, showConfirmationModal]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
     showConfirmationModal(

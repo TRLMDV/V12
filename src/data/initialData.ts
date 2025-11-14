@@ -1,6 +1,6 @@
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, PaymentCategorySetting, Currency, PackingUnit, BankAccount
+  CurrencyRates, Settings, PaymentCategorySetting, Currency, PackingUnit, BankAccount, UtilizationOrder
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -18,6 +18,7 @@ export const initialData = {
   outgoingPayments: [] as Payment[],
   productMovements: [] as ProductMovement[],
   bankAccounts: [] as BankAccount[],
+  utilizationOrders: [] as UtilizationOrder[], // New: Utilization Orders
 };
 
 export const defaultCurrencyRates: CurrencyRates = {

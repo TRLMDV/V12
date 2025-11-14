@@ -18,7 +18,8 @@ import Finance from "./pages/Finance";
 import Profitability from "./pages/Profitability";
 import DataImportExport from "./pages/DataImportExport";
 import SettingsPage from "./pages/Settings";
-import Bank from "./pages/Bank"; // New import for Bank page
+import Bank from "./pages/Bank";
+import Utilization from "./pages/Utilization"; // New import for Utilization page
 import NotFound from "./pages/NotFound";
 // MOCK_CURRENT_DATE is not used directly in App.tsx, removing import
 
@@ -45,7 +46,8 @@ const App = () => (
             <Route path="/profitability" element={<MainLayout><Profitability /></MainLayout>} />
             <Route path="/data-import-export" element={<MainLayout><DataImportExport /></MainLayout>} />
             <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
-            <Route path="/bank" element={<MainLayout><Bank /></MainLayout>} /> {/* New Route for Bank */}
+            <Route path="/bank" element={<MainLayout><Bank /></MainLayout>} />
+            <Route path="/utilization" element={<MainLayout><Utilization /></MainLayout>} /> {/* New Route for Utilization */}
             <Route path="*" element={<NotFound />} />
           </Routes>
       </BrowserRouter>

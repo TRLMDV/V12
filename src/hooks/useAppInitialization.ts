@@ -5,7 +5,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { initialData, initialSettings, defaultCurrencyRates, MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, PackingUnit, BankAccount
+  CurrencyRates, Settings, RecycleBinItem, PackingUnit, BankAccount, UtilizationOrder
 } from '@/types';
 
 interface UseAppInitializationProps {
@@ -19,6 +19,7 @@ interface UseAppInitializationProps {
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>;
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>;
@@ -28,7 +29,7 @@ interface UseAppInitializationProps {
 
 export function useAppInitialization({
   setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-  setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts,
+  setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders, // Added setUtilizationOrders
   setSettings, setCurrencyRates, setPackingUnits, setRecycleBin, setNextIds,
 }: UseAppInitializationProps) {
   const [initialized, setInitialized] = useLocalStorage<boolean>('initialized', false);
@@ -46,6 +47,7 @@ export function useAppInitialization({
       setOutgoingPayments(initialData.outgoingPayments);
       setProductMovements(initialData.productMovements);
       setBankAccounts(initialData.bankAccounts);
+      setUtilizationOrders(initialData.utilizationOrders); // New: Initialize utilization orders
       setSettings(initialSettings);
       setCurrencyRates(defaultCurrencyRates);
       setPackingUnits(initialSettings.packingUnits);
@@ -59,8 +61,9 @@ export function useAppInitialization({
       initialNextIds.paymentCategories = initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1;
       initialNextIds.packingUnits = initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1;
       initialNextIds.bankAccounts = initialData.bankAccounts.length > 0 ? Math.max(...initialData.bankAccounts.map(ba => ba.id)) + 1 : 1;
+      initialNextIds.utilizationOrders = initialData.utilizationOrders.length > 0 ? Math.max(...initialData.utilizationOrders.map(uo => uo.id)) + 1 : 1; // New: Initialize utilizationOrders nextId
       setNextIds(initialNextIds);
       setInitialized(true);
     }
-  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setSettings, setCurrencyRates, setPackingUnits, setNextIds, setRecycleBin]);
+  }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders, setSettings, setCurrencyRates, setPackingUnits, setNextIds, setRecycleBin]);
 }

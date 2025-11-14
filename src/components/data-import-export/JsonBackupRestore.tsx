@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  Settings, CurrencyRates
+  Settings, CurrencyRates, UtilizationOrder
 } from '@/types';
 
 interface JsonBackupRestoreProps {
@@ -21,6 +21,7 @@ interface JsonBackupRestoreProps {
   incomingPayments: Payment[];
   outgoingPayments: Payment[];
   productMovements: ProductMovement[];
+  utilizationOrders: UtilizationOrder[]; // New: utilizationOrders
   settings: Settings;
   currencyRates: CurrencyRates;
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
@@ -28,10 +29,11 @@ interface JsonBackupRestoreProps {
   setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
   setWarehouses: React.Dispatch<React.SetStateAction<Warehouse[]>>;
   setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
-  setSellOrders: React.Dispatch<React.SetStateAction<SellOrder[]>>;
+  setSellOrders: React.SetStateAction<SellOrder[]>>;
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
   showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
@@ -40,10 +42,10 @@ interface JsonBackupRestoreProps {
 
 const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
-  incomingPayments, outgoingPayments, productMovements, settings, currencyRates,
+  incomingPayments, outgoingPayments, productMovements, utilizationOrders, settings, currencyRates,
   setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders,
   setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements,
-  setSettings, setCurrencyRates, showConfirmationModal, t
+  setUtilizationOrders, setSettings, setCurrencyRates, showConfirmationModal, t
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +60,7 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
       incomingPayments,
       outgoingPayments,
       productMovements,
+      utilizationOrders, // New: utilizationOrders
       settings,
       currencyRates,
     };
@@ -110,6 +113,7 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
             setIncomingPayments(importedData.incomingPayments || []);
             setOutgoingPayments(importedData.outgoingPayments || []);
             setProductMovements(importedData.productMovements || []);
+            setUtilizationOrders(importedData.utilizationOrders || []); // New: setUtilizationOrders
             setSettings(importedData.settings || {});
             setCurrencyRates(importedData.currencyRates || currencyRates);
             toast.success(t('restoreSuccess'));

@@ -5,7 +5,7 @@ import { toast as sonnerToast } from 'sonner';
 import { t } from '@/utils/i18n';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CollectionKey, PackingUnit, PaymentCategorySetting, Settings, BankAccount
+  CollectionKey, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder
 } from '@/types';
 
 interface UseCrudOperationsProps {
@@ -18,6 +18,7 @@ interface UseCrudOperationsProps {
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // Added
   setSettings: React.Dispatch<React.SetStateAction<Settings>>; // Added for paymentCategories
   setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>; // Added
@@ -27,6 +28,7 @@ interface UseCrudOperationsProps {
   showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void; // Added
+  updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void; // New: updateStockForUtilization
   addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
   // Pass current state values for validation checks where needed, but not as dependencies for useCallback
   products: Product[];
@@ -38,6 +40,7 @@ interface UseCrudOperationsProps {
   incomingPayments: Payment[];
   outgoingPayments: Payment[];
   productMovements: ProductMovement[];
+  utilizationOrders: UtilizationOrder[]; // New: utilizationOrders
   packingUnits: PackingUnit[]; // Added
   settings: Settings; // Added for paymentCategories
   bankAccounts: BankAccount[]; // Added
@@ -53,6 +56,7 @@ export function useCrudOperations({
   setIncomingPayments,
   setOutgoingPayments,
   setProductMovements,
+  setUtilizationOrders, // Destructure new prop
   setPackingUnits, // Destructure new prop
   setSettings, // Destructure new prop
   setBankAccounts, // Destructure new prop
@@ -60,9 +64,10 @@ export function useCrudOperations({
   showAlertModal, showConfirmationModal,
   updateStockFromOrder,
   updateAverageCosts,
+  updateStockForUtilization, // Destructure new prop
   addToRecycleBin,
   // Current state values for validation, not for useCallback dependencies
-  products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings, bankAccounts,
+  products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
 }: UseCrudOperationsProps) {
 
   const getNextId = useCallback((key: CollectionKey) => {
@@ -88,6 +93,7 @@ export function useCrudOperations({
       case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
       case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
       case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
+      case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break; // New: utilizationOrders
       case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
       case 'bankAccounts':
         setter = setBankAccounts;
@@ -125,6 +131,42 @@ export function useCrudOperations({
       }
     }
 
+    // Stock validation for Utilization Orders
+    if (key === 'utilizationOrders') {
+      const newUtilizationOrder = item as UtilizationOrder;
+      const oldUtilizationOrder = (currentCollection as UtilizationOrder[]).find(uo => uo.id === newUtilizationOrder.id);
+
+      // Temporarily revert stock for old order if editing
+      if (oldUtilizationOrder) {
+        updateStockForUtilization(null, oldUtilizationOrder);
+      }
+
+      // Check stock for new order
+      const productsCopy: Product[] = JSON.parse(JSON.stringify(products)); // Deep copy for dry run
+      for (const utilItem of newUtilizationOrder.items) {
+        const product = productsCopy.find(p => p.id === utilItem.productId);
+        if (!product || !product.stock) {
+          showAlertModal('Error', `Product data missing for item ID ${utilItem.productId}`);
+          // Revert temporary stock changes if validation fails
+          if (oldUtilizationOrder) updateStockForUtilization(oldUtilizationOrder, null);
+          return;
+        }
+        const stockInWarehouse = product.stock[newUtilizationOrder.warehouseId] || 0;
+        if (stockInWarehouse < utilItem.quantity) {
+          const originalProduct = products.find(prod => prod.id === utilItem.productId);
+          const safeProductName = originalProduct?.name || 'Unknown Product';
+          showAlertModal('Stock Error', `${t('notEnoughStock')} ${safeProductName}. ${t('available')}: ${stockInWarehouse}, ${t('requested')}: ${utilItem.quantity}.`);
+          // Revert temporary stock changes if validation fails
+          if (oldUtilizationOrder) updateStockForUtilization(oldUtilizationOrder, null);
+          return;
+        }
+        // Apply tentative stock changes for subsequent checks in the same form submission
+        product.stock[newUtilizationOrder.warehouseId] = stockInWarehouse - utilItem.quantity;
+      }
+      // If all checks pass, apply the actual stock changes
+      updateStockForUtilization(newUtilizationOrder, oldUtilizationOrder);
+    }
+
     (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => {
       const existingItemIndex = prevItems.findIndex(i => i.id === item.id);
       let updatedItems;
@@ -143,10 +185,10 @@ export function useCrudOperations({
     sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts,
-    getNextId, setNextIdForCollection, showAlertModal,
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,
+    getNextId, setNextIdForCollection, showAlertModal, updateStockForUtilization,
     // Include current state values for validation, but not as dependencies for useCallback
-    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings, bankAccounts,
+    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
   ]);
 
   const deleteItem = useCallback((key: CollectionKey, id: number) => {
@@ -164,6 +206,7 @@ export function useCrudOperations({
         case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
         case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
         case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
+        case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break; // New: utilizationOrders
         case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
         case 'bankAccounts': setter = setBankAccounts; currentCollection = bankAccounts; break; // Added
         case 'paymentCategories':
@@ -195,6 +238,9 @@ export function useCrudOperations({
         const hasMovements = productMovements.some(m => m.items?.some(i => i.productId === id));
         if (hasMovements) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInMovements')); return; }
 
+        const hasUtilizationOrders = utilizationOrders.some(uo => uo.items?.some(i => i.productId === id)); // New: Check utilization orders
+        if (hasUtilizationOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInUtilizationOrders')); return; }
+
         const productToDelete = products.find(p => p.id === id);
         if (productToDelete && productToDelete.stock && Object.values(productToDelete.stock).some(qty => qty > 0)) {
           showAlertModal(t('deletionFailed'), t('cannotDeleteProductWithStock'));
@@ -213,7 +259,8 @@ export function useCrudOperations({
         }
         const hasOrders = purchaseOrders.some(o => o.warehouseId === id) ||
                          sellOrders.some(o => o.warehouseId === id) ||
-                         productMovements.some(m => m.sourceWarehouseId === id || m.destWarehouseId === id);
+                         productMovements.some(m => m.sourceWarehouseId === id || m.destWarehouseId === id) ||
+                         utilizationOrders.some(uo => uo.warehouseId === id); // New: Check utilization orders
         if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseInUse')); return; }
       }
       if (key === 'suppliers' || key === 'customers') {
@@ -240,12 +287,12 @@ export function useCrudOperations({
         }
       }
 
-      // Reverse stock change if deleting a completed order/movement
+      // Reverse stock change if deleting a completed order/movement/utilization
       if (key === 'purchaseOrders' || key === 'sellOrders') {
-        const orderToDelete = currentCollection.find(o => o.id === id);
+        const orderToDelete = itemToDelete as PurchaseOrder | SellOrder;
         if (orderToDelete) updateStockFromOrder(null, orderToDelete);
       } else if (key === 'productMovements') {
-        const movementToDelete = currentCollection.find(m => m.id === id);
+        const movementToDelete = itemToDelete as ProductMovement;
         if (movementToDelete) {
           setSellOrders(prevSellOrders => prevSellOrders.map(so =>
             so.productMovementId === movementToDelete.id
@@ -267,6 +314,11 @@ export function useCrudOperations({
             return p;
           }));
         }
+      } else if (key === 'utilizationOrders') { // New: Revert stock for utilization orders
+        const utilizationOrderToDelete = itemToDelete as UtilizationOrder;
+        if (utilizationOrderToDelete) {
+          updateStockForUtilization(null, utilizationOrderToDelete);
+        }
       } else if (key === 'incomingPayments') {
         const paymentToDelete = itemToDelete as Payment;
         if (paymentToDelete.orderId !== 0) {
@@ -285,10 +337,10 @@ export function useCrudOperations({
     showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete);
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts,
-    showAlertModal, showConfirmationModal, updateStockFromOrder, addToRecycleBin,
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,
+    showAlertModal, showConfirmationModal, updateStockFromOrder, updateStockForUtilization, addToRecycleBin,
     // Include current state values for validation, but not as dependencies for useCallback
-    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, packingUnits, settings, bankAccounts,
+    products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
   ]);
 
   return {

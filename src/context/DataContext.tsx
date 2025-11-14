@@ -13,7 +13,7 @@ import { initialData, initialSettings, defaultCurrencyRates } from '@/data/initi
 
 import {
   Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit, BankAccount
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit, BankAccount, UtilizationOrder
 } from '@/types';
 
 // --- Context Definition ---
@@ -38,6 +38,8 @@ interface DataContextType {
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   bankAccounts: BankAccount[];
   setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>;
+  utilizationOrders: UtilizationOrder[]; // New: Utilization Orders
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: Set Utilization Orders
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   currencyRates: CurrencyRates;
@@ -63,6 +65,7 @@ interface DataContextType {
   setNextIdForCollection: (key: CollectionKey, nextId: number) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
+  updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void; // New: Stock management for utilization
 
   // Modals
   showAlertModal: (title: string, message: string) => void;
@@ -88,6 +91,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [outgoingPayments, setOutgoingPayments] = useLocalStorage<Payment[]>('outgoingPayments', initialData.outgoingPayments);
   const [productMovements, setProductMovements] = useLocalStorage<ProductMovement[]>('productMovements', initialData.productMovements);
   const [bankAccounts, setBankAccounts] = useLocalStorage<BankAccount[]>('bankAccounts', initialData.bankAccounts);
+  const [utilizationOrders, setUtilizationOrders] = useLocalStorage<UtilizationOrder[]>('utilizationOrders', initialData.utilizationOrders); // New: Utilization Orders
 
   const [settings, setSettings] = useLocalStorage<Settings>('settings', initialSettings);
   const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', defaultCurrencyRates);
@@ -95,7 +99,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   // Internal state for next IDs, managed by DataProvider
   const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
-    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1, bankAccounts: 1,
+    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1, bankAccounts: 1, utilizationOrders: 1, // Added utilizationOrders
     paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
     packingUnits: initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1,
   });
@@ -112,6 +116,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] productMovements:", productMovements);
   console.log("[DataContext] packingUnits:", packingUnits);
   console.log("[DataContext] bankAccounts:", bankAccounts);
+  console.log("[DataContext] utilizationOrders:", utilizationOrders); // New: Log utilization orders
 
 
   // Use the new modals hook
@@ -184,6 +189,37 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     baseUpdateStockFromOrder(newOrder, oldOrder);
   }, [baseUpdateStockFromOrder]);
 
+  // New: Stock management for Utilization Orders
+  const updateStockForUtilization = useCallback((newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => {
+    setProducts(prevProducts => {
+      const updatedProducts = JSON.parse(JSON.stringify(prevProducts)); // Deep copy
+
+      // --- 1. Reverse old stock change if an old order exists ---
+      if (oldOrder) {
+        (oldOrder.items || []).forEach(item => {
+          const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
+          if (p) {
+            if (!p.stock) p.stock = {};
+            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + item.quantity;
+          }
+        });
+      }
+
+      // --- 2. Apply new stock change if a new order exists ---
+      if (newOrder) {
+        (newOrder.items || []).forEach(item => {
+          const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
+          if (p) {
+            if (!p.stock) p.stock = {};
+            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - item.quantity;
+            if (p.stock[newOrder.warehouseId] < 0) p.stock[newOrder.warehouseId] = 0; // Ensure stock doesn't go negative
+          }
+        });
+      }
+      return updatedProducts;
+    });
+  }, [setProducts]);
+
   // Use the new recycle bin hook
   const {
     recycleBin,
@@ -195,7 +231,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getItemSummary,
   } = useRecycleBin({
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts,
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts, setUtilizationOrders, // Added setUtilizationOrders
     products: Array.isArray(products) ? products : [],
     suppliers: Array.isArray(suppliers) ? suppliers : [],
     customers: Array.isArray(customers) ? customers : [],
@@ -208,6 +244,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [],
     settings,
     bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [],
+    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], // Added utilizationOrders
   });
 
   // Memoized map for packing units
@@ -239,6 +276,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProductMovements,
     setPackingUnits,
     setBankAccounts,
+    setUtilizationOrders, // New: setUtilizationOrders
     setSettings,
     setNextIds,
     // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
@@ -252,6 +290,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [],
     productMovements: Array.isArray(productMovements) ? productMovements : [],
     bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [],
+    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], // New: utilizationOrders
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [],
     settings,
     // Other stable dependencies
@@ -260,13 +299,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showConfirmationModal,
     updateStockFromOrder,
     updateAverageCosts,
+    updateStockForUtilization, // New: Pass updateStockForUtilization
     addToRecycleBin,
   });
 
   // --- Initialization Logic ---
   useAppInitialization({
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts,
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders, // Added setUtilizationOrders
     setSettings, setCurrencyRates, setPackingUnits, setRecycleBin, setNextIds,
   });
 
@@ -288,6 +328,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], setOutgoingPayments,
     productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements,
     bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [], setBankAccounts,
+    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], setUtilizationOrders, // New: utilizationOrders
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits,
@@ -295,7 +336,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     warehouseMap,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
-    updateStockFromOrder, updateAverageCosts,
+    updateStockFromOrder, updateAverageCosts, updateStockForUtilization, // New: updateStockForUtilization
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
@@ -310,6 +351,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     outgoingPayments, setOutgoingPayments,
     productMovements, setProductMovements,
     bankAccounts, setBankAccounts,
+    utilizationOrders, setUtilizationOrders, // New: utilizationOrders
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits, setPackingUnits,
@@ -317,7 +359,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     warehouseMap,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
-    updateStockFromOrder, updateAverageCosts,
+    updateStockFromOrder, updateAverageCosts, updateStockForUtilization, // New: updateStockForUtilization
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
