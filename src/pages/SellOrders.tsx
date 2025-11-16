@@ -166,7 +166,7 @@ const SellOrders: React.FC = () => {
         totalValueAZN,
         paymentStatus,
         totalInclVat: order.total, // Total (Incl. VAT) is simply order.total
-        totalExclVclVat: totalExclVat, // Add calculated Total (Excl. VAT)
+        totalExclVat: totalExclVat, // Corrected property name from totalExclVclVat to totalExclVat
       };
     });
 
