@@ -233,7 +233,8 @@ const Bank: React.FC = () => {
       t('deleteBankAccountWarning', { accountName: accountToDelete.name }),
       () => {
         deleteItem('bankAccounts', id);
-      }
+      },
+      t('yes') // Added 'yes' as the action label for confirmation
     );
   };
 
