@@ -295,6 +295,7 @@ const Bank: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
+              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
               <TableHead className="p-3">{t('accountName')}</TableHead>
               <TableHead className="p-3">{t('currency')}</TableHead>
               <TableHead className="p-3 text-right">{t('currentBalance')}</TableHead>
@@ -303,8 +304,9 @@ const Bank: React.FC = () => {
           </TableHeader>
           <TableBody>
             {bankAccountsWithBalances.length > 0 ? (
-              bankAccountsWithBalances.map(account => (
+              bankAccountsWithBalances.map((account, index) => (
                 <TableRow key={account.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                  <TableCell className="p-3 font-semibold">{index + 1}.</TableCell>{/* New: Numbering cell */}
                   <TableCell className="p-3 font-semibold">{account.name}</TableCell>
                   <TableCell className="p-3">{account.currency}</TableCell>
                   <TableCell className={`p-3 text-right font-bold ${account.currentBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -325,7 +327,7 @@ const Bank: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={5} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noBankAccountsFound')}
                 </TableCell>
               </TableRow>
@@ -414,6 +416,7 @@ const Bank: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-100 dark:bg-slate-700">
+                <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
                 <TableHead className="p-3">{t('date')}</TableHead>
                 <TableHead className="p-3">{t('description')}</TableHead>
                 <TableHead className="p-3 text-right">{t('incoming')}</TableHead>
@@ -425,6 +428,7 @@ const Bank: React.FC = () => {
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((t, index) => (
                   <TableRow key={t.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                    <TableCell className="p-3 font-semibold">{index + 1}.</TableCell>{/* New: Numbering cell */}
                     <TableCell className="p-3">{format(new Date(t.date), 'yyyy-MM-dd')}</TableCell>
                     <TableCell className="p-3">{t.description}</TableCell>
                     <TableCell className="p-3 text-right text-green-600">
@@ -440,7 +444,7 @@ const Bank: React.FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                  <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
                     {t('noTransactionsFound')}
                   </TableCell>
                 </TableRow>
