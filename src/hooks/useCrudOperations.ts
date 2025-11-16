@@ -25,7 +25,7 @@ interface UseCrudOperationsProps {
   nextIds: { [key: string]: number }; // Still need nextIds value for getNextId
   setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
   showAlertModal: (title: string, message: string) => void;
-  showConfirmationModal: (title: string, message: string, onConfirm: () => void) => void;
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void; // Updated signature
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void; // Added
   updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void; // New: updateStockForUtilization
@@ -363,7 +363,7 @@ export function useCrudOperations({
       addToRecycleBin(itemToDelete, key);
       (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id)); // Remove from active data
     };
-    showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete);
+    showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete, t('yes')); // Pass 'yes' as actionLabel
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,

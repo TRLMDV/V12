@@ -71,8 +71,6 @@ const i18n = {
     totalLandedCost: 'Total Landed Cost',
     paymentForProducts: 'Payment for Products',
     paymentForFees: 'Payment for Fees',
-    productsTotal: 'Products Total',
-    feesTotal: 'Fees Total',
     itemTotal: 'Item Total',
     searchBySku: 'Search by SKU',
     enterSku: 'Enter SKU...',
@@ -282,6 +280,8 @@ const i18n = {
     colorIndigo: 'Indigo',
     colorPink: 'Pink',
     colorTeal: 'Teal',
+    yes: 'Yes', // Added 'Yes'
+    no: 'No', // Added 'No'
   }
 };
 
