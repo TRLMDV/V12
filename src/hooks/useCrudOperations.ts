@@ -71,10 +71,12 @@ export function useCrudOperations({
 }: UseCrudOperationsProps) {
 
   const getNextId = useCallback((key: CollectionKey) => {
+    console.log(`useCrudOperations: getNextId called for key: ${key}. Current nextIds[${key}]: ${nextIds[key] || 1}`);
     return nextIds[key] || 1;
   }, [nextIds]); // nextIds is a dependency here, which is fine as it's a single object.
 
   const setNextIdForCollection = useCallback((key: CollectionKey, newNextId: number) => {
+    console.log(`useCrudOperations: setNextIdForCollection called for key: ${key}, newNextId: ${newNextId}`);
     setNextIds(prev => ({ ...prev, [key]: newNextId }));
   }, [setNextIds]); // setNextIds is stable.
 
@@ -110,8 +112,10 @@ export function useCrudOperations({
             const newItemId = getNextId(key);
             updatedCategories = [...existingCategories, { ...item, id: newItemId }];
             setNextIdForCollection(key, newItemId + 1);
+            console.log(`useCrudOperations: Added new payment category with ID ${newItemId}. Next ID: ${newItemId + 1}`);
           } else { // Existing item, update it
             updatedCategories = existingCategories.map((i: any) => i.id === item.id ? item : i);
+            console.log(`useCrudOperations: Updated payment category with ID ${item.id}.`);
           }
           return { ...prevSettings, paymentCategories: updatedCategories };
         });
@@ -127,8 +131,10 @@ export function useCrudOperations({
             const newItemId = getNextId(key);
             updatedButtons = [...existingButtons, { ...item, id: newItemId }];
             setNextIdForCollection(key, newItemId + 1);
+            console.log(`useCrudOperations: Added new quick button with ID ${newItemId}. Next ID: ${newItemId + 1}`);
           } else { // Existing item, update it
             updatedButtons = existingButtons.map((i: any) => i.id === item.id ? item : i);
+            console.log(`useCrudOperations: Updated quick button with ID ${item.id}.`);
           }
           return { ...prevSettings, quickButtons: updatedButtons };
         });

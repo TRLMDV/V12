@@ -117,6 +117,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] packingUnits:", packingUnits);
   console.log("[DataContext] bankAccounts:", bankAccounts);
   console.log("[DataContext] utilizationOrders:", utilizationOrders); // New: Log utilization orders
+  console.log("[DataContext] nextIds (initial load):", nextIds);
 
 
   // Use the new modals hook
@@ -276,9 +277,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIncomingPayments,
     setOutgoingPayments,
     setProductMovements,
+    setUtilizationOrders, // New: setUtilizationOrders
     setPackingUnits,
     setBankAccounts,
-    setUtilizationOrders, // New: setUtilizationOrders
     setSettings,
     setNextIds,
     // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)

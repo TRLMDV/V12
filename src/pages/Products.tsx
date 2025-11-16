@@ -106,20 +106,24 @@ const Products: React.FC = () => {
   };
 
   const handleAddProduct = () => {
+    console.log("Products.tsx: handleAddProduct called. Setting editingProductId to undefined.");
     setEditingProductId(undefined);
     setIsModalOpen(true);
   };
 
   const handleEditProduct = (id: number) => {
+    console.log("Products.tsx: handleEditProduct called. Setting editingProductId to:", id);
     setEditingProductId(id);
     setIsModalOpen(true);
   };
 
   const handleDeleteProduct = (id: number) => {
+    console.log("Products.tsx: handleDeleteProduct called for ID:", id);
     deleteItem('products', id);
   };
 
   const handleModalClose = () => {
+    console.log("Products.tsx: handleModalClose called.");
     setIsModalOpen(false);
     setEditingProductId(undefined);
   };

@@ -36,6 +36,7 @@ export function useAppInitialization({
 
   useEffect(() => {
     if (!initialized) {
+      console.log("useAppInitialization: App not initialized. Setting default data and nextIds.");
       // Initialize with empty data and default settings
       setWarehouses(initialData.warehouses);
       setProducts(initialData.products);
@@ -65,6 +66,9 @@ export function useAppInitialization({
       initialNextIds.quickButtons = initialSettings.quickButtons.length > 0 ? Math.max(...initialSettings.quickButtons.map(qb => qb.id)) + 1 : 1; // New: Initialize quickButtons nextId
       setNextIds(initialNextIds);
       setInitialized(true);
+      console.log("useAppInitialization: App initialized with nextIds:", initialNextIds);
+    } else {
+      console.log("useAppInitialization: App already initialized.");
     }
   }, [initialized, setInitialized, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders, setSettings, setCurrencyRates, setPackingUnits, setNextIds, setRecycleBin]);
 }

@@ -25,17 +25,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
   const [defaultPackingUnitId, setDefaultPackingUnitId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
+    console.log("ProductForm.tsx: useEffect triggered. productId prop:", productId, "isEdit:", isEdit);
     // Find the 'Piece' packing unit
     const piecePackingUnit = packingUnits.find(pu => pu.name === 'Piece');
 
     if (isEdit) {
       const existingProduct = products.find(p => p.id === productId);
       if (existingProduct) {
+        console.log("ProductForm.tsx: Editing existing product:", existingProduct);
         setProduct(existingProduct);
         setImageUrl(existingProduct.imageUrl || null);
         setDefaultPackingUnitId(existingProduct.defaultPackingUnitId);
+      } else {
+        console.warn("ProductForm.tsx: Editing mode but product not found with ID:", productId);
+        // Fallback to new product form if ID is not found in edit mode
+        setProduct({});
+        setImageUrl(null);
+        setDefaultPackingUnitId(piecePackingUnit ? piecePackingUnit.id : undefined);
       }
     } else {
+      console.log("ProductForm.tsx: Creating new product. Resetting form.");
       setProduct({});
       setImageUrl(null);
       // Set default to 'Piece' packing unit for new products
@@ -77,6 +86,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
       defaultPackingUnitId: defaultPackingUnitId, // Save default packing unit
     };
 
+    console.log("ProductForm.tsx: handleSubmit. Product object to save:", productToSave);
     saveItem('products', productToSave);
     onSuccess();
   };
