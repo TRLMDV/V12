@@ -288,6 +288,7 @@ const IncomingPayments: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
+              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('id')}>
                 {t('paymentId')} {getSortIndicator('id')}
               </TableHead>
@@ -314,9 +315,10 @@ const IncomingPayments: React.FC = () => {
           </TableHeader>
           <TableBody>
             {paginatedPayments.length > 0 ? (
-              paginatedPayments.map(p => {
+              paginatedPayments.map((p, index) => {
                 return (
                   <TableRow key={p.id} className={p.rowClass}>
+                    <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                     <TableCell className="p-3 font-semibold">
                       #{p.id}
                     </TableCell>
@@ -343,7 +345,7 @@ const IncomingPayments: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>

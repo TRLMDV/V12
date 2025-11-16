@@ -23,6 +23,8 @@ interface SellOrdersTableProps {
   sortConfig: { key: string; direction: 'ascending' | 'descending' };
   handleSortClick: (key: string) => () => void;
   getSortIndicator: (key: string) => string;
+  currentPage: number; // New prop
+  itemsPerPage: number; // New prop
 }
 
 const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
@@ -33,6 +35,8 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
   sortConfig,
   handleSortClick,
   getSortIndicator,
+  currentPage, // Destructure new prop
+  itemsPerPage, // Destructure new prop
 }) => {
   const { packingUnitMap } = useData(); // Access packingUnitMap
 
@@ -55,6 +59,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
+            <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('id')}>
               {t('orderId')} {getSortIndicator('id')}
             </TableHead>
@@ -84,8 +89,9 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
         </TableHeader>
         <TableBody>
           {orders.length > 0 ? (
-            orders.map(order => (
+            orders.map((order, index) => (
               <TableRow key={order.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                 <TableCell className="p-3 font-semibold">#{order.id}</TableCell>
                 <TableCell className="p-3">{order.customerName}</TableCell>
                 <TableCell className="p-3">{order.orderDate}</TableCell>
@@ -108,7 +114,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
                     {t(order.paymentStatus.toLowerCase().replace(' ', '') as keyof typeof t)}
                   </span>
                 </TableCell>
-                <TableCell className="p-3 font-bold text-gray-700 dark:text-slate-300">{order.totalExclVat.toFixed(2)} AZN</TableCell>
+                <TableCell className="p-3 font-bold text-gray-700 dark:text-slate-300">{order.totalExclVat.toFixed(2)} AZN}</TableCell>
                 <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.totalInclVat.toFixed(2)} AZN</TableCell>
                 <TableCell className="p-3">
                   <Button variant="link" onClick={() => viewOrderDetails(order.id)} className="mr-2 p-0 h-auto">
@@ -125,7 +131,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400">
+              <TableCell colSpan={10} className="p-4 text-center text-gray-500 dark:text-slate-400">
                 {t('noItemsFound')}
               </TableCell>
             </TableRow>
@@ -133,7 +139,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
         </TableBody>
         <TableFooter>
           <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
-            <TableCell colSpan={6} className="p-3 text-right text-lg">{t('totals')}:</TableCell><TableCell className="p-3 text-lg text-gray-700 dark:text-slate-300">{totalSumExclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3 text-lg text-sky-600 dark:text-sky-400">{totalSumInclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3"></TableCell>
+            <TableCell colSpan={7} className="p-3 text-right text-lg">{t('totals')}:</TableCell><TableCell className="p-3 text-lg text-gray-700 dark:text-slate-300">{totalSumExclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3 text-lg text-sky-600 dark:text-sky-400">{totalSumInclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3"></TableCell>
           </TableRow>
         </TableFooter>
       </Table>

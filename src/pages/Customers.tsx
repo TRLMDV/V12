@@ -111,6 +111,7 @@ const Customers: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
+              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('name')}>
                 {t('customerName')} {getSortIndicator('name')}
               </TableHead>
@@ -131,8 +132,9 @@ const Customers: React.FC = () => {
           </TableHeader>
           <TableBody>
             {paginatedCustomers.length > 0 ? (
-              paginatedCustomers.map(c => (
+              paginatedCustomers.map((c, index) => (
                 <TableRow key={c.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                  <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                   <TableCell className="p-3">{c.name}</TableCell>
                   <TableCell className="p-3">{c.contact}</TableCell>
                   <TableCell className="p-3">{c.email}</TableCell>
@@ -150,7 +152,7 @@ const Customers: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={7} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>

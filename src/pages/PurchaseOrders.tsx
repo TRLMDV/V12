@@ -264,6 +264,8 @@ const PurchaseOrders: React.FC = () => {
         sortConfig={sortConfig as { key: string; direction: 'ascending' | 'descending' }}
         handleSortClick={handleSortClick}
         getSortIndicator={getSortIndicator}
+        currentPage={currentPage} // Pass currentPage
+        itemsPerPage={itemsPerPage} // Pass itemsPerPage
       />
       <PaginationControls
         totalItems={filteredAndSortedOrders.length}

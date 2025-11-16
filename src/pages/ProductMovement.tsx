@@ -307,6 +307,7 @@ const ProductMovement: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
+              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('id')}>
                 {t('orderId')} {getSortIndicator('id')}
               </TableHead>
@@ -327,8 +328,9 @@ const ProductMovement: React.FC = () => {
           </TableHeader>
           <TableBody>
             {paginatedMovements.length > 0 ? (
-              paginatedMovements.map(m => (
+              paginatedMovements.map((m, index) => (
                 <TableRow key={m.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                  <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                   <TableCell className="p-3 font-semibold">#{m.id}</TableCell>
                   <TableCell className="p-3">{m.sourceWarehouseName}</TableCell>
                   <TableCell className="p-3">{m.destWarehouseName}</TableCell>
@@ -349,7 +351,7 @@ const ProductMovement: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={7} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {filterSourceWarehouseId !== 'all' || filterDestWarehouseId !== 'all' || startDateFilter || endDateFilter || productFilterId !== 'all' ? t('noItemsFound') : t('noItemsFound')}
                 </TableCell>
               </TableRow>

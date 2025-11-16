@@ -170,7 +170,7 @@ const Warehouses: React.FC = () => {
 
       <div>
         {paginatedWarehouses.length > 0 ? (
-          paginatedWarehouses.map(w => {
+          paginatedWarehouses.map((w, index) => {
             const warehouseProducts = sortedWarehouseProducts[w.id] || [];
             let warehouseTotalValue = 0; // Excl. VAT
             let warehouseTotalValueInclVat = 0; // Incl. VAT
@@ -187,7 +187,7 @@ const Warehouses: React.FC = () => {
                   onClick={() => toggleWarehouseDetails(w.id)}
                 >
                   <div>
-                    <h2 className="2xl font-bold text-gray-800 dark:text-slate-200">{w.name}</h2>
+                    <h2 className="2xl font-bold text-gray-800 dark:text-slate-200">{(currentPage - 1) * itemsPerPage + index + 1}. {w.name}</h2>{/* New: Numbering */}
                     <p className="text-gray-600 dark:text-slate-400">{w.location}</p>
                     <p className="text-sm text-gray-500 dark:text-slate-400">
                       {t('warehouseType')}: <span className="font-medium">{t(((w.type || 'secondary').toLowerCase() + 'WarehouseType') as keyof typeof t)}</span>
@@ -268,7 +268,7 @@ const Warehouses: React.FC = () => {
                         <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
                           <TableCell colSpan={6} className="p-2 text-right">{t('totals')}:</TableCell>
                           <TableCell className="p-2">{warehouseTotalValue.toFixed(2)} AZN</TableCell>
-                          <TableCell className="p-2 text-sky-600 dark:text-sky-400">{warehouseTotalValueInclVat.toFixed(2)} AZN</TableCell>
+                          <TableCell className="p-2 text-sky-600 dark:text-sky-400">{warehouseTotalValueInclVat.toFixed(2)} AZN}</TableCell>
                         </TableRow>
                       </TableFooter>
                     </Table>

@@ -165,6 +165,7 @@ const Products: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
+              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
               <TableHead className="p-3">{t('image')}</TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('name')}>
                 {t('name')} {sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
@@ -193,7 +194,7 @@ const Products: React.FC = () => {
           </TableHeader>
           <TableBody>
             {paginatedProducts.length > 0 ? (
-              paginatedProducts.map(p => {
+              paginatedProducts.map((p, index) => {
                 const stockIsLow = p.totalStock < p.minStock;
                 const landedCostDisplay = p.averageLandedCost > 0 ? `${p.averageLandedCost.toFixed(2)} AZN` : 'N/A';
                 const priceWithMarkupDisplay = p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : 'N/A';
@@ -202,6 +203,7 @@ const Products: React.FC = () => {
 
                 return (
                   <TableRow key={p.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                    <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                     <TableCell className="p-3">
                       <img
                         src={p.imageUrl || defaultImage}
@@ -241,7 +243,7 @@ const Products: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={10} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>

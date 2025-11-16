@@ -166,7 +166,7 @@ const SellOrders: React.FC = () => {
         totalValueAZN,
         paymentStatus,
         totalInclVat: order.total, // Total (Incl. VAT) is simply order.total
-        totalExclVat: totalExclVat, // Add calculated Total (Excl. VAT)
+        totalExclVclVat: totalExclVat, // Add calculated Total (Excl. VAT)
       };
     });
 
@@ -250,6 +250,8 @@ const SellOrders: React.FC = () => {
         sortConfig={sortConfig}
         handleSortClick={handleSortClick}
         getSortIndicator={getSortIndicator}
+        currentPage={currentPage} // Pass currentPage
+        itemsPerPage={itemsPerPage} // Pass itemsPerPage
       />
       <PaginationControls
         totalItems={filteredAndSortedOrders.length}
