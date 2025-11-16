@@ -14,6 +14,7 @@ import BankAccountForm from '@/forms/BankAccountForm'; // New: BankAccountForm
 import PaymentForm from '@/forms/PaymentForm';
 import { Payment, Currency, BankAccount } from '@/types';
 import { format } from 'date-fns';
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 
 interface Transaction {
   id: string; // Unique ID for transaction (payment.id + type)
@@ -53,6 +54,14 @@ const Bank: React.FC = () => {
   // New states for deposit/withdrawal modals
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
+
+  // Pagination states for the main bank accounts table (already exists, but for clarity)
+  const [mainAccountsCurrentPage, setMainAccountsCurrentPage] = useState(1);
+  const mainAccountsItemsPerPage = 100;
+
+  // NEW: Pagination states for the transaction history table
+  const [transactionsCurrentPage, setTransactionsCurrentPage] = useState(1);
+  const transactionsItemsPerPage = 100; // Default to 100 items per page for transactions
 
   // Map bank accounts for easy lookup
   const bankAccountMap = useMemo(() => {
@@ -192,6 +201,13 @@ const Bank: React.FC = () => {
     return filtered;
   }, [allTransactionsForSelectedAccount, startDateFilter, endDateFilter]);
 
+  // NEW: Apply pagination to the filtered transactions
+  const paginatedTransactions = useMemo(() => {
+    const startIndex = (transactionsCurrentPage - 1) * transactionsItemsPerPage;
+    const endIndex = startIndex + transactionsItemsPerPage;
+    return filteredTransactions.slice(startIndex, endIndex);
+  }, [filteredTransactions, transactionsCurrentPage, transactionsItemsPerPage]);
+
   const handleAddAccount = () => {
     setEditingBankAccountId(undefined);
     setIsAccountModalOpen(true);
@@ -228,6 +244,7 @@ const Bank: React.FC = () => {
 
   const handleViewTransactions = (id: number) => {
     setSelectedBankAccountId(id);
+    setTransactionsCurrentPage(1); // Reset transaction pagination when opening modal
     setIsTransactionsModalOpen(true);
   };
 
@@ -236,6 +253,7 @@ const Bank: React.FC = () => {
     setSelectedBankAccountId(undefined);
     setStartDateFilter('');
     setEndDateFilter('');
+    setTransactionsCurrentPage(1); // Reset transaction pagination when closing modal
   };
 
   const handleDeposit = () => {
@@ -389,7 +407,10 @@ const Bank: React.FC = () => {
                 type="date"
                 id="bank-start-date-filter"
                 value={startDateFilter}
-                onChange={(e) => setStartDateFilter(e.target.value)}
+                onChange={(e) => {
+                  setStartDateFilter(e.target.value);
+                  setTransactionsCurrentPage(1); // Reset to first page on filter change
+                }}
                 className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
               />
             </div>
@@ -399,7 +420,10 @@ const Bank: React.FC = () => {
                 type="date"
                 id="bank-end-date-filter"
                 value={endDateFilter}
-                onChange={(e) => setEndDateFilter(e.target.value)}
+                onChange={(e) => {
+                  setEndDateFilter(e.target.value);
+                  setTransactionsCurrentPage(1); // Reset to first page on filter change
+                }}
                 className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
               />
             </div>
@@ -425,10 +449,10 @@ const Bank: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.length > 0 ? (
-                filteredTransactions.map((t, index) => (
+              {paginatedTransactions.length > 0 ? (
+                paginatedTransactions.map((t, index) => (
                   <TableRow key={t.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                    <TableCell className="p-3 font-semibold">{index + 1}.</TableCell>{/* New: Numbering cell */}
+                    <TableCell className="p-3 font-semibold">{(transactionsCurrentPage - 1) * transactionsItemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                     <TableCell className="p-3">{format(new Date(t.date), 'yyyy-MM-dd')}</TableCell>
                     <TableCell className="p-3">{t.description}</TableCell>
                     <TableCell className="p-3 text-right text-green-600">
@@ -452,6 +476,12 @@ const Bank: React.FC = () => {
             </TableBody>
           </Table>
         </div>
+        <PaginationControls
+          totalItems={filteredTransactions.length}
+          itemsPerPage={transactionsItemsPerPage}
+          currentPage={transactionsCurrentPage}
+          onPageChange={setTransactionsCurrentPage}
+        />
       </FormModal>
     </div>
   );
