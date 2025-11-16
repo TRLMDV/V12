@@ -128,21 +128,17 @@ export function useRecycleBin({
     };
     setRecycleBin(prev => [...prev, newItem]);
     showAlertModal(t('success'), t('itemMovedToRecycleBin'));
-    console.log("useRecycleBin: Item added to recycle bin:", newItem);
   }, [setRecycleBin, showAlertModal, t]);
 
   const restoreFromRecycleBin = useCallback((recycleItemId: string) => {
-    console.log("DEBUG: useRecycleBin - restoreFromRecycleBin called for ID:", recycleItemId); // New log
     showConfirmationModal(
       t('restoreData'),
       t('restoreWarning'),
       () => {
-        console.log("DEBUG: useRecycleBin - restoreFromRecycleBin - Confirmation callback executed."); // New log
         setRecycleBin(prevRecycleBin => {
           const itemToRestore = prevRecycleBin.find(item => item.id === recycleItemId);
           if (!itemToRestore) {
             showAlertModal(t('error'), t('itemNotFoundInRecycleBin'));
-            console.error("useRecycleBin: Item not found in recycle bin for restore:", recycleItemId);
             return prevRecycleBin;
           }
 
@@ -168,7 +164,6 @@ export function useRecycleBin({
                 paymentCategories: [...(prevSettings.paymentCategories || []), data],
               }));
               showAlertModal(t('success'), t('itemRestored'));
-              console.log("useRecycleBin: Payment category restored:", data);
               return prevRecycleBin.filter(item => item.id !== recycleItemId);
             case 'quickButtons':
               setSettings(prevSettings => ({
@@ -176,21 +171,17 @@ export function useRecycleBin({
                 quickButtons: [...(prevSettings.quickButtons || []), data],
               }));
               showAlertModal(t('success'), t('itemRestored'));
-              console.log("useRecycleBin: Quick button restored:", data);
               return prevRecycleBin.filter(item => item.id !== recycleItemId);
             default:
               showAlertModal(t('error'), t('unknownCollectionType'));
-              console.error("useRecycleBin: Unknown collection type for restore:", collectionKey);
               return prevRecycleBin;
           }
 
           (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => {
             if (prevItems.some((i: any) => i.id === data.id)) {
               showAlertModal(t('error'), t('itemAlreadyExists'));
-              console.warn("useRecycleBin: Item already exists in active data, not restoring:", data);
               return prevItems;
             }
-            console.log(`useRecycleBin: Restoring item to ${collectionKey}:`, data);
             return [...prevItems, data];
           });
 
@@ -203,30 +194,24 @@ export function useRecycleBin({
   }, [setRecycleBin, setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setBankAccounts, setUtilizationOrders, setSettings, showAlertModal, showConfirmationModal, t]);
 
   const deletePermanentlyFromRecycleBin = useCallback((recycleItemId: string) => {
-    console.log("DEBUG: useRecycleBin - deletePermanentlyFromRecycleBin called for ID:", recycleItemId); // New log
     showConfirmationModal(
       t('deletePermanently'),
       t('deletePermanentlyWarning'),
       () => {
-        console.log("DEBUG: useRecycleBin - deletePermanentlyFromRecycleBin - Confirmation callback executed."); // New log
         setRecycleBin(prev => prev.filter(item => item.id !== recycleItemId));
         showAlertModal(t('success'), t('itemDeletedPermanently'));
-        console.log("useRecycleBin: Item permanently deleted:", recycleItemId);
       },
       t('deletePermanently') // Pass action label
     );
   }, [setRecycleBin, showConfirmationModal, showAlertModal, t]);
 
   const cleanRecycleBin = useCallback(() => {
-    console.log("DEBUG: useRecycleBin - cleanRecycleBin called."); // New log
     showConfirmationModal(
       t('cleanRecycleBin'),
       t('cleanRecycleBinWarning'),
       () => {
-        console.log("DEBUG: useRecycleBin - cleanRecycleBin - Confirmation callback executed."); // New log
         setRecycleBin([]);
         showAlertModal(t('success'), t('recycleBinCleaned'));
-        console.log("useRecycleBin: Recycle bin cleaned.");
       },
       t('cleanRecycleBin') // Pass action label
     );

@@ -71,17 +71,14 @@ export function useCrudOperations({
 }: UseCrudOperationsProps) {
 
   const getNextId = useCallback((key: CollectionKey) => {
-    console.log(`useCrudOperations: getNextId called for key: ${key}. Current nextIds[${key}]: ${nextIds[key] || 1}`);
     return nextIds[key] || 1;
   }, [nextIds]); // nextIds is a dependency here, which is fine as it's a single object.
 
   const setNextIdForCollection = useCallback((key: CollectionKey, newNextId: number) => {
-    console.log(`useCrudOperations: setNextIdForCollection called for key: ${key}, newNextId: ${newNextId}`);
     setNextIds(prev => ({ ...prev, [key]: newNextId }));
   }, [setNextIds]); // setNextIds is stable.
 
   const saveItem = useCallback((key: CollectionKey, item: any) => {
-    console.log(`useCrudOperations: saveItem called for key: ${key}, item:`, item);
     let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>> | React.Dispatch<React.SetStateAction<BankAccount[]>> | React.Dispatch<React.SetStateAction<QuickButton[]>>;
     let currentCollection: any[] = []; // To be populated for validation
 
@@ -100,7 +97,6 @@ export function useCrudOperations({
       case 'bankAccounts':
         setter = setBankAccounts;
         currentCollection = bankAccounts;
-        console.log("useCrudOperations: Matched 'bankAccounts' case.");
         break;
       case 'paymentCategories':
         setSettings((prevSettings: Settings) => {
@@ -112,10 +108,8 @@ export function useCrudOperations({
             const newItemId = getNextId(key);
             updatedCategories = [...existingCategories, { ...item, id: newItemId }];
             setNextIdForCollection(key, newItemId + 1);
-            console.log(`useCrudOperations: Added new payment category with ID ${newItemId}. Next ID: ${newItemId + 1}`);
           } else { // Existing item, update it
             updatedCategories = existingCategories.map((i: any) => i.id === item.id ? item : i);
-            console.log(`useCrudOperations: Updated payment category with ID ${item.id}.`);
           }
           return { ...prevSettings, paymentCategories: updatedCategories };
         });
@@ -131,17 +125,14 @@ export function useCrudOperations({
             const newItemId = getNextId(key);
             updatedButtons = [...existingButtons, { ...item, id: newItemId }];
             setNextIdForCollection(key, newItemId + 1);
-            console.log(`useCrudOperations: Added new quick button with ID ${newItemId}. Next ID: ${newItemId + 1}`);
           } else { // Existing item, update it
             updatedButtons = existingButtons.map((i: any) => i.id === item.id ? item : i);
-            console.log(`useCrudOperations: Updated quick button with ID ${item.id}.`);
           }
           return { ...prevSettings, quickButtons: updatedButtons };
         });
         sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
         return;
       default:
-        console.log(`useCrudOperations: Unknown collection key: ${key}`);
         return;
     }
 
@@ -198,10 +189,8 @@ export function useCrudOperations({
         const newItemId = getNextId(key);
         updatedItems = [...prevItems, { ...item, id: newItemId }];
         setNextIdForCollection(key, newItemId + 1); // Increment next ID for this collection
-        console.log(`useCrudOperations: Added new item with ID ${newItemId} to ${key}. Next ID for ${key}: ${newItemId + 1}`);
       } else { // Existing item, update it
         updatedItems = prevItems.map(i => i.id === item.id ? item : i);
-        console.log(`useCrudOperations: Updated existing item with ID ${item.id} in ${key}.`);
       }
       return updatedItems;
     });

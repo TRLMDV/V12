@@ -98,11 +98,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [packingUnits, setPackingUnits] = useLocalStorage<PackingUnit[]>('packingUnits', initialSettings.packingUnits);
   
   // Internal state for next IDs, managed by DataProvider
-  const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {
-    products: 1, suppliers: 1, customers: 1, warehouses: 1, purchaseOrders: 1, sellOrders: 1, incomingPayments: 1, outgoingPayments: 1, productMovements: 1, bankAccounts: 1, utilizationOrders: 1, quickButtons: 1, // Added utilizationOrders and quickButtons
-    paymentCategories: initialSettings.paymentCategories.length > 0 ? Math.max(...initialSettings.paymentCategories.map(c => c.id)) + 1 : 1,
-    packingUnits: initialSettings.packingUnits.length > 0 ? Math.max(...initialSettings.packingUnits.map(pu => pu.id)) + 1 : 1,
-  });
+  // This will be initialized by useAppInitialization based on actual data, not hardcoded defaults.
+  const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {}); 
 
   // Add console logs for debugging
   console.log("[DataContext] products:", products);
@@ -117,7 +114,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] packingUnits:", packingUnits);
   console.log("[DataContext] bankAccounts:", bankAccounts);
   console.log("[DataContext] utilizationOrders:", utilizationOrders); // New: Log utilization orders
-  console.log("[DataContext] nextIds (initial load):", nextIds);
+  console.log("[DataContext] nextIds (initial load from localStorage):", nextIds);
 
 
   // Use the new modals hook
@@ -308,8 +305,23 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- Initialization Logic ---
   useAppInitialization({
+    products: Array.isArray(products) ? products : [],
+    suppliers: Array.isArray(suppliers) ? suppliers : [],
+    customers: Array.isArray(customers) ? customers : [],
+    warehouses: Array.isArray(warehouses) ? warehouses : [],
+    purchaseOrders: Array.isArray(purchaseOrders) ? purchaseOrders : [],
+    sellOrders: Array.isArray(sellOrders) ? sellOrders : [],
+    incomingPayments: Array.isArray(incomingPayments) ? incomingPayments : [],
+    outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [],
+    productMovements: Array.isArray(productMovements) ? productMovements : [],
+    bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [],
+    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [],
+    settings,
+    currencyRates,
+    packingUnits: Array.isArray(packingUnits) ? packingUnits : [],
+    recycleBin: Array.isArray(recycleBin) ? recycleBin : [],
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders, // Added setUtilizationOrders
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders,
     setSettings, setCurrencyRates, setPackingUnits, setRecycleBin, setNextIds,
   });
 
