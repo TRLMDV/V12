@@ -25,10 +25,12 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
       if (existingOrder) return existingOrder;
     }
+    const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined;
     return {
       orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       status: 'Draft',
       currency: 'AZN',
+      warehouseId: defaultWarehouse, // Set default warehouseId
       transportationFees: 0,
       transportationFeesCurrency: 'AZN',
       customFees: 0,
@@ -84,10 +86,12 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         setIsFormInitialized(true);
       }
     } else if (!isEdit && !isFormInitialized) {
+      const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined; // Also set here for re-initialization
       setOrder({
         orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
         status: 'Draft',
         currency: 'AZN',
+        warehouseId: defaultWarehouse, // Set default warehouseId
         transportationFees: 0,
         transportationFeesCurrency: 'AZN',
         customFees: 0,
@@ -103,7 +107,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       setOpenComboboxIndex(null);
       setIsFormInitialized(true);
     }
-  }, [orderId, isEdit, purchaseOrders, products, getNextId, isFormInitialized, mainCurrency, packingUnits]);
+  }, [orderId, isEdit, purchaseOrders, products, getNextId, isFormInitialized, mainCurrency, packingUnits, warehouses]);
 
   return {
     order,

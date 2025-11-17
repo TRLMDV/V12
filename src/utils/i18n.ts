@@ -283,6 +283,7 @@ const i18n = {
     colorTeal: 'Teal',
     yes: 'Yes', // Added 'Yes'
     no: 'No', // Added 'No'
+    selectWarehouseToSeeStock: 'Select warehouse to see stock', // New translation key
   }
 };
 
