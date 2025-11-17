@@ -52,8 +52,6 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
 
-  console.log("DEBUG: SellOrderItemsField - setOpenComboboxIndex:", setOpenComboboxIndex);
-
   // Filter products based on exact SKU match, or show all if search is empty
   const filteredProducts = useMemo(() => {
     const trimmedSearchQuery = searchQuery.trim().toLowerCase();

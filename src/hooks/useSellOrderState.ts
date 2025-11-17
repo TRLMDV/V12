@@ -65,6 +65,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(mainCurrency);
   const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
   const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>('');
+  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
@@ -100,6 +101,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       setSelectedCurrency(mainCurrency);
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
+      setOpenComboboxIndex(null); // Reset for new order
       setIsFormInitialized(true);
     }
   }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized, productMap, mainCurrency, packingUnits]);
@@ -127,6 +129,8 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
     setManualExchangeRate,
     manualExchangeRateInput,
     setManualExchangeRateInput,
+    openComboboxIndex, // Return openComboboxIndex
+    setOpenComboboxIndex, // Return setOpenComboboxIndex
     customerMap,
     productMap,
     warehouseMap,

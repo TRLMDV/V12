@@ -34,6 +34,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     setManualExchangeRate,
     manualExchangeRateInput,
     setManualExchangeRateInput,
+    openComboboxIndex, // Destructure openComboboxIndex
+    setOpenComboboxIndex, // Destructure setOpenComboboxIndex
     customerMap,
     productMap,
     warehouseMap,
@@ -150,5 +152,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     products,
     customers,
     warehouses,
+    openComboboxIndex, // Return openComboboxIndex
+    setOpenComboboxIndex, // Return setOpenComboboxIndex
   };
 };
