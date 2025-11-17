@@ -106,6 +106,10 @@ export const usePurchaseOrderHandlers = ({
           item.qty = String(currentDisplayQty);
           item.packingQuantity = ''; // Clear packing quantity as no unit is selected
         }
+        // After updating qty, recalculate itemTotal
+        const finalQtyNum = parseFloat(String(item.qty)) || 0;
+        const finalPriceNum = parseFloat(String(item.price)) || 0;
+        item.itemTotal = String(finalQtyNum * finalPriceNum);
       } else if (field === 'packingQuantity') {
         const inputValue = String(value);
         const parsedValue = parseFloat(inputValue) || 0;
@@ -120,23 +124,28 @@ export const usePurchaseOrderHandlers = ({
           item.qty = inputValue; // Store as string for consistency with other inputs
           item.packingQuantity = ''; // Clear packingQuantity if no unit is selected
         }
+        // After updating qty, recalculate itemTotal
+        const finalQtyNum = parseFloat(String(item.qty)) || 0;
+        const finalPriceNum = parseFloat(String(item.price)) || 0;
+        item.itemTotal = String(finalQtyNum * finalPriceNum);
       } else if (field === 'price') {
         item.price = value;
+        // After updating price, recalculate itemTotal
+        const finalQtyNum = parseFloat(String(item.qty)) || 0;
+        const finalPriceNum = parseFloat(String(item.price)) || 0;
+        item.itemTotal = String(finalQtyNum * finalPriceNum);
       } else if (field === 'itemTotal') {
-        item.itemTotal = value;
+        item.itemTotal = value; // User's input for itemTotal
         const qtyNum = parseFloat(String(item.qty)) || 0;
         const itemTotalNum = parseFloat(value) || 0;
         if (qtyNum > 0) {
-          item.price = String(itemTotalNum / qtyNum);
+          item.price = String(itemTotalNum / qtyNum); // Calculate price based on user's itemTotal
         } else {
-          item.price = '0'; // Or handle error/alert if qty is 0
+          item.price = '0'; // Handle division by zero
         }
+        // IMPORTANT: Do NOT recalculate itemTotal here, as the user just set it.
+        // The price was calculated from it.
       }
-
-      // Recalculate itemTotal based on base qty and price
-      const finalQtyNum = parseFloat(String(item.qty)) || 0;
-      const finalPriceNum = parseFloat(String(item.price)) || 0;
-      item.itemTotal = String(finalQtyNum * finalPriceNum);
 
       newItems[index] = item;
       return newItems;
