@@ -89,7 +89,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                     className="col-span-2 justify-between"
                   >
                     {item.productId
-                      ? selectedProduct?.name || t('selectProduct')
+                      ? `${selectedProduct?.name || t('selectProduct')} (${selectedProduct?.sku || 'N/A'})`
                       : t('selectProduct')}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
