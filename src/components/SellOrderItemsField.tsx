@@ -46,7 +46,15 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
   packingUnitMap, // Destructure new prop
   warehouseId,
 }) => {
-  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
+
+  // Filter products based on exact SKU match
+  const filteredProducts = products.filter(product => {
+    const trimmedProductSku = String(product.sku).trim().toLowerCase();
+    const trimmedSearchQuery = searchQuery.trim().toLowerCase();
+    console.log(`DEBUG: Filtering product SKU='${trimmedProductSku}' against search='${trimmedSearchQuery}'`);
+    return trimmedSearchQuery === '' || trimmedProductSku === trimmedSearchQuery;
+  });
 
   return (
     <>
@@ -83,17 +91,22 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command>
-                    <CommandInput placeholder={t('searchProductBySku')} />
+                  <Command shouldFilter={false}> {/* Disable internal filtering */}
+                    <CommandInput
+                      placeholder={t('searchProductByExactSku')}
+                      value={searchQuery}
+                      onValueChange={setSearchQuery}
+                    />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup>
-                      {products.map((product) => (
+                      {filteredProducts.map((product) => ( // Use filteredProducts here
                         <CommandItem
                           key={product.id}
-                          value={`${product.name} ${product.sku}`}
+                          value={product.sku}
                           onSelect={() => {
                             handleOrderItemChange(index, 'productId', product.id);
                             setOpenComboboxIndex(null);
+                            setSearchQuery(''); // Clear search query after selection
                           }}
                         >
                           <Check
