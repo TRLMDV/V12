@@ -134,9 +134,13 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                               )}
                             />
                             {product.name} ({product.sku})
-                            {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined && (
+                            {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined ? (
                               <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
                                 ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
+                              </span>
+                            ) : (
+                              <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
+                                ({t('selectWarehouseToSeeStock')}) {/* New translation key */}
                               </span>
                             )}
                           </CommandItem>
