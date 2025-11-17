@@ -78,8 +78,10 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                   <Command
                     filter={(value, search) => {
-                      // Perform exact match on SKU, trimming whitespace from both
-                      return value.trim().toLowerCase() === search.trim().toLowerCase() ? 1 : 0;
+                      const trimmedValue = value.trim().toLowerCase();
+                      const trimmedSearch = search.trim().toLowerCase();
+                      console.log(`DEBUG: Comparing value='${trimmedValue}' with search='${trimmedSearch}'`);
+                      return trimmedValue === trimmedSearch ? 1 : 0;
                     }}
                   >
                     <CommandInput placeholder={t('searchProductByExactSku')} />
