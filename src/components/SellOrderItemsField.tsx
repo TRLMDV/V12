@@ -91,18 +91,20 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command shouldFilter={false}> {/* Disable internal filtering */}
+                  <Command shouldFilter={false} filter={() => 0}> {/* Explicitly disable internal filtering */}
                     <CommandInput
                       placeholder={t('searchProductByExactSku')}
                       value={searchQuery}
-                      onValueChange={setSearchQuery}
+                      onValueChange={(currentValue) => {
+                        setSearchQuery(currentValue);
+                      }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup>
                       {filteredProducts.map((product) => ( // Use filteredProducts here
                         <CommandItem
                           key={product.id}
-                          value={product.sku}
+                          value={product.id.toString()} // Use product ID as value
                           onSelect={() => {
                             handleOrderItemChange(index, 'productId', product.id);
                             setOpenComboboxIndex(null);

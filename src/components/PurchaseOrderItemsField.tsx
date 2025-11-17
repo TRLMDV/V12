@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react'; // Import useEffect
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -41,21 +41,22 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
   openComboboxIndex,
   setOpenComboboxIndex,
 }) => {
-  const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    console.log("DEBUG: searchQuery updated to:", searchQuery);
+    console.log("DEBUG: [PurchaseOrderItemsField] searchQuery updated to:", searchQuery);
   }, [searchQuery]);
 
   // Filter products based on exact SKU match
   const filteredProducts = products.filter(product => {
     const trimmedProductSku = String(product.sku).trim().toLowerCase();
     const trimmedSearchQuery = searchQuery.trim().toLowerCase();
+    // console.log(`DEBUG: [PurchaseOrderItemsField] Filtering product SKU='${trimmedProductSku}' against search='${trimmedSearchQuery}'`);
     return trimmedSearchQuery === '' || trimmedProductSku === trimmedSearchQuery;
   });
 
   useEffect(() => {
-    console.log("DEBUG: Filtered products for display:", filteredProducts.map(p => ({ id: p.id, name: p.name, sku: p.sku })));
+    console.log("DEBUG: [PurchaseOrderItemsField] Filtered products for display:", filteredProducts.map(p => ({ id: p.id, name: p.name, sku: p.sku })));
   }, [filteredProducts]);
 
   return (
@@ -93,33 +94,39 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command shouldFilter={false}> {/* Disable internal filtering */}
+                  <Command shouldFilter={false} filter={() => 0}> {/* Explicitly disable internal filtering */}
                     <CommandInput
                       placeholder={t('searchProductByExactSku')}
                       value={searchQuery}
-                      onValueChange={setSearchQuery}
+                      onValueChange={(currentValue) => {
+                        console.log("DEBUG: [PurchaseOrderItemsField] CommandInput onValueChange:", currentValue);
+                        setSearchQuery(currentValue);
+                      }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup>
-                      {filteredProducts.map((product) => ( // Use filteredProducts here
-                        <CommandItem
-                          key={product.id}
-                          value={product.id.toString()} // Use product ID as value to prevent text-based filtering by cmdk
-                          onSelect={() => {
-                            handleOrderItemChange(index, 'productId', product.id);
-                            setOpenComboboxIndex(null);
-                            setSearchQuery(''); // Clear search query after selection
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              item.productId === product.id ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
-                        </CommandItem>
-                      ))}
+                      {filteredProducts.map((product) => {
+                        console.log("DEBUG: [PurchaseOrderItemsField] Rendering CommandItem for product SKU:", product.sku);
+                        return (
+                          <CommandItem
+                            key={product.id}
+                            value={product.id.toString()} // Use product ID as value
+                            onSelect={() => {
+                              handleOrderItemChange(index, 'productId', product.id);
+                              setOpenComboboxIndex(null);
+                              setSearchQuery(''); // Clear search query after selection
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                item.productId === product.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
+                          </CommandItem>
+                        );
+                      })}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
