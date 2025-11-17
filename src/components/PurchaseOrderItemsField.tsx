@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -96,20 +96,22 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                   <Command shouldFilter={false}> {/* Explicitly disable cmdk's internal filter */}
-                    <CommandInput
-                      placeholder={t('searchProductByExactSku')}
-                      value={searchQuery}
-                      onValueChange={(currentValue) => {
-                        setSearchQuery(currentValue);
-                      }}
-                    />
+                    {/* Replaced CommandInput with a regular Input */}
+                    <div className="p-1">
+                      <Input
+                        placeholder={t('searchProductByExactSku')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup key={searchQuery}> {/* Force re-render of CommandGroup */}
                       {filteredProducts.map((product) => {
                         return (
                           <CommandItem
                             key={product.id}
-                            value={product.id.toString()} // Use product ID as value, as we are pre-filtering
+                            value={product.id.toString()} // Use product ID as value
                             onSelect={() => {
                               handleOrderItemChange(index, 'productId', product.id);
                               setOpenComboboxIndex(null);
