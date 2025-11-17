@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -149,10 +149,10 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
 
               <Input
                 type="text"
-                value={item.packingQuantity}
-                onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)}
+                value={item.packingUnitId ? item.packingQuantity : item.qty} // Dynamically display packingQty or baseQty
+                onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)} // Always update via packingQuantity field
                 className="col-span-1"
-                disabled={!item.packingUnitId}
+                // Removed disabled prop
               />
               <Input
                 type="text"
@@ -165,8 +165,9 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 type="text"
                 step="0.01"
                 value={item.itemTotal}
-                readOnly
-                className="col-span-2 bg-gray-50 dark:bg-slate-700"
+                onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)} // Made editable
+                // Removed readOnly prop
+                className="col-span-2" // Removed bg-gray-50 dark:bg-slate-700 to indicate it's editable
               />
               <Input
                 type="text"

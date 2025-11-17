@@ -95,22 +95,30 @@ export const usePurchaseOrderHandlers = ({
         }
       } else if (field === 'packingUnitId') {
         item.packingUnitId = value === 'none-selected' ? undefined : parseInt(value);
-        // Recalculate base qty if packing quantity exists
-        const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
+        const currentDisplayQty = parseFloat(String(item.packingQuantity)) || 0; // Get current value from the input field
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
-        if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
+
+        if (selectedPackingUnit) {
+          // If a new packing unit is selected, keep packingQuantity as is, recalculate base qty
+          item.qty = String(currentDisplayQty * selectedPackingUnit.conversionFactor);
         } else {
-          item.qty = ''; // Clear base qty if no valid packing unit or quantity
+          // If 'none-selected' is chosen, treat current input as base qty
+          item.qty = String(currentDisplayQty);
+          item.packingQuantity = ''; // Clear packing quantity as no unit is selected
         }
       } else if (field === 'packingQuantity') {
-        item.packingQuantity = value;
-        const packingQtyNum = parseFloat(value) || 0;
+        const inputValue = String(value);
+        const parsedValue = parseFloat(inputValue) || 0;
+
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
-        if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
+
+        if (selectedPackingUnit && item.packingUnitId !== undefined && item.packingUnitId !== null && item.packingUnitId !== 0) { // Check if a valid packing unit is selected
+          item.packingQuantity = inputValue;
+          item.qty = String(parsedValue * selectedPackingUnit.conversionFactor);
         } else {
-          item.qty = ''; // Clear base qty if no valid packing unit or quantity
+          // If no packing unit selected, treat input as base quantity
+          item.qty = inputValue; // Store as string for consistency with other inputs
+          item.packingQuantity = ''; // Clear packingQuantity if no unit is selected
         }
       } else if (field === 'price') {
         item.price = value;
@@ -121,7 +129,7 @@ export const usePurchaseOrderHandlers = ({
         if (qtyNum > 0) {
           item.price = String(itemTotalNum / qtyNum);
         } else {
-          item.price = '0';
+          item.price = '0'; // Or handle error/alert if qty is 0
         }
       }
 
@@ -146,3 +154,5 @@ export const usePurchaseOrderHandlers = ({
     handleOrderItemChange,
   };
 };
+
+export default usePurchaseOrderHandlers;
