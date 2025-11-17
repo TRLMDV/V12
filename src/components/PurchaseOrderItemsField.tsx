@@ -79,7 +79,12 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
 
           return (
             <div key={index} className="grid grid-cols-12 gap-2 mb-2 items-center">
-              <Popover open={openComboboxIndex === index} onOpenChange={(open) => setOpenComboboxIndex(open ? index : null)}>
+              <Popover open={openComboboxIndex === index} onOpenChange={(open) => {
+                setOpenComboboxIndex(open ? index : null);
+                if (!open) {
+                  setSearchQuery(''); // Reset search query when popover closes
+                }
+              }}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -104,7 +109,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                       }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup>
+                    <CommandGroup key={searchQuery}> {/* Add key here to force re-render */}
                       {filteredProducts.map((product) => {
                         console.log("DEBUG: [PurchaseOrderItemsField] Rendering CommandItem for product SKU:", product.sku);
                         return (
