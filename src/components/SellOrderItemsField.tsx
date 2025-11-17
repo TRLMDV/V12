@@ -48,19 +48,13 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
 
-  // Filter products based on exact SKU match, or show all if search is empty
-  const filteredProducts = useMemo(() => {
-    const trimmedSearchQuery = searchQuery.trim().toLowerCase();
-    if (trimmedSearchQuery === '') {
-      return products; // Show all products when search is empty
-    }
-    return products.filter(product => {
-      const trimmedProductSku = String(product.sku).trim().toLowerCase();
-      const isMatch = trimmedProductSku === trimmedSearchQuery;
-      console.log(`DEBUG: [Filter Check] Product SKU: '${trimmedProductSku}', Search Query: '${trimmedSearchQuery}', Match: ${isMatch}`);
-      return isMatch; // Exact match
-    });
-  }, [products, searchQuery]);
+  // Custom filter function for cmdk to perform exact SKU match
+  const customFilter = (value: string, search: string) => {
+    const trimmedValue = value.trim().toLowerCase(); // This will be product.sku
+    const trimmedSearch = search.trim().toLowerCase();
+    console.log(`DEBUG: [Command Filter] Item SKU: '${trimmedValue}', Search: '${trimmedSearch}', Match: ${isMatch}`);
+    return isMatch ? 1 : 0; // Return 1 for exact match, 0 otherwise
+  };
 
   return (
     <>
@@ -102,7 +96,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command> {/* Removed shouldFilter and filter props */}
+                  <Command filter={customFilter}> {/* Use custom filter */}
                     <CommandInput
                       placeholder={t('searchProductByExactSku')}
                       value={searchQuery}
@@ -111,11 +105,11 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                       }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup key={searchQuery}> {/* Add key here to force re-render */}
-                      {filteredProducts.map((product) => ( // Use filteredProducts here
+                    <CommandGroup>
+                      {products.map((product) => ( // Pass all products, let Command filter
                         <CommandItem
                           key={product.id}
-                          value={product.id.toString()} // Use product ID as value
+                          value={product.sku} // Set value to SKU for filtering
                           onSelect={() => {
                             handleOrderItemChange(index, 'productId', product.id);
                             setOpenComboboxIndex(null);

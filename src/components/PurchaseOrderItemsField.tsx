@@ -43,27 +43,14 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    console.log("DEBUG: [PurchaseOrderItemsField] searchQuery updated to:", searchQuery);
-  }, [searchQuery]);
-
-  // Filter products based on exact SKU match, or show all if search is empty
-  const filteredProducts = useMemo(() => {
-    const trimmedSearchQuery = searchQuery.trim().toLowerCase();
-    if (trimmedSearchQuery === '') {
-      return products; // Show all products when search is empty
-    }
-    return products.filter(product => {
-      const trimmedProductSku = String(product.sku).trim().toLowerCase();
-      const isMatch = trimmedProductSku === trimmedSearchQuery;
-      console.log(`DEBUG: [Filter Check] Product SKU: '${trimmedProductSku}', Search Query: '${trimmedSearchQuery}', Match: ${isMatch}`);
-      return isMatch; // Exact match
-    });
-  }, [products, searchQuery]);
-
-  useEffect(() => {
-    console.log("DEBUG: [PurchaseOrderItemsField] Filtered products for display:", filteredProducts.map(p => ({ id: p.id, name: p.name, sku: p.sku })));
-  }, [filteredProducts]);
+  // Custom filter function for cmdk to perform exact SKU match
+  const customFilter = (value: string, search: string) => {
+    const trimmedValue = value.trim().toLowerCase(); // This will be product.sku
+    const trimmedSearch = search.trim().toLowerCase();
+    const isMatch = trimmedValue === trimmedSearch;
+    console.log(`DEBUG: [Command Filter] Item SKU: '${trimmedValue}', Search: '${trimmedSearch}', Match: ${isMatch}`);
+    return isMatch ? 1 : 0; // Return 1 for exact match, 0 otherwise
+  };
 
   return (
     <>
@@ -105,39 +92,35 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command> {/* Removed shouldFilter and filter props */}
+                  <Command filter={customFilter}> {/* Use custom filter */}
                     <CommandInput
                       placeholder={t('searchProductByExactSku')}
                       value={searchQuery}
                       onValueChange={(currentValue) => {
-                        console.log("DEBUG: [PurchaseOrderItemsField] CommandInput onValueChange:", currentValue);
                         setSearchQuery(currentValue);
                       }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup key={searchQuery}> {/* Add key here to force re-render */}
-                      {filteredProducts.map((product) => {
-                        console.log("DEBUG: [PurchaseOrderItemsField] Rendering CommandItem for product SKU:", product.sku);
-                        return (
-                          <CommandItem
-                            key={product.id}
-                            value={product.id.toString()} // Use product ID as value
-                            onSelect={() => {
-                              handleOrderItemChange(index, 'productId', product.id);
-                              setOpenComboboxIndex(null);
-                              setSearchQuery(''); // Clear search query after selection
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                item.productId === product.id ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
-                          </CommandItem>
-                        );
-                      })}
+                    <CommandGroup>
+                      {products.map((product) => (
+                        <CommandItem
+                          key={product.id}
+                          value={product.sku} // Set value to SKU for filtering
+                          onSelect={() => {
+                            handleOrderItemChange(index, 'productId', product.id);
+                            setOpenComboboxIndex(null);
+                            setSearchQuery(''); // Clear search query after selection
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              item.productId === product.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
