@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -48,13 +48,19 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
 
-  // Filter products based on exact SKU match
-  const filteredProducts = products.filter(product => {
-    const trimmedProductSku = String(product.sku).trim().toLowerCase();
+  // Filter products based on exact SKU match, or show all if search is empty
+  const filteredProducts = useMemo(() => {
     const trimmedSearchQuery = searchQuery.trim().toLowerCase();
-    console.log(`DEBUG: [Filter Check] Product SKU: '${trimmedProductSku}', Search Query: '${trimmedSearchQuery}', Match: ${isMatch}`);
-    return isMatch;
-  });
+    if (trimmedSearchQuery === '') {
+      return products; // Show all products when search is empty
+    }
+    return products.filter(product => {
+      const trimmedProductSku = String(product.sku).trim().toLowerCase();
+      const isMatch = trimmedProductSku === trimmedSearchQuery;
+      console.log(`DEBUG: [Filter Check] Product SKU: '${trimmedProductSku}', Search Query: '${trimmedSearchQuery}', Match: ${isMatch}`);
+      return isMatch; // Exact match
+    });
+  }, [products, searchQuery]);
 
   return (
     <>
@@ -96,7 +102,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command shouldFilter={false} filter={() => 0}> {/* Explicitly disable internal filtering */}
+                  <Command> {/* Removed shouldFilter and filter props */}
                     <CommandInput
                       placeholder={t('searchProductByExactSku')}
                       value={searchQuery}
@@ -105,58 +111,31 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                       }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup>
-                      {searchQuery === '' ? (
-                        products.map((product) => (
-                          <CommandItem
-                            key={product.id}
-                            value={product.id.toString()}
-                            onSelect={() => {
-                              handleOrderItemChange(index, 'productId', product.id);
-                              setOpenComboboxIndex(null);
-                              setSearchQuery('');
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                item.productId === product.id ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {product.name} ({product.sku})
-                            {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined && (
-                              <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
-                                ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
-                              </span>
+                    <CommandGroup key={searchQuery}> {/* Add key here to force re-render */}
+                      {filteredProducts.map((product) => ( // Use filteredProducts here
+                        <CommandItem
+                          key={product.id}
+                          value={product.id.toString()} // Use product ID as value
+                          onSelect={() => {
+                            handleOrderItemChange(index, 'productId', product.id);
+                            setOpenComboboxIndex(null);
+                            setSearchQuery(''); // Clear search query after selection
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              item.productId === product.id ? "opacity-100" : "opacity-0"
                             )}
-                          </CommandItem>
-                        ))
-                      ) : (
-                        filteredProducts.map((product) => (
-                          <CommandItem
-                            key={product.id}
-                            value={product.id.toString()}
-                            onSelect={() => {
-                              handleOrderItemChange(index, 'productId', product.id);
-                              setOpenComboboxIndex(null);
-                              setSearchQuery('');
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                item.productId === product.id ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {product.name} ({product.sku})
-                            {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined && (
-                              <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
-                                ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
-                              </span>
-                            )}
-                          </CommandItem>
-                        ))
-                      )}
+                          />
+                          {product.name} ({product.sku})
+                          {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined && (
+                            <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
+                              ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
+                            </span>
+                          )}
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
