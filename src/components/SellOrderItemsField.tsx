@@ -48,13 +48,17 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
 
-  // Custom filter function for cmdk to perform exact SKU match
-  const customFilter = (value: string, search: string) => {
-    const trimmedValue = value.trim().toLowerCase(); // This will be product.sku
-    const trimmedSearch = search.trim().toLowerCase();
-    console.log(`DEBUG: [Command Filter] Item SKU: '${trimmedValue}', Search: '${trimmedSearch}', Match: ${isMatch}`);
-    return isMatch ? 1 : 0; // Return 1 for exact match, 0 otherwise
-  };
+  // Filter products based on exact SKU match, or show all if search is empty
+  const filteredProducts = useMemo(() => {
+    const trimmedSearchQuery = searchQuery.trim().toLowerCase();
+    if (trimmedSearchQuery === '') {
+      return products; // Show all products when search is empty
+    }
+    return products.filter(product => {
+      const trimmedProductSku = String(product.sku).trim().toLowerCase();
+      return trimmedProductSku === trimmedSearchQuery; // Exact match
+    });
+  }, [products, searchQuery]);
 
   return (
     <>
@@ -96,7 +100,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command filter={customFilter}> {/* Use custom filter */}
+                  <Command shouldFilter={false}> {/* Explicitly disable cmdk's internal filter */}
                     <CommandInput
                       placeholder={t('searchProductByExactSku')}
                       value={searchQuery}
@@ -105,31 +109,33 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                       }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup>
-                      {products.map((product) => ( // Pass all products, let Command filter
-                        <CommandItem
-                          key={product.id}
-                          value={product.sku} // Set value to SKU for filtering
-                          onSelect={() => {
-                            handleOrderItemChange(index, 'productId', product.id);
-                            setOpenComboboxIndex(null);
-                            setSearchQuery(''); // Clear search query after selection
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              item.productId === product.id ? "opacity-100" : "opacity-0"
+                    <CommandGroup key={searchQuery}> {/* Force re-render of CommandGroup */}
+                      {filteredProducts.map((product) => {
+                        return (
+                          <CommandItem
+                            key={product.id}
+                            value={product.id.toString()} // Use product ID as value, as we are pre-filtering
+                            onSelect={() => {
+                              handleOrderItemChange(index, 'productId', product.id);
+                              setOpenComboboxIndex(null);
+                              setSearchQuery(''); // Clear search query after selection
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                item.productId === product.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {product.name} ({product.sku})
+                            {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined && (
+                              <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
+                                ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
+                              </span>
                             )}
-                          />
-                          {product.name} ({product.sku})
-                          {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined && (
-                            <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
-                              ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
-                            </span>
-                          )}
-                        </CommandItem>
-                      ))}
+                          </CommandItem>
+                        );
+                      })}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
