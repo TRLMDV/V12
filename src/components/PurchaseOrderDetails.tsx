@@ -55,6 +55,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
         <TableHeader>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
             <TableHead className="p-2">{t('product')}</TableHead>
+            <TableHead className="p-2">{t('sku')}</TableHead> {/* New: SKU column */}
             <TableHead className="p-2">{t('qty')}</TableHead> {/* Now displays packing quantity */}
             <TableHead className="p-2">{t('price')}</TableHead>
             <TableHead className="p-2">{t('landedCostPerUnit')}</TableHead>
@@ -73,6 +74,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
             return (
               <TableRow key={index} className="border-b dark:border-slate-600">
                 <TableCell className="p-2">{product?.name || 'N/A'}</TableCell>
+                <TableCell className="p-2">{product?.sku || 'N/A'}</TableCell> {/* New: SKU cell */}
                 <TableCell className="p-2">{displayQty}</TableCell>
                 <TableCell className="p-2">{item.price?.toFixed(2)} {item.currency || order.currency}</TableCell>
                 <TableCell className="p-2">{item.landedCostPerUnit?.toFixed(2)} AZN</TableCell>
@@ -83,28 +85,28 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
         </TableBody>
         <TableFooter>
           <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
-            <TableCell colSpan={4} className="p-2 text-right">{t('productsSubtotal')} ({order.currency}):</TableCell>
+            <TableCell colSpan={5} className="p-2 text-right">{t('productsSubtotal')} ({order.currency}):</TableCell> {/* Adjusted colSpan */}
             <TableCell className="p-2">{productsSubtotalNative.toFixed(2)} {order.currency}</TableCell>
           </TableRow>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableCell colSpan={4} className="p-2 text-right">{t('transportationFees')} ({order.transportationFeesCurrency}):</TableCell>
+            <TableCell colSpan={5} className="p-2 text-right">{t('transportationFees')} ({order.transportationFeesCurrency}):</TableCell> {/* Adjusted colSpan */}
             <TableCell className="p-2">{order.transportationFees.toFixed(2)} {order.transportationFeesCurrency}</TableCell>
           </TableRow>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableCell colSpan={4} className="p-2 text-right">{t('customFees')} ({order.customFeesCurrency}):</TableCell>
+            <TableCell colSpan={5} className="p-2 text-right">{t('customFees')} ({order.customFeesCurrency}):</TableCell> {/* Adjusted colSpan */}
             <TableCell className="p-2">{order.customFees.toFixed(2)} {order.customFeesCurrency}</TableCell>
           </TableRow>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableCell colSpan={4} className="p-2 text-right">{t('additionalFees')} ({order.additionalFeesCurrency}):</TableCell>
+            <TableCell colSpan={5} className="p-2 text-right">{t('additionalFees')} ({order.additionalFeesCurrency}):</TableCell> {/* Adjusted colSpan */}
             <TableCell className="p-2">{order.additionalFees.toFixed(2)} {order.additionalFeesCurrency}</TableCell>
           </TableRow>
           <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">
-            <TableCell colSpan={4} className="p-2 text-right">{t('total')} ({order.currency}):</TableCell>
+            <TableCell colSpan={5} className="p-2 text-right">{t('total')} ({order.currency}):</TableCell> {/* Adjusted colSpan */}
             <TableCell className="p-2 text-sky-600 dark:text-sky-400">{totalValueNative.toFixed(2)} {order.currency}</TableCell>
           </TableRow>
           <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">
-            <TableCell colSpan={4} className="p-2 text-right">{t('totalLandedCost')} (AZN):</TableCell>
-            <TableCell className="p-2 text-sky-600 dark:text-sky-400">{order.total.toFixed(2)} AZN</TableCell>
+            <TableCell colSpan={5} className="p-2 text-right">{t('totalLandedCost')} (AZN):</TableCell> {/* Adjusted colSpan */}
+            <TableCell className="p-2 text-sky-600 dark:text-sky-400">{order.total.toFixed(2)} AZN}</TableCell>
           </TableRow>
         </TableFooter>
       </Table>
