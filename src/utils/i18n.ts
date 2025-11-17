@@ -55,6 +55,7 @@ const i18n = {
     vatCollectedFromSales: 'VAT Collected From Sales',
     chooseJsonFile: 'Choose JSON File',
     searchProductBySku: 'Search product by name or SKU...',
+    searchProductByExactSku: 'Search by exact SKU...',
     noProductFound: 'No product found.',
     generateProductMovement: 'Generate Product Movement',
     warehouseType: 'Warehouse Type',

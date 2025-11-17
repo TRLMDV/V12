@@ -76,14 +76,19 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command>
-                    <CommandInput placeholder={t('searchProductBySku')} />
+                  <Command
+                    filter={(value, search) => {
+                      // Perform exact match on SKU
+                      return value.toLowerCase() === search.toLowerCase() ? 1 : 0;
+                    }}
+                  >
+                    <CommandInput placeholder={t('searchProductByExactSku')} />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup>
                       {products.map((product) => (
                         <CommandItem
                           key={product.id}
-                          value={`${product.name} ${product.sku}`}
+                          value={product.sku} // Set value to SKU for exact match filtering
                           onSelect={() => {
                             handleOrderItemChange(index, 'productId', product.id);
                             setOpenComboboxIndex(null);
