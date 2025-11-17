@@ -78,7 +78,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
                 <TableCell className="p-2">{displayQty}</TableCell>
                 <TableCell className="p-2">{item.price?.toFixed(2)} {item.currency || order.currency}</TableCell>
                 <TableCell className="p-2">{item.landedCostPerUnit?.toFixed(2)} AZN</TableCell>
-                <TableCell className="p-2">{itemTotalLandedAZN.toFixed(2)} AZN}</TableCell>
+                <TableCell className="p-2">{itemTotalLandedAZN.toFixed(2)} AZN</TableCell>
               </TableRow>
             );
           })}
