@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trash2, RotateCcw, XCircle } from 'lucide-react';
@@ -16,10 +16,67 @@ interface RecycleBinSectionProps {
   t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
+type SortConfig = {
+  key: 'collectionKey' | 'originalId' | 'dataSummary' | 'deletedAt';
+  direction: 'ascending' | 'descending';
+};
+
 const RecycleBinSection: React.FC<RecycleBinSectionProps> = ({
   recycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary, t
 }) => {
-  console.log("RecycleBinSection: Rendered. Recycle bin items count:", recycleBin.length);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'deletedAt', direction: 'descending' });
+
+  const sortedRecycleBin = useMemo(() => {
+    const sortableItems = [...recycleBin].map(item => ({
+      ...item,
+      dataSummary: getItemSummary(item.data, item.collectionKey), // Pre-calculate for sorting
+    }));
+
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        const key = sortConfig.key;
+        let valA: any;
+        let valB: any;
+
+        if (key === 'collectionKey') {
+          valA = t(a.collectionKey);
+          valB = t(b.collectionKey);
+        } else if (key === 'deletedAt') {
+          valA = new Date(a.deletedAt).getTime();
+          valB = new Date(b.deletedAt).getTime();
+        } else {
+          valA = a[key];
+          valB = b[key];
+        }
+
+        let comparison = 0;
+        if (typeof valA === 'string' || typeof valB === 'string') {
+          comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
+        } else {
+          if (valA < valB) comparison = -1;
+          if (valA > valB) comparison = 1;
+        }
+        return sortConfig.direction === 'ascending' ? comparison : -comparison;
+      });
+    }
+    return sortableItems;
+  }, [recycleBin, sortConfig, getItemSummary, t]);
+
+  const requestSort = useCallback((key: SortConfig['key']) => {
+    let direction: SortConfig['direction'] = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  }, [sortConfig]);
+
+  const getSortIndicator = useCallback((key: SortConfig['key']) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
+    }
+    return '';
+  }, [sortConfig]);
+
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md mb-6">
       <div className="flex justify-between items-center mb-6">
@@ -37,16 +94,24 @@ const RecycleBinSection: React.FC<RecycleBinSectionProps> = ({
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
-              <TableHead className="p-3">{t('itemType')}</TableHead>
-              <TableHead className="p-3">{t('originalId')}</TableHead>
-              <TableHead className="p-3">{t('dataSummary')}</TableHead>
-              <TableHead className="p-3">{t('deletedAt')}</TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('collectionKey')}>
+                {t('itemType')} {getSortIndicator('collectionKey')}
+              </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('originalId')}>
+                {t('originalId')} {getSortIndicator('originalId')}
+              </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('dataSummary')}>
+                {t('dataSummary')} {getSortIndicator('dataSummary')}
+              </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('deletedAt')}>
+                {t('deletedAt')} {getSortIndicator('deletedAt')}
+              </TableHead>
               <TableHead className="p-3">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {recycleBin.length > 0 ? (
-              recycleBin.map(item => (
+            {sortedRecycleBin.length > 0 ? (
+              sortedRecycleBin.map(item => (
                 <TableRow key={item.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 capitalize">{t(item.collectionKey)}</TableCell>
                   <TableCell className="p-3">#{item.originalId}</TableCell>
