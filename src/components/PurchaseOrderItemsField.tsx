@@ -51,8 +51,9 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
   const filteredProducts = products.filter(product => {
     const trimmedProductSku = String(product.sku).trim().toLowerCase();
     const trimmedSearchQuery = searchQuery.trim().toLowerCase();
-    // console.log(`DEBUG: [PurchaseOrderItemsField] Filtering product SKU='${trimmedProductSku}' against search='${trimmedSearchQuery}'`);
-    return trimmedSearchQuery === '' || trimmedProductSku === trimmedSearchQuery;
+    const isMatch = trimmedSearchQuery === '' || trimmedProductSku === trimmedSearchQuery;
+    console.log(`DEBUG: [Filter Check] Product SKU: '${trimmedProductSku}', Search Query: '${trimmedSearchQuery}', Match: ${isMatch}`);
+    return isMatch;
   });
 
   useEffect(() => {
@@ -109,17 +110,16 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                       }}
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup key={searchQuery}> {/* Add key here to force re-render */}
-                      {filteredProducts.map((product) => {
-                        console.log("DEBUG: [PurchaseOrderItemsField] Rendering CommandItem for product SKU:", product.sku);
-                        return (
+                    <CommandGroup>
+                      {searchQuery === '' ? (
+                        products.map((product) => (
                           <CommandItem
                             key={product.id}
-                            value={product.id.toString()} // Use product ID as value
+                            value={product.id.toString()}
                             onSelect={() => {
                               handleOrderItemChange(index, 'productId', product.id);
                               setOpenComboboxIndex(null);
-                              setSearchQuery(''); // Clear search query after selection
+                              setSearchQuery('');
                             }}
                           >
                             <Check
@@ -130,8 +130,28 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                             />
                             {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
                           </CommandItem>
-                        );
-                      })}
+                        ))
+                      ) : (
+                        filteredProducts.map((product) => (
+                          <CommandItem
+                            key={product.id}
+                            value={product.id.toString()}
+                            onSelect={() => {
+                              handleOrderItemChange(index, 'productId', product.id);
+                              setOpenComboboxIndex(null);
+                              setSearchQuery('');
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                item.productId === product.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
+                          </CommandItem>
+                        ))
+                      )}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
