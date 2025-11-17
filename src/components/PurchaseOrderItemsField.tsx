@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react'; // Import useState
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -43,13 +43,20 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
 
+  useEffect(() => {
+    console.log("DEBUG: searchQuery updated to:", searchQuery);
+  }, [searchQuery]);
+
   // Filter products based on exact SKU match
   const filteredProducts = products.filter(product => {
     const trimmedProductSku = String(product.sku).trim().toLowerCase();
     const trimmedSearchQuery = searchQuery.trim().toLowerCase();
-    console.log(`DEBUG: Filtering product SKU='${trimmedProductSku}' against search='${trimmedSearchQuery}'`);
     return trimmedSearchQuery === '' || trimmedProductSku === trimmedSearchQuery;
   });
+
+  useEffect(() => {
+    console.log("DEBUG: Filtered products for display:", filteredProducts.map(p => ({ id: p.id, name: p.name, sku: p.sku })));
+  }, [filteredProducts]);
 
   return (
     <>
@@ -97,7 +104,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                       {filteredProducts.map((product) => ( // Use filteredProducts here
                         <CommandItem
                           key={product.id}
-                          value={product.sku}
+                          value={product.id.toString()} // Use product ID as value to prevent text-based filtering by cmdk
                           onSelect={() => {
                             handleOrderItemChange(index, 'productId', product.id);
                             setOpenComboboxIndex(null);
