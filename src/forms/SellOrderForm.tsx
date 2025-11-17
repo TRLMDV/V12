@@ -47,6 +47,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     mainCurrency,
     subtotalInOrderCurrency,
     activeCurrencies,
+    openComboboxIndex, // Destructure openComboboxIndex
+    setOpenComboboxIndex, // Destructure setOpenComboboxIndex
   } = useSellOrderForm({ orderId, onSuccess });
 
   return (
@@ -162,6 +164,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           packingUnits={packingUnits}
           packingUnitMap={packingUnitMap}
           warehouseId={order.warehouseId as number}
+          openComboboxIndex={openComboboxIndex} // Pass openComboboxIndex
+          setOpenComboboxIndex={setOpenComboboxIndex} // Pass setOpenComboboxIndex
         />
 
         <div className="grid grid-cols-4 items-center gap-4 mt-6 border-t pt-4 dark:border-slate-700">

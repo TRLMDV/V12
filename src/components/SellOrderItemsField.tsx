@@ -33,6 +33,8 @@ interface SellOrderItemsFieldProps {
   packingUnits: PackingUnit[]; // New: Pass packingUnits array
   packingUnitMap: { [key: number]: PackingUnit }; // New: Pass packingUnitMap
   warehouseId?: number;
+  openComboboxIndex: number | null; // New prop
+  setOpenComboboxIndex: React.Dispatch<React.SetStateAction<number | null>>; // New prop
 }
 
 const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
@@ -45,6 +47,8 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
   packingUnits, // Destructure new prop
   packingUnitMap, // Destructure new prop
   warehouseId,
+  openComboboxIndex, // Destructure new prop
+  setOpenComboboxIndex, // Destructure new prop
 }) => {
   const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
 
