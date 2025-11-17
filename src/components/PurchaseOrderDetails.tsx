@@ -78,7 +78,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
                 <TableCell className="p-2">{displayQty}</TableCell>
                 <TableCell className="p-2">{item.price?.toFixed(2)} {item.currency || order.currency}</TableCell>
                 <TableCell className="p-2">{item.landedCostPerUnit?.toFixed(2)} AZN</TableCell>
-                <TableCell className="p-2">{itemTotalLandedAZN.toFixed(2)} AZN</TableCell>
+                <TableCell className="p-2">{itemTotalLandedAZN.toFixed(2)} AZN}</TableCell>
               </TableRow>
             );
           })}
@@ -106,7 +106,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
           </TableRow>
           <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">
             <TableCell colSpan={5} className="p-2 text-right">{t('totalLandedCost')} (AZN):</TableCell> {/* Adjusted colSpan */}
-            <TableCell className="p-2 text-sky-600 dark:text-sky-400">{order.total.toFixed(2)} AZN}</TableCell>
+            <TableCell className="p-2 text-sky-600 dark:text-sky-400">{order.total.toFixed(2)} AZN</TableCell>
           </TableRow>
         </TableFooter>
       </Table>
