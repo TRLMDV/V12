@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react'; // Import useState
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,8 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
   openComboboxIndex,
   setOpenComboboxIndex,
 }) => {
+  const [searchQuery, setSearchQuery] = useState(''); // Local state for the search input
+
   return (
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
@@ -76,35 +78,40 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command
-                    filter={(value, search) => {
-                      const trimmedValue = value.trim().toLowerCase();
-                      const trimmedSearch = search.trim().toLowerCase();
-                      console.log(`DEBUG: Comparing value='${trimmedValue}' with search='${trimmedSearch}'`);
-                      return trimmedValue === trimmedSearch ? 1 : 0;
-                    }}
-                  >
-                    <CommandInput placeholder={t('searchProductByExactSku')} />
+                  <Command>
+                    <CommandInput
+                      placeholder={t('searchProductByExactSku')}
+                      value={searchQuery} // Bind value to local state
+                      onValueChange={setSearchQuery} // Update local state on change
+                    />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup>
-                      {products.map((product) => (
-                        <CommandItem
-                          key={product.id}
-                          value={product.sku} // Set value to SKU for exact match filtering
-                          onSelect={() => {
-                            handleOrderItemChange(index, 'productId', product.id);
-                            setOpenComboboxIndex(null);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              item.productId === product.id ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
-                        </CommandItem>
-                      ))}
+                      {products
+                        .filter(product => {
+                          const trimmedProductSku = String(product.sku).trim().toLowerCase();
+                          const trimmedSearchQuery = searchQuery.trim().toLowerCase();
+                          console.log(`DEBUG: Filtering product SKU='${trimmedProductSku}' against search='${trimmedSearchQuery}'`);
+                          return trimmedSearchQuery === '' || trimmedProductSku === trimmedSearchQuery;
+                        })
+                        .map((product) => (
+                          <CommandItem
+                            key={product.id}
+                            value={product.sku} // Still pass SKU as value for onSelect or other potential uses
+                            onSelect={() => {
+                              handleOrderItemChange(index, 'productId', product.id);
+                              setOpenComboboxIndex(null);
+                              setSearchQuery(''); // Clear search query after selection
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                item.productId === product.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {product.name} ({product.sku}) ({t('stockAvailable')}: {product.stock?.[warehouseId as number] || 0} {t('piece')})
+                          </CommandItem>
+                        ))}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
