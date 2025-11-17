@@ -204,165 +204,165 @@ export function useCrudOperations({
   ]);
 
   const deleteItem = useCallback((key: CollectionKey, id: number) => {
-    const onConfirmDelete = () => {
-      let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<Settings>>;
-      let currentCollection: any[] = []; // To be populated for validation
+    let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<Settings>>;
+    let currentCollection: any[] = []; // To be populated for validation
 
-      switch (key) {
-        case 'products': setter = setProducts; currentCollection = products; break;
-        case 'suppliers': setter = setSuppliers; currentCollection = suppliers; break;
-        case 'customers': setter = setCustomers; currentCollection = customers; break;
-        case 'warehouses': setter = setWarehouses; currentCollection = warehouses; break;
-        case 'purchaseOrders': setter = setPurchaseOrders; currentCollection = purchaseOrders; break;
-        case 'sellOrders': setter = setSellOrders; currentCollection = sellOrders; break;
-        case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
-        case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
-        case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
-        case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break; // New: utilizationOrders
-        case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
-        case 'bankAccounts': setter = setBankAccounts; currentCollection = bankAccounts; break; // Added
-        case 'paymentCategories':
-          const categoryToDelete = (settings.paymentCategories || []).find((c: PaymentCategorySetting) => c.id === id);
-          if (!categoryToDelete) {
-            showAlertModal(t('error'), t('itemNotFound'));
-            return;
-          }
-          addToRecycleBin(categoryToDelete, key);
-          setSettings((prevSettings: Settings) => ({
-            ...prevSettings,
-            paymentCategories: (prevSettings.paymentCategories || []).filter((c: PaymentCategorySetting) => c.id !== id),
-          }));
+    switch (key) {
+      case 'products': setter = setProducts; currentCollection = products; break;
+      case 'suppliers': setter = setSuppliers; currentCollection = suppliers; break;
+      case 'customers': setter = setCustomers; currentCollection = customers; break;
+      case 'warehouses': setter = setWarehouses; currentCollection = warehouses; break;
+      case 'purchaseOrders': setter = setPurchaseOrders; currentCollection = purchaseOrders; break;
+      case 'sellOrders': setter = setSellOrders; currentCollection = sellOrders; break;
+      case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
+      case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
+      case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
+      case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break; // New: utilizationOrders
+      case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
+      case 'bankAccounts': setter = setBankAccounts; currentCollection = bankAccounts; break; // Added
+      case 'paymentCategories':
+        const categoryToDelete = (settings.paymentCategories || []).find((c: PaymentCategorySetting) => c.id === id);
+        if (!categoryToDelete) {
+          showAlertModal(t('error'), t('itemNotFound'));
           return;
-        case 'quickButtons':
-          const buttonToDelete = (settings.quickButtons || []).find((b: QuickButton) => b.id === id);
-          if (!buttonToDelete) {
-            showAlertModal(t('error'), t('itemNotFound'));
-            return;
-          }
-          addToRecycleBin(buttonToDelete, key);
-          setSettings((prevSettings: Settings) => ({
-            ...prevSettings,
-            quickButtons: (prevSettings.quickButtons || []).filter((b: QuickButton) => b.id !== id),
-          }));
+        }
+        addToRecycleBin(categoryToDelete, key);
+        setSettings((prevSettings: Settings) => ({
+          ...prevSettings,
+          paymentCategories: (prevSettings.paymentCategories || []).filter((c: PaymentCategorySetting) => c.id !== id),
+        }));
+        sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
+        return;
+      case 'quickButtons':
+        const buttonToDelete = (settings.quickButtons || []).find((b: QuickButton) => b.id === id);
+        if (!buttonToDelete) {
+          showAlertModal(t('error'), t('itemNotFound'));
           return;
-        default: return;
-      }
+        }
+        addToRecycleBin(buttonToDelete, key);
+        setSettings((prevSettings: Settings) => ({
+          ...prevSettings,
+          quickButtons: (prevSettings.quickButtons || []).filter((b: QuickButton) => b.id !== id),
+        }));
+        sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
+        return;
+      default: return;
+    }
 
-      const itemToDelete = currentCollection.find(i => i.id === id);
-      if (!itemToDelete) {
-        showAlertModal(t('error'), t('itemNotFound'));
+    const itemToDelete = currentCollection.find(i => i.id === id);
+    if (!itemToDelete) {
+      showAlertModal(t('error'), t('itemNotFound'));
+      return;
+    }
+
+    // --- Deletion validation checks (need current state values) ---
+    if (key === 'products') {
+      const hasOrders = sellOrders.some(o => o.items?.some(i => i.productId === id)) || purchaseOrders.some(o => o.items?.some(i => i.productId === id));
+      if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInOrders')); return; }
+
+      const hasMovements = productMovements.some(m => m.items?.some(i => i.productId === id));
+      if (hasMovements) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInMovements')); return; }
+
+      const hasUtilizationOrders = utilizationOrders.some(uo => uo.items?.some(i => i.productId === id)); // New: Check utilization orders
+      if (hasUtilizationOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInUtilizationOrders')); return; }
+
+      const productToDelete = products.find(p => p.id === id);
+      if (productToDelete && productToDelete.stock && Object.values(productToDelete.stock).some(qty => qty > 0)) {
+        showAlertModal(t('deletionFailed'), t('cannotDeleteProductWithStock'));
         return;
       }
-
-      // --- Deletion validation checks (need current state values) ---
-      if (key === 'products') {
-        const hasOrders = sellOrders.some(o => o.items?.some(i => i.productId === id)) || purchaseOrders.some(o => o.items?.some(i => i.productId === id));
-        if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInOrders')); return; }
-
-        const hasMovements = productMovements.some(m => m.items?.some(i => i.productId === id));
-        if (hasMovements) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInMovements')); return; }
-
-        const hasUtilizationOrders = utilizationOrders.some(uo => uo.items?.some(i => i.productId === id)); // New: Check utilization orders
-        if (hasUtilizationOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInUtilizationOrders')); return; }
-
-        const productToDelete = products.find(p => p.id === id);
-        if (productToDelete && productToDelete.stock && Object.values(productToDelete.stock).some(qty => qty > 0)) {
-          showAlertModal(t('deletionFailed'), t('cannotDeleteProductWithStock'));
-          return;
-        }
+    }
+    if (key === 'warehouses') {
+      const warehouseToDelete = currentCollection.find((w: Warehouse) => w.id === id);
+      if (warehouseToDelete && warehouseToDelete.type === 'Main') {
+        showAlertModal(t('deletionFailed'), t('cannotDeleteMainWarehouse'));
+        return;
       }
-      if (key === 'warehouses') {
-        const warehouseToDelete = currentCollection.find((w: Warehouse) => w.id === id);
-        if (warehouseToDelete && warehouseToDelete.type === 'Main') {
-          showAlertModal(t('deletionFailed'), t('cannotDeleteMainWarehouse'));
-          return;
-        }
-        if (products.some(p => p.stock && p.stock[id] && p.stock[id] > 0)) {
-          showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseWithStock'));
-          return;
-        }
-        const hasOrders = purchaseOrders.some(o => o.warehouseId === id) ||
+      if (products.some(p => p.stock && p.stock[id] && p.stock[id] > 0)) {
+        showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseWithStock'));
+        return;
+      }
+      const hasOrders = purchaseOrders.some(o => o.warehouseId === id) ||
                          sellOrders.some(o => o.warehouseId === id) ||
                          productMovements.some(m => m.sourceWarehouseId === id || m.destWarehouseId === id) ||
                          utilizationOrders.some(uo => uo.warehouseId === id); // New: Check utilization orders
-        if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseInUse')); return; }
+      if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseInUse')); return; }
+    }
+    if (key === 'suppliers' || key === 'customers') {
+      const orderCollection = key === 'suppliers' ? purchaseOrders : sellOrders;
+      if (orderCollection.some(o => o.contactId === id)) { showAlertModal(t('deletionFailed'), t(`cannotDeleteContactInOrders`, { contactType: t(key.slice(0, -1) as keyof typeof t) })); return; }
+    }
+    if (key === 'packingUnits') {
+      if (products.some(p => p.defaultPackingUnitId === id)) {
+        showAlertModal(t('deletionFailed'), t('cannotDeletePackingUnitInUse'));
+        return;
       }
-      if (key === 'suppliers' || key === 'customers') {
-        const orderCollection = key === 'suppliers' ? purchaseOrders : sellOrders;
-        if (orderCollection.some(o => o.contactId === id)) { showAlertModal(t('deletionFailed'), t(`cannotDeleteContactInOrders`, { contactType: t(key.slice(0, -1) as keyof typeof t) })); return; }
-      }
-      if (key === 'packingUnits') {
-        if (products.some(p => p.defaultPackingUnitId === id)) {
-          showAlertModal(t('deletionFailed'), t('cannotDeletePackingUnitInUse'));
-          return;
-        }
-        if (purchaseOrders.some(po => po.items.some(item => item.packingUnitId === id)) ||
+      if (purchaseOrders.some(po => po.items.some(item => item.packingUnitId === id)) ||
             sellOrders.some(so => so.items.some(item => item.packingUnitId === id))) {
-          showAlertModal(t('deletionFailed'), t('cannotDeletePackingUnitInOrders'));
-          return;
-        }
+        showAlertModal(t('deletionFailed'), t('cannotDeletePackingUnitInOrders'));
+        return;
       }
-      if (key === 'bankAccounts') { // New validation for bank accounts
-        const hasIncomingPayments = incomingPayments.some(p => p.bankAccountId === id);
-        const hasOutgoingPayments = outgoingPayments.some(p => p.bankAccountId === id);
-        if (hasIncomingPayments || hasOutgoingPayments) {
-          showAlertModal(t('deletionFailed'), t('cannotDeleteBankAccountWithPayments'));
-          return;
-        }
+    }
+    if (key === 'bankAccounts') { // New validation for bank accounts
+      const hasIncomingPayments = incomingPayments.some(p => p.bankAccountId === id);
+      const hasOutgoingPayments = outgoingPayments.some(p => p.bankAccountId === id);
+      if (hasIncomingPayments || hasOutgoingPayments) {
+        showAlertModal(t('deletionFailed'), t('cannotDeleteBankAccountWithPayments'));
+        return;
       }
+    }
 
-      // Reverse stock change if deleting a completed order/movement/utilization
-      if (key === 'purchaseOrders' || key === 'sellOrders') {
-        const orderToDelete = itemToDelete as PurchaseOrder | SellOrder;
-        if (orderToDelete) updateStockFromOrder(null, orderToDelete);
-      } else if (key === 'productMovements') {
-        const movementToDelete = itemToDelete as ProductMovement;
-        if (movementToDelete) {
-          setSellOrders(prevSellOrders => prevSellOrders.map(so =>
-            so.productMovementId === movementToDelete.id
-              ? { ...so, productMovementId: undefined }
-              : so
-          ));
+    // Reverse stock change if deleting a completed order/movement/utilization
+    if (key === 'purchaseOrders' || key === 'sellOrders') {
+      const orderToDelete = itemToDelete as PurchaseOrder | SellOrder;
+      if (orderToDelete) updateStockFromOrder(null, orderToDelete);
+    } else if (key === 'productMovements') {
+      const movementToDelete = itemToDelete as ProductMovement;
+      if (movementToDelete) {
+        setSellOrders(prevSellOrders => prevSellOrders.map(so =>
+          so.productMovementId === movementToDelete.id
+            ? { ...so, productMovementId: undefined }
+            : so
+        ));
 
-          setProducts(prevProducts => prevProducts.map(p => {
-            if (p.stock && movementToDelete.items?.some(item => item.productId === p.id)) {
-              const newP = { ...p, stock: { ...p.stock } };
-              movementToDelete.items.forEach(item => {
-                if (item.productId === p.id) {
-                  newP.stock[movementToDelete.sourceWarehouseId] = (newP.stock[movementToDelete.sourceWarehouseId] || 0) + item.quantity;
-                  newP.stock[movementToDelete.destWarehouseId] = (newP.stock[movementToDelete.destWarehouseId] || 0) - item.quantity;
-                }
-              });
-              return newP;
-            }
-            return p;
-          }));
-        }
-      } else if (key === 'utilizationOrders') { // New: Revert stock for utilization orders
-        const utilizationOrderToDelete = itemToDelete as UtilizationOrder;
-        if (utilizationOrderToDelete) {
-          updateStockForUtilization(null, utilizationOrderToDelete);
-        }
-      } else if (key === 'incomingPayments') {
-        const paymentToDelete = itemToDelete as Payment;
-        if (paymentToDelete.orderId !== 0) {
-          setSellOrders(prevSellOrders => prevSellOrders.map(so =>
-            so.incomingPaymentId === paymentToDelete.id
-              ? { ...so, incomingPaymentId: undefined }
-              : so
-          ));
-        }
+        setProducts(prevProducts => prevProducts.map(p => {
+          if (p.stock && movementToDelete.items?.some(item => item.productId === p.id)) {
+            const newP = { ...p, stock: { ...p.stock } };
+            movementToDelete.items.forEach(item => {
+              if (item.productId === p.id) {
+                newP.stock[movementToDelete.sourceWarehouseId] = (newP.stock[movementToDelete.sourceWarehouseId] || 0) + item.quantity;
+                newP.stock[movementToDelete.destWarehouseId] = (newP.stock[movementToDelete.destWarehouseId] || 0) - item.quantity;
+              }
+            });
+            return newP;
+          }
+          return p;
+        }));
       }
+    } else if (key === 'utilizationOrders') { // New: Revert stock for utilization orders
+      const utilizationOrderToDelete = itemToDelete as UtilizationOrder;
+      if (utilizationOrderToDelete) {
+        updateStockForUtilization(null, utilizationOrderToDelete);
+      }
+    } else if (key === 'incomingPayments') {
+      const paymentToDelete = itemToDelete as Payment;
+      if (paymentToDelete.orderId !== 0) {
+        setSellOrders(prevSellOrders => prevSellOrders.map(so =>
+          so.incomingPaymentId === paymentToDelete.id
+            ? { ...so, incomingPaymentId: undefined }
+            : so
+        ));
+      }
+    }
 
-      // Move to recycle bin instead of permanent deletion
-      addToRecycleBin(itemToDelete, key);
-      (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id)); // Remove from active data
-    };
-    showConfirmationModal(t('confirmation'), t('areYouSure'), onConfirmDelete, t('yes')); // Pass 'yes' as actionLabel
+    // Move to recycle bin instead of permanent deletion
+    addToRecycleBin(itemToDelete, key);
+    (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id)); // Remove from active data
+    sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,
-    showAlertModal, showConfirmationModal, updateStockFromOrder, updateStockForUtilization, addToRecycleBin,
+    showAlertModal, updateStockFromOrder, updateStockForUtilization, addToRecycleBin,
     // Include current state values for validation, but not as dependencies for useCallback
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
   ]);
