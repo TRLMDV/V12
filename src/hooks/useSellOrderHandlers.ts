@@ -23,6 +23,7 @@ interface UseSellOrderHandlersProps {
   setManualExchangeRateInput: React.Dispatch<React.SetStateAction<string>>;
   productMap: { [key: number]: Product };
   packingUnitMap: { [key: number]: PackingUnit }; // New: Pass packingUnitMap
+  setIsWarehouseManuallySet: React.Dispatch<React.SetStateAction<boolean>>; // New: Pass setIsWarehouseManuallySet
 }
 
 export const useSellOrderHandlers = ({
@@ -33,6 +34,7 @@ export const useSellOrderHandlers = ({
   setManualExchangeRateInput,
   productMap,
   packingUnitMap, // Destructure new prop
+  setIsWarehouseManuallySet, // Destructure new prop
 }: UseSellOrderHandlersProps) => {
   const { currencyRates, packingUnits } = useData(); // Get packingUnits to find 'Piece'
 
@@ -50,7 +52,10 @@ export const useSellOrderHandlers = ({
 
   const handleSelectChange = useCallback((id: keyof SellOrder, value: string) => {
     setOrder(prev => ({ ...prev, [id]: value }));
-  }, [setOrder]);
+    if (id === 'warehouseId') {
+      setIsWarehouseManuallySet(true); // Set flag when warehouse is manually changed
+    }
+  }, [setOrder, setIsWarehouseManuallySet]);
 
   const handleCurrencyChange = useCallback((value: Currency) => {
     setSelectedCurrency(value);

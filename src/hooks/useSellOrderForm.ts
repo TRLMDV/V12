@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
+import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { useSellOrderState } from './useSellOrderState';
 import { useSellOrderCalculations } from './useSellOrderCalculations';
 import { useSellOrderHandlers } from './useSellOrderHandlers';
@@ -36,6 +36,8 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     setManualExchangeRateInput,
     openComboboxIndex, // Destructure openComboboxIndex
     setOpenComboboxIndex, // Destructure setOpenComboboxIndex
+    isWarehouseManuallySet, // New: Destructure isWarehouseManuallySet
+    setIsWarehouseManuallySet, // New: Destructure setIsWarehouseManuallySet
     customerMap,
     productMap,
     warehouseMap,
@@ -97,6 +99,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     setManualExchangeRateInput,
     productMap,
     packingUnitMap, // Pass packingUnitMap
+    setIsWarehouseManuallySet, // New: Pass setIsWarehouseManuallySet
   });
 
   // 4. Actions

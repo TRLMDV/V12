@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
+import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { SellOrder, Product, Customer, Warehouse, Currency, PackingUnit } from '@/types';
 
 interface SellOrderItemState {
@@ -66,6 +66,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
   const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
   const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>('');
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
+  const [isWarehouseManuallySet, setIsWarehouseManuallySet] = useState(false); // New state to track manual warehouse selection
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
@@ -86,6 +87,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);
         setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? String(existingOrder.exchangeRate) : '');
+        setIsWarehouseManuallySet(false); // Reset on edit, assume default unless user changes
         setIsFormInitialized(true);
       }
     } else if (!isEdit && !isFormInitialized) {
@@ -102,21 +104,26 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
       setOpenComboboxIndex(null); // Reset for new order
+      setIsWarehouseManuallySet(false); // Reset for new order
       setIsFormInitialized(true);
     }
   }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized, productMap, mainCurrency, packingUnits]);
 
-  // Effect to set default warehouse when customer changes
+  // Effect to set default warehouse when customer changes, respecting manual override
   useEffect(() => {
-    if (order.contactId) {
+    if (order.contactId && !isWarehouseManuallySet) { // Only auto-set if not manually overridden
       const selectedCustomer = customerMap[order.contactId];
       if (selectedCustomer && selectedCustomer.defaultWarehouseId !== undefined) {
-        if (!order.warehouseId || !warehouses.some(w => w.id === order.warehouseId)) {
+        // Only set if the current warehouse is different from the customer's default
+        if (order.warehouseId !== selectedCustomer.defaultWarehouseId) {
           setOrder(prev => ({ ...prev, warehouseId: selectedCustomer.defaultWarehouseId }));
         }
+      } else if (order.warehouseId !== undefined) {
+        // If customer has no default, and a warehouse is currently selected (which wasn't manually set), clear it
+        setOrder(prev => ({ ...prev, warehouseId: undefined }));
       }
     }
-  }, [order.contactId, customerMap, order.warehouseId, warehouses]);
+  }, [order.contactId, customerMap, order.warehouseId, isWarehouseManuallySet, setOrder, warehouses]);
 
   return {
     order,
@@ -131,6 +138,8 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
     setManualExchangeRateInput,
     openComboboxIndex, // Return openComboboxIndex
     setOpenComboboxIndex, // Return setOpenComboboxIndex
+    isWarehouseManuallySet, // New: Return isWarehouseManuallySet
+    setIsWarehouseManuallySet, // New: Return setIsWarehouseManuallySet
     customerMap,
     productMap,
     warehouseMap,
