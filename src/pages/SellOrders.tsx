@@ -23,7 +23,7 @@ type SortConfig = {
 };
 
 const SellOrders: React.FC = () => {
-  const { sellOrders, customers, warehouses, products, incomingPayments, deleteItem, showAlertModal, currencyRates } = useData();
+  const { sellOrders, customers, warehouses, products, incomingPayments, deleteItem, showAlertModal, currencyRates, showConfirmationModal } = useData();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState<number | undefined>(undefined);
@@ -103,6 +103,8 @@ const SellOrders: React.FC = () => {
   };
 
   const handleDeleteOrder = (id: number) => {
+    // The deleteItem function in useCrudOperations now handles the confirmation modal
+    // and cascading deletion logic for sell orders.
     deleteItem('sellOrders', id);
   };
 

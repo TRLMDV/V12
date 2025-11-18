@@ -284,6 +284,9 @@ const i18n = {
     yes: 'Yes', // Added 'Yes'
     no: 'No', // Added 'No'
     selectWarehouseToSeeStock: 'Select warehouse to see stock', // New translation key
+    deleteSellOrder: 'Delete Sell Order', // New translation key
+    deleteSellOrderWarning: 'Are you sure you want to delete this Sell Order?', // New translation key
+    alsoDeleteAssociatedItems: 'This will also move the following associated items to the Recycle Bin', // New translation key
   }
 };
 

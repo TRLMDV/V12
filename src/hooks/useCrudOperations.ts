@@ -312,6 +312,54 @@ export function useCrudOperations({
       }
     }
 
+    // --- Specific logic for SellOrders deletion: Delete associated ProductMovement and IncomingPayment ---
+    if (key === 'sellOrders') {
+      const sellOrderToDelete = itemToDelete as SellOrder;
+      let associatedItemsMessage = '';
+
+      if (sellOrderToDelete.productMovementId) {
+        const movement = productMovements.find(pm => pm.id === sellOrderToDelete.productMovementId);
+        if (movement) {
+          associatedItemsMessage += `\n- ${t('productMovement')} #${movement.id}`;
+        }
+      }
+      if (sellOrderToDelete.incomingPaymentId) {
+        const payment = incomingPayments.find(ip => ip.id === sellOrderToDelete.incomingPaymentId);
+        if (payment) {
+          associatedItemsMessage += `\n- ${t('incomingPayment')} #${payment.id}`;
+        }
+      }
+
+      const confirmMessage = associatedItemsMessage
+        ? `${t('deleteSellOrderWarning')} ${t('alsoDeleteAssociatedItems')}: ${associatedItemsMessage}`
+        : t('deleteSellOrderWarning');
+
+      showConfirmationModal(
+        t('deleteSellOrder'),
+        confirmMessage,
+        () => {
+          // Perform cascading deletions first
+          if (sellOrderToDelete.productMovementId) {
+            // Recursively call deleteItem for the product movement
+            // This will move the product movement to recycle bin and unlink it from the sell order
+            deleteItem('productMovements', sellOrderToDelete.productMovementId);
+          }
+          if (sellOrderToDelete.incomingPaymentId) {
+            // Recursively call deleteItem for the incoming payment
+            // This will move the incoming payment to recycle bin and unlink it from the sell order
+            deleteItem('incomingPayments', sellOrderToDelete.incomingPaymentId);
+          }
+
+          // Then delete the sell order itself
+          addToRecycleBin(itemToDelete, key);
+          (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id));
+          sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
+        },
+        t('delete')
+      );
+      return; // Exit early as confirmation modal handles the deletion flow
+    }
+
     // Reverse stock change if deleting a completed order/movement/utilization
     if (key === 'purchaseOrders' || key === 'sellOrders') {
       const orderToDelete = itemToDelete as PurchaseOrder | SellOrder;
@@ -362,7 +410,7 @@ export function useCrudOperations({
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,
-    showAlertModal, updateStockFromOrder, updateStockForUtilization, addToRecycleBin,
+    showAlertModal, showConfirmationModal, updateStockFromOrder, updateStockForUtilization, addToRecycleBin,
     // Include current state values for validation, but not as dependencies for useCallback
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
   ]);
