@@ -13,12 +13,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label'; // Ensuring this import is present
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
-import { Payment, SellOrder, BankAccount } from '@/types'; // Import types from types file
+import { Payment, SellOrder, BankAccount, Currency } from '@/types'; // Import types from types file
+import { format } from 'date-fns'; // Import format from date-fns
 
 type SortConfig = {
   key: keyof Payment | 'linkedOrderDisplay' | 'categoryDisplay' | 'bankAccountBalance'; // Added bankAccountBalance
   direction: 'ascending' | 'descending';
 };
+
+// Helper type for internal transaction processing
+interface BankTransaction {
+  id: string; // e.g., 'inc-1', 'out-5', 'initial-2'
+  date: string;
+  amount: number; // Amount in the account's currency
+  type: 'incoming' | 'outgoing' | 'initial';
+  bankAccountId: number;
+  originalPaymentCurrency: Currency; // For conversion
+}
 
 const IncomingPayments: React.FC = () => {
   const { incomingPayments, sellOrders, customers, bankAccounts, deleteItem, currencyRates, settings, convertCurrency, outgoingPayments } = useData();
@@ -37,32 +48,79 @@ const IncomingPayments: React.FC = () => {
   const customerMap = customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
   const paymentCategoryMap = useMemo(() => (settings.paymentCategories || []).reduce((acc, cat) => ({ ...acc, [cat.name]: cat.name }), {} as { [key: string]: string }), [settings.paymentCategories]);
 
-  // Calculate current balance for each bank account
-  const bankAccountsWithBalances = useMemo(() => {
-    return bankAccounts.map(account => {
-      let currentBalance = account.initialBalance;
+  // Memoized map to store running balances after each transaction
+  const runningBalancesMap = useMemo(() => {
+    const balances = new Map<number, Map<string, number>>(); // bankAccountId -> (transactionId -> balanceAfterTransaction)
 
+    bankAccounts.forEach(account => {
+      const accountTransactions: BankTransaction[] = [];
+
+      // Initial balance as a transaction (using epoch date to ensure it's sorted first)
+      accountTransactions.push({
+        id: `initial-${account.id}`,
+        date: '1970-01-01', 
+        amount: account.initialBalance,
+        type: 'initial',
+        bankAccountId: account.id,
+        originalPaymentCurrency: account.currency,
+      });
+
+      // Incoming payments
       incomingPayments.forEach(p => {
         if (p.bankAccountId === account.id) {
           const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          currentBalance += amountInAccountCurrency;
+          accountTransactions.push({
+            id: `inc-${p.id}`,
+            date: p.date,
+            amount: amountInAccountCurrency,
+            type: 'incoming',
+            bankAccountId: account.id,
+            originalPaymentCurrency: p.paymentCurrency,
+          });
         }
       });
 
+      // Outgoing payments
       outgoingPayments.forEach(p => {
         if (p.bankAccountId === account.id) {
           const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          currentBalance -= amountInAccountCurrency;
+          accountTransactions.push({
+            id: `out-${p.id}`,
+            date: p.date,
+            amount: amountInAccountCurrency,
+            type: 'outgoing',
+            bankAccountId: account.id,
+            originalPaymentCurrency: p.paymentCurrency,
+          });
         }
       });
 
-      return { ...account, currentBalance };
-    });
-  }, [bankAccounts, incomingPayments, outgoingPayments, convertCurrency]);
+      // Sort all transactions for this account by date, then by type (initial -> incoming -> outgoing)
+      accountTransactions.sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        if (dateA !== dateB) return dateA - dateB;
+        const typeOrder = { 'initial': 0, 'incoming': 1, 'outgoing': 2 };
+        return typeOrder[a.type] - typeOrder[b.type];
+      });
 
-  const bankAccountMapWithBalances = useMemo(() => {
-    return bankAccountsWithBalances.reduce((acc, account) => ({ ...acc, [account.id]: account }), {} as { [key: number]: BankAccount & { currentBalance: number } });
-  }, [bankAccountsWithBalances]);
+      let currentRunningBalance = 0;
+      const accountBalances = new Map<string, number>();
+
+      accountTransactions.forEach(t => {
+        if (t.type === 'initial') {
+          currentRunningBalance = t.amount;
+        } else if (t.type === 'incoming') {
+          currentRunningBalance += t.amount;
+        } else if (t.type === 'outgoing') {
+          currentRunningBalance -= t.amount;
+        }
+        accountBalances.set(t.id, currentRunningBalance);
+      });
+      balances.set(account.id, accountBalances);
+    });
+    return balances;
+  }, [bankAccounts, incomingPayments, outgoingPayments, convertCurrency]);
 
 
   // Aggregate payments by order ID and specific category (products) in AZN
@@ -102,7 +160,10 @@ const IncomingPayments: React.FC = () => {
       let remainingAmountText = '';
       let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
       let categoryDisplay = '';
-      const linkedBankAccount = bankAccountMapWithBalances[p.bankAccountId];
+      
+      const linkedBankAccount = bankAccounts.find(acc => acc.id === p.bankAccountId);
+      const balanceAfterThisPayment = runningBalancesMap.get(p.bankAccountId)?.get(`inc-${p.id}`);
+
 
       if (p.orderId === 0) {
         categoryDisplay = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
@@ -137,7 +198,7 @@ const IncomingPayments: React.FC = () => {
         remainingAmountText, 
         rowClass, 
         categoryDisplay,
-        bankAccountBalance: linkedBankAccount?.currentBalance,
+        bankAccountBalance: balanceAfterThisPayment, // Use the calculated running balance
         bankAccountCurrency: linkedBankAccount?.currency,
       };
     });
@@ -166,7 +227,7 @@ const IncomingPayments: React.FC = () => {
       });
     }
     return finalFilteredPayments;
-  }, [incomingPayments, startDateFilter, endDateFilter, categoryFilter, sellOrderMap, customerMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t, bankAccountMapWithBalances]);
+  }, [incomingPayments, startDateFilter, endDateFilter, categoryFilter, sellOrderMap, customerMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t, runningBalancesMap, bankAccounts]);
 
   // Get all unique categories for the filter dropdown
   const allUniqueCategories = useMemo(() => {
