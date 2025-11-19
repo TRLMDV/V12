@@ -350,6 +350,10 @@ export function useCrudOperations({
             deleteItem('incomingPayments', sellOrderToDelete.incomingPaymentId);
           }
 
+          // Reverse stock change for the sell order itself
+          const orderToDelete = itemToDelete as SellOrder;
+          if (orderToDelete) updateStockFromOrder(null, orderToDelete);
+
           // Then delete the sell order itself
           addToRecycleBin(itemToDelete, key);
           (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id));
@@ -361,7 +365,7 @@ export function useCrudOperations({
     }
 
     // Reverse stock change if deleting a completed order/movement/utilization
-    if (key === 'purchaseOrders' || key === 'sellOrders') {
+    if (key === 'purchaseOrders') { // Removed '|| key === 'sellOrders''
       const orderToDelete = itemToDelete as PurchaseOrder | SellOrder;
       if (orderToDelete) updateStockFromOrder(null, orderToDelete);
     } else if (key === 'productMovements') {
