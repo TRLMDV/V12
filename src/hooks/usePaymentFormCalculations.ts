@@ -79,6 +79,11 @@ export const usePaymentFormCalculations = ({
     }[] = [];
 
     allOrders.forEach(order => {
+      // Filter out 'Draft' purchase orders for outgoing payments
+      if (!isIncoming && (order as PurchaseOrder).status === 'Draft') {
+        return;
+      }
+
       const currentOrderPayments = paymentsByOrderAndCategoryAZN[order.id] || { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
 
       let adjustedPaymentsAZN = { ...currentOrderPayments };
