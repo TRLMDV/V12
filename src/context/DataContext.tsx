@@ -1,31 +1,23 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import React, { createContext, useContext, useMemo } from 'react';
 import { t } from '@/utils/i18n';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 import { useModals } from '@/hooks/useModals';
 import { useInventoryManagement } from '@/hooks/useInventoryManagement';
 import { useCrudOperations } from '@/hooks/useCrudOperations';
-import { useRecycleBin } from '@/hooks/useRecycleBin'; // New import
-import { useAppInitialization } from '@/hooks/useAppInitialization'; // New import
+import { useRecycleBin } from '@/hooks/useRecycleBin';
+import { useAppInitialization } from '@/hooks/useAppInitialization';
 
-import { initialData, initialSettings, defaultCurrencyRates } from '@/data/initialData'; // Corrected import path for MOCK_CURRENT_DATE
+// New modular hooks
+import { useDataState } from '@/hooks/useDataState';
+import { useDataMaps } from '@/hooks/useDataMaps';
+import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
+import { useBankBalances } from '@/hooks/useBankBalances';
 
 import {
-  Product, Supplier, Customer, Warehouse, OrderItem, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PaymentCategorySetting, Currency, PackingUnit, BaseUnit, BankAccount, UtilizationOrder
+  Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PackingUnit, BankAccount, UtilizationOrder, Currency
 } from '@/types';
-
-// --- Helper type for internal transaction processing in DataContext ---
-interface BankTransactionForRunningBalance {
-  id: string; // e.g., 'inc-1', 'out-5', 'initial-2'
-  date: string;
-  amount: number; // Amount in the account's currency
-  type: 'incoming' | 'outgoing' | 'initial';
-  bankAccountId: number;
-  originalPaymentCurrency: Currency; // For conversion
-  originalPaymentAmount: number; // For conversion
-}
 
 // --- Context Definition ---
 interface DataContextType {
@@ -49,8 +41,8 @@ interface DataContextType {
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   bankAccounts: BankAccount[];
   setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>;
-  utilizationOrders: UtilizationOrder[]; // New: Utilization Orders
-  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: Set Utilization Orders
+  utilizationOrders: UtilizationOrder[];
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>;
   settings: Settings;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   currencyRates: CurrencyRates;
@@ -67,7 +59,7 @@ interface DataContextType {
   restoreFromRecycleBin: (recycleItemId: string) => void;
   deletePermanentlyFromRecycleBin: (recycleItemId: string) => void;
   cleanRecycleBin: () => void;
-  getItemSummary: (item: any, collectionKey: CollectionKey) => string; // New: Expose getItemSummary
+  getItemSummary: (item: any, collectionKey: CollectionKey) => string;
 
   // CRUD operations
   saveItem: (key: CollectionKey, item: any) => void;
@@ -76,44 +68,44 @@ interface DataContextType {
   setNextIdForCollection: (key: CollectionKey, nextId: number) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
-  updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void; // New: Stock management for utilization
+  updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void;
 
   // Modals
   showAlertModal: (title: string, message: string) => void;
-  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void; // Updated signature
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void;
   isConfirmationModalOpen: boolean;
-  confirmationModalProps: { title: string; message: string; onConfirm: () => void; actionLabel?: string } | null; // Updated signature
+  confirmationModalProps: { title: string; message: string; onConfirm: () => void; actionLabel?: string } | null;
   closeConfirmationModal: () => void;
 
   // Currency conversion utility
   convertCurrency: (amount: number, fromCurrency: Currency, toCurrency: Currency) => number;
 
   // Running balances for bank accounts
-  runningBalancesMap: Map<number, Map<string, number>>; // bankAccountId -> (transactionId -> balanceAfterTransaction)
+  runningBalancesMap: Map<number, Map<string, number>>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useLocalStorage<Product[]>('products', initialData.products);
-  const [suppliers, setSuppliers] = useLocalStorage<Supplier[]>('suppliers', initialData.suppliers);
-  const [customers, setCustomers] = useLocalStorage<Customer[]>('customers', initialData.customers);
-  const [warehouses, setWarehouses] = useLocalStorage<Warehouse[]>('warehouses', initialData.warehouses);
-  const [purchaseOrders, setPurchaseOrders] = useLocalStorage<PurchaseOrder[]>('purchaseOrders', initialData.purchaseOrders);
-  const [sellOrders, setSellOrders] = useLocalStorage<SellOrder[]>('sellOrders', initialData.sellOrders);
-  const [incomingPayments, setIncomingPayments] = useLocalStorage<Payment[]>('incomingPayments', initialData.incomingPayments);
-  const [outgoingPayments, setOutgoingPayments] = useLocalStorage<Payment[]>('outgoingPayments', initialData.outgoingPayments);
-  const [productMovements, setProductMovements] = useLocalStorage<ProductMovement[]>('productMovements', initialData.productMovements);
-  const [bankAccounts, setBankAccounts] = useLocalStorage<BankAccount[]>('bankAccounts', initialData.bankAccounts);
-  const [utilizationOrders, setUtilizationOrders] = useLocalStorage<UtilizationOrder[]>('utilizationOrders', initialData.utilizationOrders); // New: Utilization Orders
-
-  const [settings, setSettings] = useLocalStorage<Settings>('settings', initialSettings);
-  const [currencyRates, setCurrencyRates] = useLocalStorage<CurrencyRates>('currencyRates', defaultCurrencyRates);
-  const [packingUnits, setPackingUnits] = useLocalStorage<PackingUnit[]>('packingUnits', initialSettings.packingUnits);
-  
-  // Internal state for next IDs, managed by DataProvider
-  // This will be initialized by useAppInitialization based on actual data, not hardcoded defaults.
-  const [nextIds, setNextIds] = useLocalStorage<{ [key: string]: number }>('nextIds', {}); 
+  // 1. State Management
+  const {
+    products, setProducts,
+    suppliers, setSuppliers,
+    customers, setCustomers,
+    warehouses, setWarehouses,
+    purchaseOrders, setPurchaseOrders,
+    sellOrders, setSellOrders,
+    incomingPayments, setIncomingPayments,
+    outgoingPayments, setOutgoingPayments,
+    productMovements, setProductMovements,
+    bankAccounts, setBankAccounts,
+    utilizationOrders, setUtilizationOrders,
+    settings, setSettings,
+    currencyRates, setCurrencyRates,
+    packingUnits, setPackingUnits,
+    nextIds, setNextIds,
+    recycleBin, setRecycleBin,
+  } = useDataState();
 
   // Add console logs for debugging
   console.log("[DataContext] products:", products);
@@ -126,11 +118,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] productMovements:", productMovements);
   console.log("[DataContext] packingUnits:", packingUnits);
   console.log("[DataContext] bankAccounts:", bankAccounts);
-  console.log("[DataContext] utilizationOrders:", utilizationOrders); // New: Log utilization orders
+  console.log("[DataContext] utilizationOrders:", utilizationOrders);
   console.log("[DataContext] nextIds (initial load from localStorage):", nextIds);
 
-
-  // Use the new modals hook
+  // 2. Modals
   const {
     showAlertModal,
     showConfirmationModal,
@@ -139,117 +130,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     closeConfirmationModal,
   } = useModals();
 
-  // --- Currency Conversion Utility ---
-  const convertCurrency = useCallback((amount: number, fromCurrency: Currency, toCurrency: Currency): number => {
-    if (fromCurrency === toCurrency) {
-      return amount;
-    }
+  // 3. Currency Conversion
+  const { convertCurrency } = useCurrencyConverter({ currencyRates });
 
-    const rateFromAZN = currencyRates[fromCurrency];
-    const rateToAZN = currencyRates[toCurrency];
+  // 4. Bank Balances
+  const { runningBalancesMap } = useBankBalances({ bankAccounts, incomingPayments, outgoingPayments, convertCurrency });
 
-    if (!rateFromAZN || !rateToAZN) {
-      console.warn(`Missing currency rate for conversion: ${fromCurrency} or ${toCurrency}`);
-      return amount; // Return original amount if rates are missing
-    }
+  // 5. Data Maps
+  const { packingUnitMap, warehouseMap } = useDataMaps({ packingUnits, warehouses });
 
-    // Convert to AZN first, then to target currency
-    const amountInAZN = amount * rateFromAZN;
-    return amountInAZN / rateToAZN;
-  }, [currencyRates]);
-
-  // --- Running Balances Map for Bank Accounts ---
-  const runningBalancesMap = useMemo(() => {
-    const balances = new Map<number, Map<string, number>>(); // bankAccountId -> (transactionId -> balanceAfterTransaction)
-
-    bankAccounts.forEach(account => {
-      const accountTransactions: BankTransactionForRunningBalance[] = [];
-
-      // Initial balance as a transaction (using epoch date to ensure it's sorted first)
-      accountTransactions.push({
-        id: `initial-${account.id}`,
-        date: '1970-01-01', 
-        amount: account.initialBalance,
-        type: 'initial',
-        bankAccountId: account.id,
-        originalPaymentCurrency: account.currency,
-        originalPaymentAmount: account.initialBalance,
-      });
-
-      // Incoming payments
-      incomingPayments.forEach(p => {
-        if (p.bankAccountId === account.id) {
-          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          accountTransactions.push({
-            id: `inc-${p.id}`,
-            date: p.date,
-            amount: amountInAccountCurrency,
-            type: 'incoming',
-            bankAccountId: account.id,
-            originalPaymentCurrency: p.paymentCurrency,
-            originalPaymentAmount: p.amount,
-          });
-        }
-      });
-
-      // Outgoing payments
-      outgoingPayments.forEach(p => {
-        if (p.bankAccountId === account.id) {
-          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          accountTransactions.push({
-            id: `out-${p.id}`,
-            date: p.date,
-            amount: amountInAccountCurrency,
-            type: 'outgoing',
-            bankAccountId: account.id,
-            originalPaymentCurrency: p.paymentCurrency,
-            originalPaymentAmount: p.amount,
-          });
-        }
-      });
-
-      // Sort all transactions for this account by date, then by type (initial -> incoming -> outgoing)
-      accountTransactions.sort((a, b) => {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        if (dateA !== dateB) return dateA - dateB;
-        const typeOrder = { 'initial': 0, 'incoming': 1, 'outgoing': 2 };
-        return typeOrder[a.type] - typeOrder[b.type];
-      });
-
-      let currentRunningBalance = 0;
-      const accountBalances = new Map<string, number>();
-
-      accountTransactions.forEach(t => {
-        if (t.type === 'initial') {
-          currentRunningBalance = t.amount;
-        } else if (t.type === 'incoming') {
-          currentRunningBalance += t.amount;
-        } else if (t.type === 'outgoing') {
-          currentRunningBalance -= t.amount;
-        }
-        accountBalances.set(t.id, currentRunningBalance);
-      });
-      balances.set(account.id, accountBalances);
-    });
-    return balances;
-  }, [bankAccounts, incomingPayments, outgoingPayments, convertCurrency]);
-
-
-  // Use the new inventory management hook
+  // 6. Inventory Management
   const {
     updateStockFromOrder: baseUpdateStockFromOrder,
     updateAverageCosts: baseUpdateAverageAverageCosts,
   } = useInventoryManagement({ products: Array.isArray(products) ? products : [], setProducts });
 
-  // Override updateAverageCosts to use mainCurrency
-  const updateAverageCosts = useCallback((purchaseOrder: PurchaseOrder) => {
+  const updateAverageCosts = React.useCallback((purchaseOrder: PurchaseOrder) => {
     setProducts(prevProducts => {
       const updatedProducts = JSON.parse(JSON.stringify(prevProducts));
       (purchaseOrder.items || []).forEach(item => {
         const product = updatedProducts.find((p: Product) => p.id === item.productId);
         if (product) {
-          // item.landedCostPerUnit is already in Main Currency from PurchaseOrderForm
           const landedCostInMainCurrency = item.landedCostPerUnit || 0;
           if (landedCostInMainCurrency <= 0) return;
 
@@ -273,17 +174,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [setProducts]);
 
-  // Override updateStockFromOrder to use the base one
-  const updateStockFromOrder = useCallback((newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => {
+  const updateStockFromOrder = React.useCallback((newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => {
     baseUpdateStockFromOrder(newOrder, oldOrder);
   }, [baseUpdateStockFromOrder]);
 
-  // New: Stock management for Utilization Orders
-  const updateStockForUtilization = useCallback((newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => {
+  const updateStockForUtilization = React.useCallback((newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => {
     setProducts(prevProducts => {
-      const updatedProducts = JSON.parse(JSON.stringify(prevProducts)); // Deep copy
+      const updatedProducts = JSON.parse(JSON.stringify(prevProducts));
 
-      // --- 1. Reverse old stock change if an old order exists ---
       if (oldOrder) {
         (oldOrder.items || []).forEach(item => {
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
@@ -294,14 +192,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
 
-      // --- 2. Apply new stock change if a new order exists ---
       if (newOrder) {
         (newOrder.items || []).forEach(item => {
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
           if (p) {
             if (!p.stock) p.stock = {};
             p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - item.quantity;
-            if (p.stock[newOrder.warehouseId] < 0) p.stock[newOrder.warehouseId] = 0; // Ensure stock doesn't go negative
+            if (p.stock[newOrder.warehouseId] < 0) p.stock[newOrder.warehouseId] = 0;
           }
         });
       }
@@ -309,10 +206,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [setProducts]);
 
-  // Use the new recycle bin hook
+  // 7. Recycle Bin
   const {
-    recycleBin,
-    setRecycleBin,
+    recycleBin: recycleBinHook, // Renamed to avoid conflict with state variable
+    setRecycleBin: setRecycleBinHook, // Renamed
     addToRecycleBin,
     restoreFromRecycleBin,
     deletePermanentlyFromRecycleBin,
@@ -320,7 +217,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getItemSummary,
   } = useRecycleBin({
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts, setUtilizationOrders, // Added setUtilizationOrders
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setPackingUnits, setSettings, setBankAccounts, setUtilizationOrders,
     products: Array.isArray(products) ? products : [],
     suppliers: Array.isArray(suppliers) ? suppliers : [],
     customers: Array.isArray(customers) ? customers : [],
@@ -333,44 +230,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [],
     settings,
     bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [],
-    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], // Added utilizationOrders
-    showAlertModal, // Pass showAlertModal
-    showConfirmationModal, // Pass showConfirmationModal
+    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [],
+    showAlertModal,
+    showConfirmationModal,
   });
 
-  // Memoized map for packing units
-  const packingUnitMap = useMemo(() => {
-    return packingUnits.reduce((acc, pu) => ({ ...acc, [pu.id]: pu }), {} as { [key: number]: PackingUnit });
-  }, [packingUnits]);
+  // Ensure the top-level recycleBin state is updated by the hook's setter
+  React.useEffect(() => {
+    setRecycleBin(recycleBinHook);
+  }, [recycleBinHook, setRecycleBin]);
 
-  // Memoized map for warehouses
-  const warehouseMap = useMemo(() => {
-    return warehouses.reduce((acc, w) => ({ ...acc, [w.id]: w }), {} as { [key: number]: Warehouse });
-  }, [warehouses]);
 
-  // Use the new CRUD operations hook
+  // 8. CRUD Operations
   const {
     getNextId,
     setNextIdForCollection,
     saveItem,
     deleteItem,
   } = useCrudOperations({
-    // Pass setters (stable references)
-    setProducts,
-    setSuppliers,
-    setCustomers,
-    setWarehouses,
-    setPurchaseOrders,
-    setSellOrders,
-    setIncomingPayments,
-    setOutgoingPayments,
-    setProductMovements,
-    setUtilizationOrders, // New: setUtilizationOrders
-    setPackingUnits,
-    setBankAccounts,
-    setSettings,
-    setNextIds,
-    // Pass current state values for validation (will cause re-render of useCrudOperations, but not recreate saveItem/deleteItem)
+    setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
+    setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders,
+    setPackingUnits, setBankAccounts, setSettings, setNextIds,
     products: Array.isArray(products) ? products : [],
     suppliers: Array.isArray(suppliers) ? suppliers : [],
     customers: Array.isArray(customers) ? customers : [],
@@ -381,20 +261,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [],
     productMovements: Array.isArray(productMovements) ? productMovements : [],
     bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [],
-    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], // New: utilizationOrders
+    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [],
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [],
     settings,
-    // Other stable dependencies
     nextIds,
     showAlertModal,
     showConfirmationModal,
     updateStockFromOrder,
     updateAverageCosts,
-    updateStockForUtilization, // New: Pass updateStockForUtilization
+    updateStockForUtilization,
     addToRecycleBin,
   });
 
-  // --- Initialization Logic ---
+  // 9. App Initialization
   useAppInitialization({
     products: Array.isArray(products) ? products : [],
     suppliers: Array.isArray(suppliers) ? suppliers : [],
@@ -437,7 +316,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     outgoingPayments: Array.isArray(outgoingPayments) ? outgoingPayments : [], setOutgoingPayments,
     productMovements: Array.isArray(productMovements) ? productMovements : [], setProductMovements,
     bankAccounts: Array.isArray(bankAccounts) ? bankAccounts : [], setBankAccounts,
-    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], setUtilizationOrders, // New: utilizationOrders
+    utilizationOrders: Array.isArray(utilizationOrders) ? utilizationOrders : [], setUtilizationOrders,
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits,
@@ -445,11 +324,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     warehouseMap,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
-    updateStockFromOrder, updateAverageCosts, updateStockForUtilization, // New: updateStockForUtilization
+    updateStockFromOrder, updateAverageCosts, updateStockForUtilization,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
-    runningBalancesMap, // Expose the running balances map
+    runningBalancesMap,
   }), [
     productsWithTotalStock, setProducts,
     suppliers, setSuppliers,
@@ -461,7 +340,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     outgoingPayments, setOutgoingPayments,
     productMovements, setProductMovements,
     bankAccounts, setBankAccounts,
-    utilizationOrders, setUtilizationOrders, // New: utilizationOrders
+    utilizationOrders, setUtilizationOrders,
     settings, setSettings,
     currencyRates, setCurrencyRates,
     packingUnits, setPackingUnits,
@@ -469,20 +348,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     warehouseMap,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
-    updateStockFromOrder, updateAverageCosts, updateStockForUtilization, // New: updateStockForUtilization
+    updateStockFromOrder, updateAverageCosts, updateStockForUtilization,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
-    runningBalancesMap, // Include in the memoized value
+    runningBalancesMap,
   ]);
 
   return (
     <DataContext.Provider value={value}>
       {children}
-      {/* Always render AlertDialog, but conditionally render its content */}
       <AlertDialog open={isConfirmationModalOpen} onOpenChange={closeConfirmationModal}>
         {confirmationModalProps && (
-          <AlertDialogContent className="z-50"> {/* Added z-50 for visibility */}
+          <AlertDialogContent className="z-50">
             <AlertDialogHeader>
               <AlertDialogTitle>{confirmationModalProps.title}</AlertDialogTitle>
               <AlertDialogDescription>{confirmationModalProps.message}</AlertDialogDescription>
@@ -499,7 +377,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
                 closeConfirmationModal();
               }}>
-                {confirmationModalProps.actionLabel || t('confirm')} {/* Use dynamic label or default to 'Confirm' */}
+                {confirmationModalProps.actionLabel || t('confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
