@@ -21,7 +21,7 @@ type SortConfig = {
 };
 
 const OutgoingPayments: React.FC = () => {
-  const { outgoingPayments, purchaseOrders, suppliers, bankAccounts, deleteItem, currencyRates, settings, convertCurrency, incomingPayments } = useData();
+  const { outgoingPayments, purchaseOrders, suppliers, bankAccounts, deleteItem, currencyRates, settings, convertCurrency, runningBalancesMap } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaymentId, setEditingPaymentId] = useState<number | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -37,33 +37,10 @@ const OutgoingPayments: React.FC = () => {
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as { [key: number]: string }), [suppliers]);
   const paymentCategoryMap = useMemo(() => (settings.paymentCategories || []).reduce((acc, cat) => ({ ...acc, [cat.name]: cat.name }), {} as { [key: string]: string }), [settings.paymentCategories]);
 
-  // Calculate current balance for each bank account
-  const bankAccountsWithBalances = useMemo(() => {
-    return bankAccounts.map(account => {
-      let currentBalance = account.initialBalance;
-
-      incomingPayments.forEach(p => {
-        if (p.bankAccountId === account.id) {
-          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          currentBalance += amountInAccountCurrency;
-        }
-      });
-
-      outgoingPayments.forEach(p => {
-        if (p.bankAccountId === account.id) {
-          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          currentBalance -= amountInAccountCurrency;
-        }
-      });
-
-      return { ...account, currentBalance };
-    });
-  }, [bankAccounts, incomingPayments, outgoingPayments, convertCurrency]);
-
-  const bankAccountMapWithBalances = useMemo(() => {
-    return bankAccountsWithBalances.reduce((acc, account) => ({ ...acc, [account.id]: account }), {} as { [key: number]: BankAccount & { currentBalance: number } });
-  }, [bankAccountsWithBalances]);
-
+  // Map bank accounts for easy lookup
+  const bankAccountMap = useMemo(() => {
+    return bankAccounts.reduce((acc, account) => ({ ...acc, [account.id]: account }), {} as { [key: number]: BankAccount });
+  }, [bankAccounts]);
 
   // Aggregate payments by order ID and specific category (products/transportationFees/customFees/additionalFees) in AZN
   const paymentsByOrderAndCategoryAZN = useMemo(() => {
@@ -105,7 +82,10 @@ const OutgoingPayments: React.FC = () => {
       let remainingAmountText = '';
       let rowClass = 'border-b dark:border-slate-700 text-gray-800 dark:text-slate-300';
       let categoryDisplay = '';
-      const linkedBankAccount = bankAccountMapWithBalances[p.bankAccountId];
+      
+      const linkedBankAccount = bankAccounts.find(acc => acc.id === p.bankAccountId);
+      const balanceAfterThisPayment = runningBalancesMap.get(p.bankAccountId)?.get(`out-${p.id}`);
+
 
       if (p.orderId === 0) {
         categoryDisplay = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
@@ -166,7 +146,7 @@ const OutgoingPayments: React.FC = () => {
         remainingAmountText, 
         rowClass, 
         categoryDisplay,
-        bankAccountBalance: linkedBankAccount?.currentBalance,
+        bankAccountBalance: balanceAfterThisPayment, // Use the calculated running balance
         bankAccountCurrency: linkedBankAccount?.currency,
       };
     });
@@ -195,7 +175,7 @@ const OutgoingPayments: React.FC = () => {
       });
     }
     return finalFilteredPayments;
-  }, [outgoingPayments, startDateFilter, endDateFilter, categoryFilter, purchaseOrderMap, supplierMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t, bankAccountMapWithBalances]);
+  }, [outgoingPayments, startDateFilter, endDateFilter, categoryFilter, purchaseOrderMap, supplierMap, paymentsByOrderAndCategoryAZN, currencyRates, paymentCategoryMap, sortConfig, t, runningBalancesMap, bankAccounts]);
 
   // Get all unique categories for the filter dropdown
   const allUniqueCategories = useMemo(() => {
