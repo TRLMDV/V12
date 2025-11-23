@@ -60,6 +60,7 @@ const Bank: React.FC = () => {
     excelExportData,
     totalTransactions,
     handleTransactionsModalClose,
+    handleViewTransactions: handleViewTransactionsLogic, // Renamed to avoid conflict
   } = useBankTransactionsLogic(
     selectedBankAccountIdForTransactions,
     bankAccountMap,
@@ -73,9 +74,7 @@ const Bank: React.FC = () => {
   // Handler to open transaction history modal and set the selected account
   const handleViewTransactions = (id: number) => {
     setSelectedBankAccountIdForTransactions(id);
-    // The useBankTransactionsLogic hook will handle opening its modal internally
-    // We just need to trigger the state change for the selected account.
-    // The modal's isOpen state is managed by useBankTransactionsLogic.
+    handleViewTransactionsLogic(id); // Call the function from the hook to open the modal
   };
 
   return (
