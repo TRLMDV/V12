@@ -19,7 +19,7 @@ import Profitability from "./pages/Profitability";
 import DataImportExport from "./pages/DataImportExport";
 import SettingsPage from "./pages/Settings";
 import Bank from "./pages/Bank";
-import Utilization from "./pages/Utilization"; // New import for Utilization page
+import Utilization from "./pages/Utilization";
 import NotFound from "./pages/NotFound";
 // MOCK_CURRENT_DATE is not used directly in App.tsx, removing import
 
@@ -29,7 +29,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      <Sonner position="bottom-left" /> {/* Changed position to bottom-left */}
       <BrowserRouter>
           <Routes>
             <Route path="/" element={<MainLayout><Dashboard /></MainLayout>} />
@@ -47,7 +47,7 @@ const App = () => (
             <Route path="/data-import-export" element={<MainLayout><DataImportExport /></MainLayout>} />
             <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
             <Route path="/bank" element={<MainLayout><Bank /></MainLayout>} />
-            <Route path="/utilization" element={<MainLayout><Utilization /></MainLayout>} /> {/* New Route for Utilization */}
+            <Route path="/utilization" element={<MainLayout><Utilization /></MainLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
       </BrowserRouter>
