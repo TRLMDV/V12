@@ -44,6 +44,17 @@ const ActiveCurrenciesSettings: React.FC<ActiveCurrenciesSettingsProps> = ({
     });
   };
 
+  const handleSelectAll = () => {
+    const allButMain = ALL_CURRENCIES.filter(c => c !== mainCurrency);
+    setActiveCurrencies(Array.from(new Set([...allButMain, mainCurrency])).sort());
+    toast.info(t('allCurrenciesSelected'));
+  };
+
+  const handleDeselectAll = () => {
+    setActiveCurrencies([mainCurrency]);
+    toast.info(t('allCurrenciesDeselected'));
+  };
+
   const handleSaveActiveCurrencies = () => {
     setSettings(prev => ({ ...prev, activeCurrencies }));
     toast.success(t('success'), { description: t('activeCurrenciesUpdated') });
@@ -67,6 +78,14 @@ const ActiveCurrenciesSettings: React.FC<ActiveCurrenciesSettingsProps> = ({
 
       {isCurrenciesListOpen && (
         <>
+          <div className="flex justify-end gap-2 mb-4">
+            <Button variant="outline" onClick={handleSelectAll} size="sm">
+              {t('selectAll')}
+            </Button>
+            <Button variant="outline" onClick={handleDeselectAll} size="sm">
+              {t('deselectAll')}
+            </Button>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 py-4">
             {sortedAllCurrencies.map(c => (
               <div key={c} className="flex items-center space-x-2">
