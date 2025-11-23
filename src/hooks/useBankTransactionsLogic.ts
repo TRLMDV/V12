@@ -12,6 +12,7 @@ interface Transaction {
   description: string;
   amount: number; // Always in the account's currency
   type: 'incoming' | 'outgoing' | 'initial';
+  bankAccountId: number; // Added this property
   originalPaymentId: number;
   originalPaymentCurrency: Currency;
   originalPaymentAmount: number;
