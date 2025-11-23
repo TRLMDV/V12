@@ -291,6 +291,7 @@ const i18n = {
     deselectAll: 'Deselect All', // New translation key
     allCurrenciesSelected: 'All active currencies selected.', // New translation key
     allCurrenciesDeselected: 'All active currencies deselected (except main currency).', // New translation key
+    exportTransactionsToExcel: 'Export Transactions to Excel', // New translation key
   }
 };
 

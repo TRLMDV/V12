@@ -13,8 +13,9 @@ import FormModal from '@/components/FormModal';
 import BankAccountForm from '@/forms/BankAccountForm'; // New: BankAccountForm
 import PaymentForm from '@/forms/PaymentForm';
 import { Payment, Currency, BankAccount } from '@/types';
-import { format } from 'date-fns';
+import { format } from 'date-fns'; // Import format from date-fns
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
+import ExcelExportButton from '@/components/ExcelExportButton'; // New: Import ExcelExportButton
 
 interface Transaction {
   id: string; // Unique ID for transaction (payment.id + type)
@@ -41,6 +42,7 @@ const Bank: React.FC = () => {
     convertCurrency,
     showAlertModal,
     showConfirmationModal, // New: For deleting bank accounts
+    runningBalancesMap, // Use the runningBalancesMap from DataContext
   } = useData();
   const mainCurrency = settings.mainCurrency;
 
@@ -68,29 +70,6 @@ const Bank: React.FC = () => {
     return bankAccounts.reduce((acc, account) => ({ ...acc, [account.id]: account }), {} as { [key: number]: BankAccount });
   }, [bankAccounts]);
 
-  // Calculate current balance for each bank account
-  const bankAccountsWithBalances = useMemo(() => {
-    return bankAccounts.map(account => {
-      let currentBalance = account.initialBalance;
-
-      incomingPayments.forEach(p => {
-        if (p.bankAccountId === account.id) {
-          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          currentBalance += amountInAccountCurrency;
-        }
-      });
-
-      outgoingPayments.forEach(p => {
-        if (p.bankAccountId === account.id) {
-          const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, account.currency);
-          currentBalance -= amountInAccountCurrency;
-        }
-      });
-
-      return { ...account, currentBalance };
-    });
-  }, [bankAccounts, incomingPayments, outgoingPayments, convertCurrency]);
-
   // Aggregate all transactions for a specific bank account with running balance
   const allTransactionsForSelectedAccount = useMemo(() => {
     const transactions: Omit<Transaction, 'runningBalance'>[] = [];
@@ -101,10 +80,11 @@ const Bank: React.FC = () => {
     // Add initial balance as a transaction
     transactions.push({
       id: `initial-${selectedAccount.id}`,
-      date: format(new Date(0), 'yyyy-MM-dd'), // Use epoch for initial balance date
+      date: '1970-01-01', // Use epoch for initial balance date to ensure it's sorted first
       description: t('initialBalance'),
       amount: selectedAccount.initialBalance,
       type: 'initial',
+      bankAccountId: selectedAccount.id,
       originalPaymentId: 0,
       originalPaymentCurrency: selectedAccount.currency,
       originalPaymentAmount: selectedAccount.initialBalance,
@@ -128,6 +108,7 @@ const Bank: React.FC = () => {
           description: description,
           amount: amountInAccountCurrency,
           type: 'incoming',
+          bankAccountId: selectedAccount.id,
           originalPaymentId: p.id,
           originalPaymentCurrency: p.paymentCurrency,
           originalPaymentAmount: p.amount,
@@ -151,6 +132,7 @@ const Bank: React.FC = () => {
           description: description,
           amount: amountInAccountCurrency,
           type: 'outgoing',
+          bankAccountId: selectedAccount.id,
           originalPaymentId: p.id,
           originalPaymentCurrency: p.paymentCurrency,
           originalPaymentAmount: p.amount,
@@ -172,12 +154,15 @@ const Bank: React.FC = () => {
       return typeOrder[a.type] - typeOrder[b.type];
     });
 
-    let currentRunningBalance = 0;
+    let currentRunningBalance = selectedAccount.initialBalance; // Start with initial balance
     const transactionsWithRunningBalance: Transaction[] = [];
 
     transactions.forEach(t => {
+      // The 'initial' transaction itself sets the starting point, subsequent transactions adjust it.
+      // We already initialized currentRunningBalance with selectedAccount.initialBalance.
+      // So, for the 'initial' transaction, we just record its amount as the running balance.
       if (t.type === 'initial') {
-        currentRunningBalance = t.amount;
+        // currentRunningBalance is already set to initialBalance
       } else if (t.type === 'incoming') {
         currentRunningBalance += t.amount;
       } else if (t.type === 'outgoing') {
@@ -272,15 +257,37 @@ const Bank: React.FC = () => {
 
   const currentAccountBalanceInModal = useMemo(() => {
     if (!selectedBankAccountId) return 0;
-    const account = bankAccountsWithBalances.find(acc => acc.id === selectedBankAccountId);
-    return account ? account.currentBalance : 0;
-  }, [selectedBankAccountId, bankAccountsWithBalances]);
+    const account = bankAccounts.find(acc => acc.id === selectedBankAccountId);
+    if (!account) return 0;
+
+    // Get the last running balance from the map for the selected account
+    const accountBalancesMap = runningBalancesMap.get(selectedBankAccountId);
+    if (accountBalancesMap && accountBalancesMap.size > 0) {
+      // Find the last transaction in the filtered list to get the current balance
+      const lastFilteredTransaction = filteredTransactions[filteredTransactions.length - 1];
+      if (lastFilteredTransaction && lastFilteredTransaction.runningBalance !== undefined) {
+        return lastFilteredTransaction.runningBalance;
+      }
+    }
+    return account.initialBalance; // Fallback if no transactions or map is empty
+  }, [selectedBankAccountId, bankAccounts, filteredTransactions, runningBalancesMap]);
 
   const selectedAccountCurrency = useMemo(() => {
     if (!selectedBankAccountId) return mainCurrency;
     const account = bankAccountMap[selectedBankAccountId];
     return account ? account.currency : mainCurrency;
   }, [selectedBankAccountId, bankAccountMap, mainCurrency]);
+
+  // Prepare data for Excel export
+  const excelExportData = useMemo(() => {
+    return filteredTransactions.map(t => ({
+      Date: format(new Date(t.date), 'yyyy-MM-dd'),
+      Description: t.description,
+      Incoming: (t.type === 'incoming' || t.type === 'initial') ? `${t.amount.toFixed(2)} ${selectedAccountCurrency}` : '',
+      Outgoing: t.type === 'outgoing' ? `${t.amount.toFixed(2)} ${selectedAccountCurrency}` : '',
+      Balance: `${t.runningBalance?.toFixed(2) || '0.00'} ${selectedAccountCurrency}`,
+    }));
+  }, [filteredTransactions, selectedAccountCurrency]);
 
   return (
     <div className="container mx-auto p-4">
@@ -302,7 +309,7 @@ const Bank: React.FC = () => {
         </div>
       </div>
 
-      {bankAccountsWithBalances.length === 0 && (
+      {bankAccounts.length === 0 && (
         <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-800 dark:text-blue-200">
           <p className="font-medium">{t('noBankAccountsFound')}</p>
           <p>{t('pleaseAddBankAccountInstruction')}</p>
@@ -322,14 +329,27 @@ const Bank: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {bankAccountsWithBalances.length > 0 ? (
-              bankAccountsWithBalances.map((account, index) => (
+            {bankAccounts.length > 0 ? (
+              bankAccounts.map((account, index) => (
                 <TableRow key={account.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{index + 1}.</TableCell>{/* New: Numbering cell */}
                   <TableCell className="p-3 font-semibold">{account.name}</TableCell>
                   <TableCell className="p-3">{account.currency}</TableCell>
-                  <TableCell className={`p-3 text-right font-bold ${account.currentBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {account.currentBalance.toFixed(2)} {account.currency}
+                  <TableCell className={`p-3 text-right font-bold ${
+                    (runningBalancesMap.get(account.id)?.get(`inc-${incomingPayments.find(p => p.bankAccountId === account.id)?.id}`) || account.initialBalance) >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {/* Display the latest running balance for the account, or initial if no transactions */}
+                    {(() => {
+                      const accountBalances = runningBalancesMap.get(account.id);
+                      if (accountBalances && accountBalances.size > 0) {
+                        // Find the last transaction ID for this account
+                        const lastTransactionId = Array.from(accountBalances.keys()).pop();
+                        if (lastTransactionId) {
+                          return `${accountBalances.get(lastTransactionId)?.toFixed(2) || '0.00'} ${account.currency}`;
+                        }
+                      }
+                      return `${account.initialBalance.toFixed(2)} ${account.currency}`;
+                    })()}
                   </TableCell>
                   <TableCell className="p-3 text-right">
                     <Button variant="link" onClick={() => handleViewTransactions(account.id)} className="mr-2 p-0 h-auto">
@@ -435,6 +455,22 @@ const Bank: React.FC = () => {
               {currentAccountBalanceInModal.toFixed(2)} {selectedAccountCurrency}
             </p>
           </div>
+        </div>
+
+        <div className="flex justify-end mb-4">
+          <ExcelExportButton
+            buttonLabel={t('exportTransactionsToExcel')}
+            data={excelExportData}
+            fileName={`${bankAccountMap[selectedBankAccountId as number]?.name || 'Bank Transactions'}_transactions`}
+            sheetName="Transactions"
+            columns={[
+              { header: t('date'), accessor: 'Date' },
+              { header: t('description'), accessor: 'Description' },
+              { header: t('incoming'), accessor: 'Incoming' },
+              { header: t('outgoing'), accessor: 'Outgoing' },
+              { header: t('balance'), accessor: 'Balance' },
+            ]}
+          />
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto">
