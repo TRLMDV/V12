@@ -28,6 +28,12 @@ const COLORS = [
   '#3f51b5', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'
 ]; // A palette of colors for multiple lines
 
+// Define a more flexible type for monthly sales entries
+interface MonthlySalesEntry {
+  name: string;
+  [key: string]: string | number; // Allows 'name' as string and dynamic year keys as numbers
+}
+
 const SalesChart: React.FC<SalesChartProps> = () => {
   const { sellOrders, settings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
@@ -121,11 +127,11 @@ const SalesChart: React.FC<SalesChartProps> = () => {
       // For both 'yearly' and 'monthly' chart types in 'all' mode,
       // we want to show monthly sales data, comparing across all years.
       const monthsInYear = eachMonthOfInterval({ start: startOfYear(currentDate), end: endOfYear(currentDate) });
-      const dataMap: { [monthKey: string]: { name: string; [year: string]: number } } = {};
+      const dataMap: { [monthKey: string]: MonthlySalesEntry } = {}; // Use the new type here
 
       monthsInYear.forEach(month => {
         const monthName = t(format(month, 'MMM').toLowerCase() as keyof typeof t);
-        dataMap[monthName] = { name: monthName };
+        dataMap[monthName] = { name: monthName }; // Assign 'name' property
         allYears.forEach(year => {
           dataMap[monthName][String(year)] = 0; // Initialize sales for each year
         });
@@ -138,7 +144,7 @@ const SalesChart: React.FC<SalesChartProps> = () => {
         const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency);
 
         if (dataMap[monthName] && allYears.includes(year)) {
-          dataMap[monthName][String(year)] = parseFloat(((dataMap[monthName][String(year)] || 0) + salesValue).toFixed(2));
+          dataMap[monthName][String(year)] = parseFloat(((dataMap[monthName][String(year)] as number || 0) + salesValue).toFixed(2));
         }
       });
 
