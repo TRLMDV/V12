@@ -310,12 +310,19 @@ const i18n = {
     day: 'Day',
     singlePeriod: 'Single Period', // New translation key
     allPeriods: 'All Periods', // New translation key
-    // New translations for ProductPurchaseOrdersModal
+    // New translations for ProductTransactionsModal
+    productTransactions: 'Product Transactions',
+    productTransactionsDescription: 'List of all purchase and sales orders containing this product.',
     purchaseOrdersWithProduct: 'Purchase Orders with Product',
     purchaseOrdersWithProductDescription: 'List of purchase orders containing this product.',
     priceInOrderCurrency: 'Price (Order Currency)',
     currencyRateToMainCurrency: 'Rate (1 {orderCurrency} to {mainCurrency})',
     noPurchaseOrdersFoundForProduct: 'No purchase orders found for this product.',
+    salesOrdersWithProduct: 'Sales Orders with Product', // New
+    saleDate: 'Sale Date', // New
+    priceExclVat: 'Price (Excl. VAT)', // New
+    priceInclVat: 'Price (Incl. VAT)', // New
+    noSalesOrdersFoundForProduct: 'No sales orders found for this product.', // New
   }
 };
 

@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'; // Import Input component
 import { Label } from '@/components/ui/label'; // Import Label component
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import ImageEnlargerModal from '@/components/ImageEnlargerModal'; // New import
-import ProductPurchaseOrdersModal from '@/components/ProductPurchaseOrdersModal'; // New import for product details modal
+import ProductTransactionsModal from '@/components/ProductTransactionsModal'; // Updated import for product details modal
 import { Product } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -35,7 +35,7 @@ const Products: React.FC = () => {
   const [enlargedProductName, setEnlargedProductName] = useState('');
 
   // States for product purchase orders modal
-  const [isProductPurchaseOrdersModalOpen, setIsProductPurchaseOrdersModalOpen] = useState(false);
+  const [isProductTransactionsModalOpen, setIsProductTransactionsModalOpen] = useState(false);
   const [selectedProductIdForDetails, setSelectedProductIdForDetails] = useState<number | undefined>(undefined);
 
   // Pagination states
@@ -137,7 +137,7 @@ const Products: React.FC = () => {
 
   const handleViewProductDetails = (productId: number) => {
     setSelectedProductIdForDetails(productId);
-    setIsProductPurchaseOrdersModalOpen(true);
+    setIsProductTransactionsModalOpen(true);
   };
 
   return (
@@ -287,9 +287,9 @@ const Products: React.FC = () => {
       />
 
       {selectedProductIdForDetails !== undefined && (
-        <ProductPurchaseOrdersModal
-          isOpen={isProductPurchaseOrdersModalOpen}
-          onClose={() => setIsProductPurchaseOrdersModalOpen(false)}
+        <ProductTransactionsModal
+          isOpen={isProductTransactionsModalOpen}
+          onClose={() => setIsProductTransactionsModalOpen(false)}
           productId={selectedProductIdForDetails}
         />
       )}
