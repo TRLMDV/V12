@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import FormModal from '@/components/FormModal';
 import ProductForm from '@/forms/ProductForm';
-import { ArrowUpDown, PlusCircle } from 'lucide-react';
+import { ArrowUpDown, PlusCircle, Eye } from 'lucide-react'; // Import Eye icon
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input'; // Import Input component
 import { Label } from '@/components/ui/label'; // Import Label component
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import ImageEnlargerModal from '@/components/ImageEnlargerModal'; // New import
+import ProductPurchaseOrdersModal from '@/components/ProductPurchaseOrdersModal'; // New import for product details modal
 import { Product } from '@/types'; // Import types from types file
 
 type SortConfig = {
@@ -32,6 +33,10 @@ const Products: React.FC = () => {
   const [isImageEnlargerModalOpen, setIsImageEnlargerModalOpen] = useState(false);
   const [enlargedImageUrl, setEnlargedImageUrl] = useState('');
   const [enlargedProductName, setEnlargedProductName] = useState('');
+
+  // States for product purchase orders modal
+  const [isProductPurchaseOrdersModalOpen, setIsProductPurchaseOrdersModalOpen] = useState(false);
+  const [selectedProductIdForDetails, setSelectedProductIdForDetails] = useState<number | undefined>(undefined);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -128,6 +133,11 @@ const Products: React.FC = () => {
     setEnlargedImageUrl(imageUrl);
     setEnlargedProductName(productName);
     setIsImageEnlargerModalOpen(true);
+  };
+
+  const handleViewProductDetails = (productId: number) => {
+    setSelectedProductIdForDetails(productId);
+    setIsProductPurchaseOrdersModalOpen(true);
   };
 
   return (
@@ -231,6 +241,9 @@ const Products: React.FC = () => {
                       {priceWithMarkupPlusVatDisplay}
                     </TableCell>
                     <TableCell className="p-3">
+                      <Button variant="link" onClick={() => handleViewProductDetails(p.id)} className="mr-2 p-0 h-auto">
+                        <Eye className="w-4 h-4" />
+                      </Button>
                       <Button variant="link" onClick={() => handleEditProduct(p.id)} className="mr-2 p-0 h-auto">
                         {t('edit')}
                       </Button>
@@ -272,6 +285,14 @@ const Products: React.FC = () => {
         imageUrl={enlargedImageUrl}
         productName={enlargedProductName}
       />
+
+      {selectedProductIdForDetails !== undefined && (
+        <ProductPurchaseOrdersModal
+          isOpen={isProductPurchaseOrdersModalOpen}
+          onClose={() => setIsProductPurchaseOrdersModalOpen(false)}
+          productId={selectedProductIdForDetails}
+        />
+      )}
     </div>
   );
 };
