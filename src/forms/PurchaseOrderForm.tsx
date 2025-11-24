@@ -33,6 +33,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     handleSelectChange,
     handleCurrencyChange,
     handleExchangeRateChange,
+    handleFeesExchangeRateChange, // New: Fees exchange rate handler
     addOrderItem,
     removeOrderItem,
     handleOrderItemChange,
@@ -41,6 +42,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
     displayedFeesBreakdown,
     selectedCurrency,
     manualExchangeRateInput,
+    manualFeesExchangeRateInput, // New: Fees exchange rate input state
     openComboboxIndex,
     setOpenComboboxIndex,
   } = usePurchaseOrderForm({ orderId, onSuccess });
@@ -172,6 +174,24 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             </SelectContent>
           </Select>
         </div>
+
+        {order.feesCurrency !== 'AZN' && (
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="feesExchangeRate" className="text-right">{t('feesExchangeRateToAZN')}</Label>
+            <div className="col-span-3">
+              <Input
+                id="feesExchangeRate"
+                type="text"
+                value={manualFeesExchangeRateInput}
+                onChange={handleFeesExchangeRateChange}
+                placeholder={t('exchangeRatePlaceholder')}
+                className="mb-1"
+                required
+              />
+              <p className="text-xs text-gray-500 dark:text-slate-400">{t('exchangeRateHelpText')}</p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-4 items-start gap-4 mt-4">
           <Label htmlFor="comment" className="text-right">

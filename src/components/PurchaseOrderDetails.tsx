@@ -27,14 +27,15 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
   const productsSubtotalNative = order.items?.reduce((sum, item) => sum + (item.price * item.qty), 0) || 0;
   const orderNativeToAznRate = order.currency === 'AZN' ? 1 : (order.exchangeRate || currencyRates[order.currency] || 1);
 
-  const convertFeeToOrderNativeCurrency = (amount: number, feeCurrency: Currency) => { // Changed feeCurrency to Currency
+  const convertFeeToOrderNativeCurrency = (amount: number, feeCurrency: Currency, feeExchangeRate?: number) => { // Changed feeCurrency to Currency, added feeExchangeRate
     if (amount === 0) return 0;
-    const feeInAzn = amount * (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
+    const effectiveFeeRateToAZN = (feeCurrency === 'AZN' ? 1 : (feeExchangeRate || currencyRates[feeCurrency] || 1));
+    const feeInAzn = amount * effectiveFeeRateToAZN;
     return feeInAzn / orderNativeToAznRate;
   };
 
   let totalFeesNative = 0;
-  totalFeesNative += convertFeeToOrderNativeCurrency(order.fees, order.feesCurrency);
+  totalFeesNative += convertFeeToOrderNativeCurrency(order.fees, order.feesCurrency, order.feesExchangeRate);
 
   const totalValueNative = productsSubtotalNative + totalFeesNative;
 
@@ -93,6 +94,12 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
             <TableCell colSpan={5} className="p-2 text-right">{t('fees')} ({order.feesCurrency}):</TableCell> {/* Adjusted colSpan */}
             <TableCell className="p-2">{order.fees.toFixed(2)} {order.feesCurrency}</TableCell>
           </TableRow>
+          {order.feesCurrency !== 'AZN' && order.feesExchangeRate && (
+            <TableRow className="bg-gray-100 dark:bg-slate-700">
+              <TableCell colSpan={5} className="p-2 text-right">{t('feesExchangeRateToAZN')}:</TableCell>
+              <TableCell className="p-2">{order.feesExchangeRate}</TableCell>
+            </TableRow>
+          )}
           <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">
             <TableCell colSpan={5} className="p-2 text-right">{t('total')} ({order.currency}):</TableCell> {/* Adjusted colSpan */}
             <TableCell className="p-2 text-sky-600 dark:text-sky-400">{totalValueNative.toFixed(2)} {order.currency}</TableCell>

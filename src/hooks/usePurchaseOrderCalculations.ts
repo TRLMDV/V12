@@ -9,6 +9,7 @@ interface UsePurchaseOrderCalculationsProps {
   orderItems: PurchaseOrderItemState[];
   selectedCurrency: Currency;
   manualExchangeRate?: number;
+  manualFeesExchangeRate?: number; // New: Pass manualFeesExchangeRate
   productMap: { [key: number]: Product };
   currencyRates: CurrencyRates;
   settings: Settings;
@@ -19,6 +20,7 @@ export const usePurchaseOrderCalculations = ({
   orderItems,
   selectedCurrency,
   manualExchangeRate,
+  manualFeesExchangeRate, // Destructure new prop
   productMap,
   currencyRates,
   settings,
@@ -41,8 +43,13 @@ export const usePurchaseOrderCalculations = ({
 
     const productsSubtotalAZN = productsSubtotalNative * currentExchangeRate;
 
-    // Calculate fees in AZN
-    const feesAZN = (order.fees || 0) * ((order.feesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.feesCurrency || 'AZN'] || 1));
+    // Determine the effective exchange rate for fees
+    const effectiveFeesExchangeRate = (order.feesCurrency || 'AZN') === 'AZN'
+      ? 1
+      : (manualFeesExchangeRate !== undefined ? manualFeesExchangeRate : (currencyRates[order.feesCurrency || 'AZN'] || 1));
+
+    // Calculate fees in AZN using the effective rate
+    const feesAZN = (order.fees || 0) * effectiveFeesExchangeRate;
 
     const totalFeesAZN = feesAZN;
 
@@ -92,7 +99,7 @@ export const usePurchaseOrderCalculations = ({
       productsSubtotalNative: parseFloat(productsSubtotalNative.toFixed(2)),
       feesBreakdownForDisplay,
     };
-  }, [order, orderItems, selectedCurrency, currentExchangeRate, currencyRates]);
+  }, [order, orderItems, selectedCurrency, currentExchangeRate, currencyRates, manualFeesExchangeRate]); // Added manualFeesExchangeRate as dependency
 
   const {
     totalOrderValueAZN,

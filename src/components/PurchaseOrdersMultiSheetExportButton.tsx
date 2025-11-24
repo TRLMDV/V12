@@ -94,6 +94,9 @@ const PurchaseOrdersMultiSheetExportButton: React.FC<PurchaseOrdersMultiSheetExp
       // --- Fees ---
       data.push([{ v: t('fees'), s: { font: { bold: true, sz: 12 } } }]);
       data.push([t('fees'), `${order.fees.toFixed(2)} ${order.feesCurrency}`]);
+      if (order.feesCurrency !== 'AZN' && order.feesExchangeRate) { // New: Add fees exchange rate to export
+        data.push([t('feesExchangeRateToAZN'), order.feesExchangeRate]);
+      }
       data.push([]); // Spacer
 
       // --- Totals ---

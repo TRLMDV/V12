@@ -10,6 +10,8 @@ interface UsePurchaseOrderHandlersProps {
   setSelectedCurrency: React.Dispatch<React.SetStateAction<Currency>>;
   setManualExchangeRate: React.Dispatch<React.SetStateAction<number | undefined>>;
   setManualExchangeRateInput: React.Dispatch<React.SetStateAction<string>>;
+  setManualFeesExchangeRate: React.Dispatch<React.SetStateAction<number | undefined>>; // New: Setter for fees exchange rate
+  setManualFeesExchangeRateInput: React.Dispatch<React.SetStateAction<string>>; // New: Setter for fees exchange rate input
   productMap: { [key: number]: Product };
   packingUnitMap: { [key: number]: PackingUnit }; // New: Pass packingUnitMap
   selectedCurrency: Currency; // Added to ensure addOrderItem has correct currency
@@ -21,6 +23,8 @@ export const usePurchaseOrderHandlers = ({
   setSelectedCurrency,
   setManualExchangeRate,
   setManualExchangeRateInput,
+  setManualFeesExchangeRate, // Destructure new prop
+  setManualFeesExchangeRateInput, // Destructure new prop
   productMap,
   packingUnitMap, // Destructure new prop
   selectedCurrency,
@@ -41,7 +45,18 @@ export const usePurchaseOrderHandlers = ({
 
   const handleSelectChange = useCallback((id: keyof PurchaseOrder, value: string) => {
     setOrder(prev => ({ ...prev, [id]: value }));
-  }, [setOrder]);
+    if (id === 'feesCurrency') {
+      // When fees currency changes, update the manual fees exchange rate input
+      if (value === 'AZN') {
+        setManualFeesExchangeRate(undefined);
+        setManualFeesExchangeRateInput('');
+      } else {
+        const defaultRate = currencyRates[value as Currency];
+        setManualFeesExchangeRate(defaultRate);
+        setManualFeesExchangeRateInput(String(defaultRate));
+      }
+    }
+  }, [setOrder, setManualFeesExchangeRate, setManualFeesExchangeRateInput, currencyRates]);
 
   const handleCurrencyChange = useCallback((value: Currency) => {
     setSelectedCurrency(value);
@@ -64,6 +79,15 @@ export const usePurchaseOrderHandlers = ({
       setManualExchangeRate(isNaN(parsedValue) ? undefined : parsedValue);
     }
   }, [setManualExchangeRate, setManualExchangeRateInput]);
+
+  const handleFeesExchangeRateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { // New handler
+    const inputValue = e.target.value;
+    if (inputValue === '' || /^-?\d*\.?\d*$/.test(inputValue)) {
+      setManualFeesExchangeRateInput(inputValue);
+      const parsedValue = parseFloat(inputValue);
+      setManualFeesExchangeRate(isNaN(parsedValue) ? undefined : parsedValue);
+    }
+  }, [setManualFeesExchangeRate, setManualFeesExchangeRateInput]);
 
   const addOrderItem = useCallback(() => {
     setOrderItems(prev => [...prev, {
@@ -158,6 +182,7 @@ export const usePurchaseOrderHandlers = ({
     handleSelectChange,
     handleCurrencyChange,
     handleExchangeRateChange,
+    handleFeesExchangeRateChange, // New: Return new handler
     addOrderItem,
     removeOrderItem,
     handleOrderItemChange,

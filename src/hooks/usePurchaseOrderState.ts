@@ -33,6 +33,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       warehouseId: defaultWarehouse, // Set default warehouseId
       fees: 0, // Renamed from transportationFees, customFees, additionalFees
       feesCurrency: 'AZN', // Renamed from transportationFeesCurrency, customFeesCurrency, additionalFeesCurrency
+      feesExchangeRate: undefined, // New: Default undefined
       comment: '', // New: Default empty comment
       total: 0,
     };
@@ -58,6 +59,8 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(mainCurrency);
   const [manualExchangeRate, setManualExchangeRate] = useState<number | undefined>(undefined);
   const [manualExchangeRateInput, setManualExchangeRateInput] = useState<string>('');
+  const [manualFeesExchangeRate, setManualFeesExchangeRate] = useState<number | undefined>(undefined); // New state for fees exchange rate
+  const [manualFeesExchangeRateInput, setManualFeesExchangeRateInput] = useState<string>(''); // New state for fees exchange rate input
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
@@ -80,6 +83,8 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);
         setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? String(existingOrder.exchangeRate) : '');
+        setManualFeesExchangeRate(existingOrder.feesExchangeRate); // Load existing fees exchange rate
+        setManualFeesExchangeRateInput(existingOrder.feesExchangeRate !== undefined ? String(existingOrder.feesExchangeRate) : ''); // Load existing fees exchange rate input
         setIsFormInitialized(true);
       }
     } else if (!isEdit && !isFormInitialized) {
@@ -91,6 +96,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         warehouseId: defaultWarehouse, // Set default warehouseId
         fees: 0, // Reset fees
         feesCurrency: 'AZN', // Reset fees currency
+        feesExchangeRate: undefined, // Reset fees exchange rate
         comment: '', // Reset comment
         total: 0,
       });
@@ -98,10 +104,25 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       setSelectedCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');
+      setManualFeesExchangeRate(undefined); // Reset fees exchange rate
+      setManualFeesExchangeRateInput(''); // Reset fees exchange rate input
       setOpenComboboxIndex(null);
       setIsFormInitialized(true);
     }
   }, [orderId, isEdit, purchaseOrders, products, getNextId, isFormInitialized, mainCurrency, packingUnits, warehouses]);
+
+  // Effect to update manualFeesExchangeRate when feesCurrency changes
+  useEffect(() => {
+    if (order.feesCurrency && order.feesCurrency !== 'AZN') {
+      const defaultRate = settings.currencyRates[order.feesCurrency];
+      setManualFeesExchangeRate(defaultRate);
+      setManualFeesExchangeRateInput(String(defaultRate));
+    } else {
+      setManualFeesExchangeRate(undefined);
+      setManualFeesExchangeRateInput('');
+    }
+  }, [order.feesCurrency, settings.currencyRates]);
+
 
   return {
     order,
@@ -114,6 +135,10 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     setManualExchangeRate,
     manualExchangeRateInput,
     setManualExchangeRateInput,
+    manualFeesExchangeRate, // New: Return fees exchange rate
+    setManualFeesExchangeRate, // New: Return setter for fees exchange rate
+    manualFeesExchangeRateInput, // New: Return fees exchange rate input
+    setManualFeesExchangeRateInput, // New: Return setter for fees exchange rate input
     openComboboxIndex,
     setOpenComboboxIndex,
     supplierMap,

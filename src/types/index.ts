@@ -117,6 +117,7 @@ export interface PurchaseOrder {
   exchangeRate?: number; // Exchange rate to AZN if currency is not AZN
   fees: number; // Renamed from additionalFees
   feesCurrency: Currency; // Renamed from additionalFeesCurrency
+  feesExchangeRate?: number; // New: Exchange rate for fees to AZN
   comment?: string; // New: Optional comment for the purchase order
   total: number; // Total landed cost in Main Currency
 }

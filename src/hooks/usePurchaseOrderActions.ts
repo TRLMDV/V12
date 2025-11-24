@@ -12,6 +12,7 @@ interface UsePurchaseOrderActionsProps {
   orderItems: OrderItem[]; // Changed from PurchaseOrderItemState[] to OrderItem[]
   selectedCurrency: Currency;
   manualExchangeRate?: number;
+  manualFeesExchangeRate?: number; // New: Pass manualFeesExchangeRate
   currentExchangeRate: number;
   onSuccess: () => void;
   isEdit: boolean;
@@ -22,6 +23,7 @@ export const usePurchaseOrderActions = ({
   orderItems,
   selectedCurrency,
   manualExchangeRate,
+  manualFeesExchangeRate, // Destructure new prop
   currentExchangeRate,
   onSuccess,
   isEdit,
@@ -61,6 +63,11 @@ export const usePurchaseOrderActions = ({
       return;
     }
 
+    if ((order.feesCurrency || 'AZN') !== 'AZN' && (!manualFeesExchangeRate || manualFeesExchangeRate <= 0)) { // New validation for fees exchange rate
+      showAlertModal('Validation Error', 'Please enter a valid exchange rate for the selected fees currency.');
+      return;
+    }
+
     // validOrderItems are already in the correct OrderItem structure, no need to re-map
     const finalOrderItems: OrderItem[] = validOrderItems;
 
@@ -76,6 +83,7 @@ export const usePurchaseOrderActions = ({
       exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRate,
       fees: order.fees || 0, // Renamed from transportationFees, customFees, additionalFees
       feesCurrency: order.feesCurrency || 'AZN', // Renamed from transportationFeesCurrency, customFeesCurrency, additionalFeesCurrency
+      feesExchangeRate: (order.feesCurrency || 'AZN') === 'AZN' ? undefined : manualFeesExchangeRate, // New: Save fees exchange rate
       comment: order.comment || undefined, // New: Save comment
       total: order.total || 0,
     };
@@ -90,7 +98,7 @@ export const usePurchaseOrderActions = ({
     onSuccess();
     toast.success(t('success'), { description: `Purchase Order #${orderToSave.id || 'new'} saved successfully.` });
   }, [
-    order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRate, onSuccess, isEdit,
+    order, orderItems, selectedCurrency, manualExchangeRate, manualFeesExchangeRate, currentExchangeRate, onSuccess, isEdit, // Added manualFeesExchangeRate
     purchaseOrders, saveItem, updateStockFromOrder, updateAverageCosts, showAlertModal, getNextId, packingUnitMap
   ]);
 

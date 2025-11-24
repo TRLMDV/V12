@@ -29,6 +29,10 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     setManualExchangeRate,
     manualExchangeRateInput,
     setManualExchangeRateInput,
+    manualFeesExchangeRate, // New: Destructure fees exchange rate state
+    setManualFeesExchangeRate, // New: Destructure setter for fees exchange rate state
+    manualFeesExchangeRateInput, // New: Destructure fees exchange rate input state
+    setManualFeesExchangeRateInput, // New: Destructure setter for fees exchange rate input state
     openComboboxIndex,
     setOpenComboboxIndex,
     supplierMap,
@@ -54,6 +58,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     orderItems,
     selectedCurrency,
     manualExchangeRate,
+    manualFeesExchangeRate, // New: Pass manualFeesExchangeRate
     productMap,
     currencyRates,
     settings,
@@ -82,6 +87,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     handleSelectChange,
     handleCurrencyChange,
     handleExchangeRateChange,
+    handleFeesExchangeRateChange, // New: Pass fees exchange rate handler
     addOrderItem,
     removeOrderItem,
     handleOrderItemChange,
@@ -91,6 +97,8 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     setSelectedCurrency,
     setManualExchangeRate,
     setManualExchangeRateInput,
+    setManualFeesExchangeRate, // New: Pass setter for fees exchange rate
+    setManualFeesExchangeRateInput, // New: Pass setter for fees exchange rate input
     productMap,
     packingUnitMap, // Pass packingUnitMap
     selectedCurrency,
@@ -104,6 +112,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     orderItems: calculatedOrderItems as OrderItem[], // Cast to OrderItem[]
     selectedCurrency,
     manualExchangeRate,
+    manualFeesExchangeRate, // New: Pass manualFeesExchangeRate
     currentExchangeRate,
     onSuccess,
     isEdit,
@@ -127,6 +136,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     handleSelectChange,
     handleCurrencyChange,
     handleExchangeRateChange,
+    handleFeesExchangeRateChange, // New: Return new handler
     addOrderItem,
     removeOrderItem,
     handleOrderItemChange,
@@ -135,6 +145,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     displayedFeesBreakdown,
     selectedCurrency,
     manualExchangeRateInput,
+    manualFeesExchangeRateInput, // New: Return fees exchange rate input
     openComboboxIndex,
     setOpenComboboxIndex,
   };
