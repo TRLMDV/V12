@@ -53,9 +53,15 @@ const OrderDetailsExcelExportButton: React.FC<OrderDetailsExcelExportButtonProps
         summaryData.push({ Field: t('exchangeRateToAZN'), Value: po.exchangeRate || currencyRates[po.currency] || 1 });
       }
       summaryData.push(
-        { Field: t('transportationFees'), Value: `${po.transportationFees.toFixed(2)} ${po.transportationFeesCurrency}` },
-        { Field: t('customFees'), Value: `${po.customFees.toFixed(2)} ${po.customFeesCurrency}` },
-        { Field: t('additionalFees'), Value: `${po.additionalFees.toFixed(2)} ${po.additionalFeesCurrency}` },
+        { Field: t('fees'), Value: `${po.fees.toFixed(2)} ${po.feesCurrency}` },
+      );
+      if (po.feesCurrency !== 'AZN' && po.feesExchangeRate) {
+        summaryData.push({ Field: t('feesExchangeRateToAZN'), Value: po.feesExchangeRate });
+      }
+      if (po.comment) {
+        summaryData.push({ Field: t('comment'), Value: po.comment });
+      }
+      summaryData.push(
         { Field: t('totalLandedCost'), Value: `${po.total.toFixed(2)} AZN` },
       );
     } else { // Sell Order
@@ -108,10 +114,11 @@ const OrderDetailsExcelExportButton: React.FC<OrderDetailsExcelExportButtonProps
     if (orderType === 'purchase') {
       const po = order as PurchaseOrder;
       const feesData = [
-        { [t('feeType')]: t('transportationFees'), [t('amount')]: `${po.transportationFees.toFixed(2)} ${po.transportationFeesCurrency}` },
-        { [t('feeType')]: t('customFees'), [t('amount')]: `${po.customFees.toFixed(2)} ${po.customFeesCurrency}` },
-        { [t('feeType')]: t('additionalFees'), [t('amount')]: `${po.additionalFees.toFixed(2)} ${po.additionalFeesCurrency}` },
+        { [t('feeType')]: t('fees'), [t('amount')]: `${po.fees.toFixed(2)} ${po.feesCurrency}` },
       ];
+      if (po.feesCurrency !== 'AZN' && po.feesExchangeRate) {
+        feesData.push({ [t('feeType')]: t('feesExchangeRateToAZN'), [t('amount')]: po.feesExchangeRate });
+      }
       const wsFees = XLSX.utils.json_to_sheet(feesData);
       XLSX.utils.book_append_sheet(wb, wsFees, t('orderFees'));
     }

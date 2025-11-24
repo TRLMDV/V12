@@ -49,6 +49,23 @@ const PurchaseOrdersImportExport: React.FC<PurchaseOrdersImportExportProps> = ({
         return;
       }
 
+      // Consolidate old fee fields into the new 'fees' and 'feesCurrency'
+      const transportationFees = parseFloat(row['Transportation Fees'] || '0');
+      const customFees = parseFloat(row['Custom Fees'] || '0');
+      const additionalFees = parseFloat(row['Additional Fees'] || '0');
+      const totalConsolidatedFees = transportationFees + customFees + additionalFees;
+
+      const transportationFeesCurrency = row['Transportation Fees Currency'] || 'AZN';
+      const customFeesCurrency = row['Custom Fees Currency'] || 'AZN';
+      const additionalFeesCurrency = row['Additional Fees Currency'] || 'AZN';
+
+      // For simplicity in import, if multiple fee currencies are present,
+      // we'll just use the first one found for the consolidated 'feesCurrency'.
+      // A more robust solution might require a more complex import schema or user interaction.
+      const consolidatedFeesCurrency = transportationFeesCurrency !== 'AZN' ? transportationFeesCurrency :
+                                       customFeesCurrency !== 'AZN' ? customFeesCurrency :
+                                       additionalFeesCurrency !== 'AZN' ? additionalFeesCurrency : 'AZN';
+
       const newOrder: PurchaseOrder = {
         id: getNextId('purchaseOrders'),
         contactId: supplier.id,
@@ -58,12 +75,10 @@ const PurchaseOrdersImportExport: React.FC<PurchaseOrdersImportExportProps> = ({
         items: [],
         currency: row['Currency'] as PurchaseOrder['currency'],
         exchangeRate: parseFloat(row['Exchange Rate to AZN'] || '0') || undefined,
-        transportationFees: parseFloat(row['Transportation Fees'] || '0'),
-        transportationFeesCurrency: row['Transportation Fees Currency'] as PurchaseOrder['transportationFeesCurrency'] || 'AZN',
-        customFees: parseFloat(row['Custom Fees'] || '0'),
-        customFeesCurrency: row['Custom Fees Currency'] as PurchaseOrder['customFeesCurrency'] || 'AZN',
-        additionalFees: parseFloat(row['Additional Fees'] || '0'),
-        additionalFeesCurrency: row['Additional Fees Currency'] as PurchaseOrder['additionalFeesCurrency'] || 'AZN',
+        fees: totalConsolidatedFees, // Use consolidated fees
+        feesCurrency: consolidatedFeesCurrency, // Use consolidated fees currency
+        feesExchangeRate: parseFloat(row['Fees Exchange Rate to AZN'] || '0') || undefined, // New: Import fees exchange rate
+        comment: String(row['Comment'] || '') || undefined, // New: Import comment
         total: parseFloat(row['Total (AZN)'] || '0'),
       };
       newPurchaseOrders.push(newOrder);
