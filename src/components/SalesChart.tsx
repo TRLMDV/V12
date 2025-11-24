@@ -17,16 +17,23 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MOCK_CURRENT_DATE } from '@/data/initialData';
 
 type ChartPeriod = 'yearly' | 'monthly';
+type DisplayMode = 'single' | 'all'; // New type for display mode
 
 interface SalesChartProps {
   // No props needed, data comes from context
 }
+
+const COLORS = [
+  '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1919',
+  '#3f51b5', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'
+]; // A palette of colors for multiple lines
 
 const SalesChart: React.FC<SalesChartProps> = () => {
   const { sellOrders, settings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
 
   const [chartType, setChartType] = useState<ChartPeriod>('yearly');
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('single'); // New state for display mode
   const [currentDate, setCurrentDate] = useState(MOCK_CURRENT_DATE); // Use MOCK_CURRENT_DATE for initial state
 
   const currentYear = getYear(currentDate);
@@ -48,74 +55,161 @@ const SalesChart: React.FC<SalesChartProps> = () => {
     setCurrentDate(prev => setMonth(prev, parseInt(month)));
   }, []);
 
-  const salesData = useMemo(() => {
-    const filteredOrders = sellOrders.filter(order => order.status === 'Shipped');
-
-    if (chartType === 'yearly') {
-      const yearStart = startOfYear(currentDate);
-      const yearEnd = endOfYear(currentDate);
-      const monthsInYear = eachMonthOfInterval({ start: yearStart, end: yearEnd });
-
-      const monthlySales: { [key: string]: number } = {};
-      monthsInYear.forEach(month => {
-        monthlySales[format(month, 'MMM')] = 0; // Initialize all months to 0
-      });
-
-      filteredOrders.forEach(order => {
-        const orderDate = parseISO(order.orderDate);
-        if (getYear(orderDate) === currentYear) {
-          const monthKey = format(orderDate, 'MMM');
-          const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency); // Already in main currency
-          monthlySales[monthKey] = (monthlySales[monthKey] || 0) + salesValue;
-        }
-      });
-
-      return monthsInYear.map(month => ({
-        name: t(format(month, 'MMM').toLowerCase() as keyof typeof t), // Translate month names
-        [t('totalSalesValue')]: parseFloat(monthlySales[format(month, 'MMM')].toFixed(2)),
-      }));
-    } else { // monthly
-      const monthStart = startOfMonth(currentDate);
-      const monthEnd = endOfMonth(currentDate);
-      const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-      const dailySales: { [key: string]: number } = {};
-      daysInMonth.forEach(day => {
-        dailySales[`${getDate(day)}`] = 0; // Initialize all days to 0
-      });
-
-      filteredOrders.forEach(order => {
-        const orderDate = parseISO(order.orderDate);
-        if (getYear(orderDate) === currentYear && getMonth(orderDate) === currentMonth) {
-          const dayKey = `${getDate(orderDate)}`;
-          const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency); // Already in main currency
-          dailySales[dayKey] = (dailySales[dayKey] || 0) + salesValue;
-        }
-      });
-
-      return daysInMonth.map(day => ({
-        name: `${t('day')} ${getDate(day)}`,
-        [t('totalSalesValue')]: parseFloat(dailySales[`${getDate(day)}`].toFixed(2)),
-      }));
-    }
-  }, [sellOrders, chartType, currentDate, currentYear, currentMonth, mainCurrency, convertCurrency]);
-
   const allYears = useMemo(() => {
     const years = new Set<number>();
     sellOrders.forEach(order => years.add(getYear(parseISO(order.orderDate))));
     if (years.size === 0) years.add(currentYear); // Ensure current year is always an option
-    return Array.from(years).sort((a, b) => b - a); // Sort descending
+    return Array.from(years).sort((a, b) => a - b); // Sort ascending for consistent line order
   }, [sellOrders, currentYear]);
 
   const allMonths = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => i); // 0-11 for months
   }, []);
 
+  const salesData = useMemo(() => {
+    const filteredOrders = sellOrders.filter(order => order.status === 'Shipped');
+
+    if (displayMode === 'single') {
+      if (chartType === 'yearly') {
+        const yearStart = startOfYear(currentDate);
+        const yearEnd = endOfYear(currentDate);
+        const monthsInYear = eachMonthOfInterval({ start: yearStart, end: yearEnd });
+
+        const monthlySales: { [key: string]: number } = {};
+        monthsInYear.forEach(month => {
+          monthlySales[format(month, 'MMM')] = 0; // Initialize all months to 0
+        });
+
+        filteredOrders.forEach(order => {
+          const orderDate = parseISO(order.orderDate);
+          if (getYear(orderDate) === currentYear) {
+            const monthKey = format(orderDate, 'MMM');
+            const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency); // Already in main currency
+            monthlySales[monthKey] = (monthlySales[monthKey] || 0) + salesValue;
+          }
+        });
+
+        return monthsInYear.map(month => ({
+          name: t(format(month, 'MMM').toLowerCase() as keyof typeof t), // Translate month names
+          [t('totalSalesValue')]: parseFloat(monthlySales[format(month, 'MMM')].toFixed(2)),
+        }));
+      } else { // monthly (single month, daily data)
+        const monthStart = startOfMonth(currentDate);
+        const monthEnd = endOfMonth(currentDate);
+        const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+        const dailySales: { [key: string]: number } = {};
+        daysInMonth.forEach(day => {
+          dailySales[`${getDate(day)}`] = 0; // Initialize all days to 0
+        });
+
+        filteredOrders.forEach(order => {
+          const orderDate = parseISO(order.orderDate);
+          if (getYear(orderDate) === currentYear && getMonth(orderDate) === currentMonth) {
+            const dayKey = `${getDate(orderDate)}`;
+            const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency); // Already in main currency
+            dailySales[dayKey] = (dailySales[dayKey] || 0) + salesValue;
+          }
+        });
+
+        return daysInMonth.map(day => ({
+          name: `${t('day')} ${getDate(day)}`,
+          [t('totalSalesValue')]: parseFloat(dailySales[`${getDate(day)}`].toFixed(2)),
+        }));
+      }
+    } else { // displayMode === 'all'
+      if (chartType === 'yearly') { // All years, monthly data
+        const monthsInYear = eachMonthOfInterval({ start: startOfYear(currentDate), end: endOfYear(currentDate) });
+        const dataMap: { [monthKey: string]: { name: string; [year: string]: number } } = {};
+
+        monthsInYear.forEach(month => {
+          const monthName = t(format(month, 'MMM').toLowerCase() as keyof typeof t);
+          dataMap[monthName] = { name: monthName };
+          allYears.forEach(year => {
+            dataMap[monthName][String(year)] = 0; // Initialize sales for each year
+          });
+        });
+
+        filteredOrders.forEach(order => {
+          const orderDate = parseISO(order.orderDate);
+          const year = getYear(orderDate);
+          const monthName = t(format(orderDate, 'MMM').toLowerCase() as keyof typeof t);
+          const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency);
+
+          if (dataMap[monthName] && allYears.includes(year)) {
+            dataMap[monthName][String(year)] = parseFloat(((dataMap[monthName][String(year)] || 0) + salesValue).toFixed(2));
+          }
+        });
+
+        return Object.values(dataMap);
+      } else { // All months, daily data (for the current selected year)
+        const yearStart = startOfYear(currentDate);
+        const yearEnd = endOfYear(currentDate);
+        const daysInYear = eachDayOfInterval({ start: yearStart, end: yearEnd });
+
+        const dataMap: { [dayKey: string]: { name: string; [month: string]: number } } = {};
+
+        // Initialize dataMap for all days of the year
+        daysInYear.forEach(day => {
+          const dayNum = getDate(day);
+          const dayKey = `${t('day')} ${dayNum}`;
+          dataMap[dayKey] = { name: dayKey };
+          allMonths.forEach(monthIndex => {
+            const monthName = t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t);
+            dataMap[dayKey][monthName] = 0; // Initialize sales for each month
+          });
+        });
+
+        filteredOrders.forEach(order => {
+          const orderDate = parseISO(order.orderDate);
+          if (getYear(orderDate) === currentYear) {
+            const dayNum = getDate(orderDate);
+            const monthIndex = getMonth(orderDate);
+            const dayKey = `${t('day')} ${dayNum}`;
+            const monthName = t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t);
+            const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency);
+
+            if (dataMap[dayKey] && dataMap[dayKey][monthName] !== undefined) {
+              dataMap[dayKey][monthName] = parseFloat(((dataMap[dayKey][monthName] || 0) + salesValue).toFixed(2));
+            }
+          }
+        });
+
+        // Filter out days that don't exist in the current month if chartType is monthly
+        // This part needs careful consideration. If we show "all months" for a *single year*,
+        // the X-axis should be days 1-31. Days that don't exist in a month (e.g., Feb 30) will just have 0 sales.
+        // The current `daysInYear` approach is correct for this.
+        return Object.values(dataMap);
+      }
+    }
+  }, [sellOrders, chartType, displayMode, currentDate, currentYear, currentMonth, mainCurrency, convertCurrency, allYears, allMonths]);
+
+  const dataKeysToRender = useMemo(() => {
+    if (salesData.length === 0) return [];
+    if (displayMode === 'single') {
+      return [t('totalSalesValue')];
+    } else if (chartType === 'yearly') { // All years, monthly data
+      return allYears.map(String);
+    } else { // All months, daily data
+      return allMonths.map(monthIndex => t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t));
+    }
+  }, [salesData, displayMode, chartType, allYears, allMonths]);
+
   return (
     <Card className="dark:bg-slate-800 dark:border-slate-700 mb-6">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('salesOverview')}</CardTitle>
         <div className="flex items-center space-x-2">
+          <Select onValueChange={(value: DisplayMode) => setDisplayMode(value)} value={displayMode}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder={t('singlePeriod')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="single">{t('singlePeriod')}</SelectItem>
+              <SelectItem value="all">{t('allPeriods')}</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select onValueChange={(value: ChartPeriod) => setChartType(value)} value={chartType}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder={t('yearlySales')} />
@@ -125,37 +219,42 @@ const SalesChart: React.FC<SalesChartProps> = () => {
               <SelectItem value="monthly">{t('monthlySales')}</SelectItem>
             </SelectContent>
           </Select>
-          {chartType === 'yearly' ? (
-            <Select onValueChange={handleYearChange} value={String(currentYear)}>
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder={String(currentYear)} />
-              </SelectTrigger>
-              <SelectContent>
-                {allYears.map(year => (
-                  <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Select onValueChange={handleMonthChange} value={String(currentMonth)}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder={t(format(currentDate, 'MMM').toLowerCase() as keyof typeof t)} />
-              </SelectTrigger>
-              <SelectContent>
-                {allMonths.map(monthIndex => (
-                  <SelectItem key={monthIndex} value={String(monthIndex)}>
-                    {t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+          {displayMode === 'single' && (
+            <>
+              {chartType === 'yearly' ? (
+                <Select onValueChange={handleYearChange} value={String(currentYear)}>
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder={String(currentYear)} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allYears.map(year => (
+                      <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Select onValueChange={handleMonthChange} value={String(currentMonth)}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder={t(format(currentDate, 'MMM').toLowerCase() as keyof typeof t)} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allMonths.map(monthIndex => (
+                      <SelectItem key={monthIndex} value={String(monthIndex)}>
+                        {t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Button variant="outline" size="icon" onClick={handlePreviousPeriod}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={handleNextPeriod}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </>
           )}
-          <Button variant="outline" size="icon" onClick={handlePreviousPeriod}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleNextPeriod}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -172,7 +271,7 @@ const SalesChart: React.FC<SalesChartProps> = () => {
             >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
               <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-              <YAxis stroke="hsl(var(--foreground))" />
+              <YAxis stroke="hsl(var(--foreground))" domain={['auto', 'auto']} /> {/* Auto domain for varying values */}
               <Tooltip
                 contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
                 itemStyle={{ color: 'hsl(var(--foreground))' }}
@@ -180,14 +279,17 @@ const SalesChart: React.FC<SalesChartProps> = () => {
                 formatter={(value: number) => [`${value.toFixed(2)} ${mainCurrency}`, t('totalSalesValue')]}
               />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey={t('totalSalesValue')}
-                stroke="#8884d8"
-                activeDot={{ r: 8 }}
-                name={t('totalSalesValue')}
-                strokeWidth={2}
-              />
+              {dataKeysToRender.map((key, index) => (
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  stroke={COLORS[index % COLORS.length]} // Assign color from palette
+                  activeDot={{ r: 8 }}
+                  name={key}
+                  strokeWidth={2}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         ) : (

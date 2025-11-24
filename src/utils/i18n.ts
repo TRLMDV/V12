@@ -308,6 +308,8 @@ const i18n = {
     next: 'Next',
     jan: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr', may: 'May', jun: 'Jun', jul: 'Jul', aug: 'Aug', sep: 'Sep', oct: 'Oct', nov: 'Nov', dec: 'Dec',
     day: 'Day',
+    singlePeriod: 'Single Period', // New translation key
+    allPeriods: 'All Periods', // New translation key
   }
 };
 
