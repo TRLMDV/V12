@@ -42,21 +42,19 @@ const OutgoingPayments: React.FC = () => {
     return bankAccounts.reduce((acc, account) => ({ ...acc, [account.id]: account }), {} as { [key: number]: BankAccount });
   }, [bankAccounts]);
 
-  // Aggregate payments by order ID and specific category (products/transportationFees/customFees/additionalFees) in AZN
+  // Aggregate payments by order ID and specific category (products/fees) in AZN
   const paymentsByOrderAndCategoryAZN = useMemo(() => {
     const result: {
       [orderId: number]: {
         products: number;
-        transportationFees: number;
-        customFees: number;
-        additionalFees: number;
+        fees: number; // Renamed from transportationFees, customFees, additionalFees
       };
     } = {};
 
     outgoingPayments.forEach(p => {
       if (p.orderId !== 0 && p.paymentCategory !== 'manual') {
         if (!result[p.orderId]) {
-          result[p.orderId] = { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
+          result[p.orderId] = { products: 0, fees: 0 };
         }
         const amountInAZN = p.amount * (p.paymentCurrency === 'AZN' ? 1 : (p.paymentExchangeRate || currencyRates[p.paymentCurrency] || 1));
         result[p.orderId][p.paymentCategory as keyof typeof result[number]] += amountInAZN;
@@ -97,9 +95,7 @@ const OutgoingPayments: React.FC = () => {
         let categoryText = '';
         switch (p.paymentCategory) {
           case 'products': categoryText = t('paymentForProducts'); break;
-          case 'transportationFees': categoryText = t('paymentForTransportationFees'); break;
-          case 'customFees': categoryText = t('paymentForCustomFees'); break;
-          case 'additionalFees': categoryText = t('paymentForAdditionalFees'); break;
+          case 'fees': categoryText = t('paymentForFees'); break; // Only one fees category now
           default: categoryText = ''; break;
         }
         linkedOrderDisplay = `${t('orderId')} #${p.orderId} (${supplierName}) ${categoryText}`;
@@ -114,18 +110,10 @@ const OutgoingPayments: React.FC = () => {
             totalCategoryValueNative = order.items?.reduce((sum, item) => sum + (item.qty * item.price), 0) || 0;
             categoryCurrency = order.currency;
             totalPaidForCategoryNative = (paymentsByOrderAndCategoryAZN[order.id]?.products || 0) / (order.currency === 'AZN' ? 1 : (order.exchangeRate || currencyRates[order.currency] || 1));
-          } else if (p.paymentCategory === 'transportationFees') {
-            totalCategoryValueNative = order.transportationFees;
-            categoryCurrency = order.transportationFeesCurrency;
-            totalPaidForCategoryNative = (paymentsByOrderAndCategoryAZN[order.id]?.transportationFees || 0) / (categoryCurrency === 'AZN' ? 1 : currencyRates[categoryCurrency] || 1);
-          } else if (p.paymentCategory === 'customFees') {
-            totalCategoryValueNative = order.customFees;
-            categoryCurrency = order.customFeesCurrency;
-            totalPaidForCategoryNative = (paymentsByOrderAndCategoryAZN[order.id]?.customFees || 0) / (categoryCurrency === 'AZN' ? 1 : currencyRates[categoryCurrency] || 1);
-          } else if (p.paymentCategory === 'additionalFees') {
-            totalCategoryValueNative = order.additionalFees;
-            categoryCurrency = order.additionalFeesCurrency;
-            totalPaidForCategoryNative = (paymentsByOrderAndCategoryAZN[order.id]?.additionalFees || 0) / (categoryCurrency === 'AZN' ? 1 : currencyRates[categoryCurrency] || 1);
+          } else if (p.paymentCategory === 'fees') { // Only one fees category now
+            totalCategoryValueNative = order.fees;
+            categoryCurrency = order.feesCurrency;
+            totalPaidForCategoryNative = (paymentsByOrderAndCategoryAZN[order.id]?.fees || 0) / (categoryCurrency === 'AZN' ? 1 : currencyRates[categoryCurrency] || 1);
           }
 
           const currentRemainingBalanceNative = totalCategoryValueNative - totalPaidForCategoryNative;
@@ -189,9 +177,7 @@ const OutgoingPayments: React.FC = () => {
         let categoryText = '';
         switch (p.paymentCategory) {
           case 'products': categoryText = t('paymentForProducts'); break;
-          case 'transportationFees': categoryText = t('paymentForTransportationFees'); break;
-          case 'customFees': categoryText = t('paymentForCustomFees'); break;
-          case 'additionalFees': categoryText = t('paymentForAdditionalFees'); break;
+          case 'fees': categoryText = t('paymentForFees'); break; // Only one fees category now
           default: categoryText = ''; break;
         }
         if (categoryText) categories.add(categoryText);

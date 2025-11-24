@@ -41,25 +41,17 @@ export const usePurchaseOrderCalculations = ({
 
     const productsSubtotalAZN = productsSubtotalNative * currentExchangeRate;
 
-    // Calculate individual fees in AZN for total calculation
-    const transportationFeesAZN = (order.transportationFees || 0) * ((order.transportationFeesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.transportationFeesCurrency || 'AZN'] || 1));
-    const customFeesAZN = (order.customFees || 0) * ((order.customFeesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.customFeesCurrency || 'AZN'] || 1));
-    const additionalFeesAZN = (order.additionalFees || 0) * ((order.additionalFeesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.additionalFeesCurrency || 'AZN'] || 1));
+    // Calculate fees in AZN
+    const feesAZN = (order.fees || 0) * ((order.feesCurrency || 'AZN') === 'AZN' ? 1 : (currencyRates[order.feesCurrency || 'AZN'] || 1));
 
-    const totalFeesAZN = transportationFeesAZN + customFeesAZN + additionalFeesAZN;
+    const totalFeesAZN = feesAZN;
 
     const totalOrderValueAZN = productsSubtotalAZN + totalFeesAZN;
 
     // Prepare fees breakdown for display in their native currencies
     const feesBreakdownForDisplay: { [currency: string]: number } = {};
-    if ((order.transportationFees || 0) > 0) {
-      feesBreakdownForDisplay[order.transportationFeesCurrency || 'AZN'] = (feesBreakdownForDisplay[order.transportationFeesCurrency || 'AZN'] || 0) + (order.transportationFees || 0);
-    }
-    if ((order.customFees || 0) > 0) {
-      feesBreakdownForDisplay[order.customFeesCurrency || 'AZN'] = (feesBreakdownForDisplay[order.customFeesCurrency || 'AZN'] || 0) + (order.customFees || 0);
-    }
-    if ((order.additionalFees || 0) > 0) {
-      feesBreakdownForDisplay[order.additionalFeesCurrency || 'AZN'] = (feesBreakdownForDisplay[order.additionalFeesCurrency || 'AZN'] || 0) + (order.additionalFees || 0);
+    if ((order.fees || 0) > 0) {
+      feesBreakdownForDisplay[order.feesCurrency || 'AZN'] = (feesBreakdownForDisplay[order.feesCurrency || 'AZN'] || 0) + (order.fees || 0);
     }
 
     // Calculate landed cost per unit for each item

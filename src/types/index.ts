@@ -55,7 +55,7 @@ export interface Payment {
   id: number;
   orderId: number; // Linked order ID, 0 for manual expense
   bankAccountId: number; // New: Link to a specific bank account
-  paymentCategory?: 'products' | 'transportationFees' | 'customFees' | 'additionalFees' | 'manual' | string; // Updated to allow custom string categories
+  paymentCategory?: 'products' | 'fees' | 'manual' | string; // Updated to allow custom string categories, simplified fees
   manualDescription?: string; // For manual expenses
   date: string;
   amount: number; // Amount in paymentCurrency
@@ -115,12 +115,9 @@ export interface PurchaseOrder {
   items: OrderItem[];
   currency: Currency; // Currency of the order (for product prices)
   exchangeRate?: number; // Exchange rate to AZN if currency is not AZN
-  transportationFees: number;
-  transportationFeesCurrency: Currency;
-  customFees: number;
-  customFeesCurrency: Currency;
-  additionalFees: number;
-  additionalFeesCurrency: Currency;
+  fees: number; // Renamed from additionalFees
+  feesCurrency: Currency; // Renamed from additionalFeesCurrency
+  comment?: string; // New: Optional comment for the purchase order
   total: number; // Total landed cost in Main Currency
 }
 

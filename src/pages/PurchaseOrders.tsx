@@ -17,7 +17,7 @@ import PaginationControls from '@/components/PaginationControls'; // Import Pagi
 import { PurchaseOrder, Product, Supplier, Warehouse, Currency } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'productsSubtotalNative' | 'totalAdditionalCostsAZN';
+  key: keyof PurchaseOrder | 'supplierName' | 'warehouseName' | 'productsSubtotalNative' | 'totalFeesAZN'; // Renamed from totalAdditionalCostsAZN
   direction: 'ascending' | 'descending';
 };
 
@@ -79,9 +79,7 @@ const PurchaseOrders: React.FC = () => {
   // Helper function to format fees for display
   const formatFeesDisplay = useCallback((order: PurchaseOrder) => {
     const fees: { amount: number; currency: Currency }[] = []; // Changed to Currency
-    if (order.transportationFees > 0) fees.push({ amount: order.transportationFees, currency: order.transportationFeesCurrency });
-    if (order.customFees > 0) fees.push({ amount: order.customFees, currency: order.customFeesCurrency });
-    if (order.additionalFees > 0) fees.push({ amount: order.additionalFees, currency: order.additionalFeesCurrency });
+    if (order.fees > 0) fees.push({ amount: order.fees, currency: order.feesCurrency });
 
     if (fees.length === 0) {
       return `0.00 AZN`;
@@ -143,20 +141,18 @@ const PurchaseOrders: React.FC = () => {
         return amount * (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
       };
 
-      let totalAdditionalCostsAZN = 0;
-      totalAdditionalCostsAZN += convertFeeToAZN(order.transportationFees, order.transportationFeesCurrency);
-      totalAdditionalCostsAZN += convertFeeToAZN(order.customFees, order.customFeesCurrency);
-      totalAdditionalCostsAZN += convertFeeToAZN(order.additionalFees, order.additionalFeesCurrency);
+      let totalFeesAZN = 0; // Renamed from totalAdditionalCostsAZN
+      totalFeesAZN += convertFeeToAZN(order.fees, order.feesCurrency);
 
-      const additionalFeesDisplayString = formatFeesDisplay(order); // Use the new helper
+      const feesDisplayString = formatFeesDisplay(order); // Use the new helper
 
       return {
         ...order,
         supplierName: supplierMap[order.contactId]?.name || 'N/A',
         warehouseName: warehouseMap[order.warehouseId]?.name || 'N/A',
         productsSubtotalNative, // Add for display in column
-        totalAdditionalCostsAZN, // Keep for sorting
-        additionalFeesDisplayString, // New field for display
+        totalFeesAZN, // Keep for sorting
+        feesDisplayString, // New field for display
       };
     });
 
@@ -167,15 +163,15 @@ const PurchaseOrders: React.FC = () => {
         let valB: any = b[key];
 
         // Handle undefined/null values by treating them as empty strings or 0 for numbers
-        if (valA === undefined || valA === null) valA = (key === 'id' || key === 'productsSubtotalNative' || key === 'totalAdditionalCostsAZN') ? 0 : '';
-        if (valB === undefined || valB === null) valB = (key === 'id' || key === 'productsSubtotalNative' || key === 'totalAdditionalCostsAZN') ? 0 : '';
+        if (valA === undefined || valA === null) valA = (key === 'id' || key === 'productsSubtotalNative' || key === 'totalFeesAZN') ? 0 : '';
+        if (valB === undefined || valB === null) valB = (key === 'id' || key === 'productsSubtotalNative' || key === 'totalFeesAZN') ? 0 : '';
 
         let comparison = 0;
 
         switch (key) {
           case 'id':
           case 'productsSubtotalNative':
-          case 'totalAdditionalCostsAZN':
+          case 'totalFeesAZN':
             comparison = (valA as number) - (valB as number);
             break;
           case 'orderDate':

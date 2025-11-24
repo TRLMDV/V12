@@ -34,9 +34,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
   };
 
   let totalFeesNative = 0;
-  totalFeesNative += convertFeeToOrderNativeCurrency(order.transportationFees, order.transportationFeesCurrency);
-  totalFeesNative += convertFeeToOrderNativeCurrency(order.customFees, order.customFeesCurrency);
-  totalFeesNative += convertFeeToOrderNativeCurrency(order.additionalFees, order.additionalFeesCurrency);
+  totalFeesNative += convertFeeToOrderNativeCurrency(order.fees, order.feesCurrency);
 
   const totalValueNative = productsSubtotalNative + totalFeesNative;
 
@@ -49,6 +47,9 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
       <p><strong>{t('orderCurrency')}:</strong> {order.currency}</p>
       {order.currency !== 'AZN' && order.exchangeRate && (
         <p><strong>{t('exchangeRateToAZN')}:</strong> {order.exchangeRate}</p>
+      )}
+      {order.comment && (
+        <p><strong>{t('comment')}:</strong> {order.comment}</p>
       )}
       <h3 className="font-semibold mt-4 mb-2">{t('orderItems')}</h3>
       <Table>
@@ -89,16 +90,8 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
             <TableCell className="p-2">{productsSubtotalNative.toFixed(2)} {order.currency}</TableCell>
           </TableRow>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableCell colSpan={5} className="p-2 text-right">{t('transportationFees')} ({order.transportationFeesCurrency}):</TableCell> {/* Adjusted colSpan */}
-            <TableCell className="p-2">{order.transportationFees.toFixed(2)} {order.transportationFeesCurrency}</TableCell>
-          </TableRow>
-          <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableCell colSpan={5} className="p-2 text-right">{t('customFees')} ({order.customFeesCurrency}):</TableCell> {/* Adjusted colSpan */}
-            <TableCell className="p-2">{order.customFees.toFixed(2)} {order.customFeesCurrency}</TableCell>
-          </TableRow>
-          <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableCell colSpan={5} className="p-2 text-right">{t('additionalFees')} ({order.additionalFeesCurrency}):</TableCell> {/* Adjusted colSpan */}
-            <TableCell className="p-2">{order.additionalFees.toFixed(2)} {order.additionalFeesCurrency}</TableCell>
+            <TableCell colSpan={5} className="p-2 text-right">{t('fees')} ({order.feesCurrency}):</TableCell> {/* Adjusted colSpan */}
+            <TableCell className="p-2">{order.fees.toFixed(2)} {order.feesCurrency}</TableCell>
           </TableRow>
           <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">
             <TableCell colSpan={5} className="p-2 text-right">{t('total')} ({order.currency}):</TableCell> {/* Adjusted colSpan */}

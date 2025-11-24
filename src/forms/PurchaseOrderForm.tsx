@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea'; // Import Textarea
 import { t } from '@/utils/i18n';
 import { usePurchaseOrderForm } from '@/hooks/usePurchaseOrderForm';
 import PurchaseOrderItemsField from '@/components/PurchaseOrderItemsField'; // New component
@@ -150,17 +151,17 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
 
         <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('fees')}</h3>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="transportationFees" className="text-right">{t('transportationFees')}</Label>
+          <Label htmlFor="fees" className="text-right">{t('fees')}</Label>
           <Input
-            id="transportationFees"
+            id="fees"
             type="number"
             step="0.01"
-            value={String(order.transportationFees || 0)}
-            onChange={(e) => handleNumericChange('transportationFees', e.target.value)}
+            value={String(order.fees || 0)}
+            onChange={(e) => handleNumericChange('fees', e.target.value)}
             className="col-span-2"
             min="0"
           />
-          <Select onValueChange={(value: Currency) => handleSelectChange('transportationFeesCurrency', value)} value={order.transportationFeesCurrency || 'AZN'}>
+          <Select onValueChange={(value: Currency) => handleSelectChange('feesCurrency', value)} value={order.feesCurrency || 'AZN'}>
             <SelectTrigger className="col-span-1">
               <SelectValue placeholder="AZN" />
             </SelectTrigger>
@@ -171,49 +172,18 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
             </SelectContent>
           </Select>
         </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="customFees" className="text-right">{t('customFees')}</Label>
-          <Input
-            id="customFees"
-            type="number"
-            step="0.01"
-            value={String(order.customFees || 0)}
-            onChange={(e) => handleNumericChange('customFees', e.target.value)}
-            className="col-span-2"
-            min="0"
+
+        <div className="grid grid-cols-4 items-start gap-4 mt-4">
+          <Label htmlFor="comment" className="text-right">
+            {t('comment')}
+          </Label>
+          <Textarea
+            id="comment"
+            value={order.comment || ''}
+            onChange={handleChange}
+            className="col-span-3"
+            placeholder={t('orderCommentPlaceholder')}
           />
-          <Select onValueChange={(value: Currency) => handleSelectChange('customFeesCurrency', value)} value={order.customFeesCurrency || 'AZN'}>
-            <SelectTrigger className="col-span-1">
-              <SelectValue placeholder="AZN" />
-            </SelectTrigger>
-            <SelectContent>
-              {activeCurrencies.map(c => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="additionalFees" className="text-right">{t('additionalFees')}</Label>
-          <Input
-            id="additionalFees"
-            type="number"
-            step="0.01"
-            value={String(order.additionalFees || 0)}
-            onChange={(e) => handleNumericChange('additionalFees', e.target.value)}
-            className="col-span-2"
-            min="0"
-          />
-          <Select onValueChange={(value: Currency) => handleSelectChange('additionalFeesCurrency', value)} value={order.additionalFeesCurrency || 'AZN'}>
-            <SelectTrigger className="col-span-1">
-              <SelectValue placeholder="AZN" />
-            </SelectTrigger>
-            <SelectContent>
-              {activeCurrencies.map(c => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4 mt-6 border-t pt-4 dark:border-slate-700">

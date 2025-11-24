@@ -44,16 +44,14 @@ export const usePaymentFormCalculations = ({
     const result: {
       [orderId: number]: {
         products: number;
-        transportationFees: number;
-        customFees: number;
-        additionalFees: number;
+        fees: number; // Renamed from transportationFees, customFees, additionalFees
       };
     } = {};
 
     allPayments.forEach(p => {
       if (p.orderId !== 0 && p.paymentCategory !== 'manual') {
         if (!result[p.orderId]) {
-          result[p.orderId] = { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
+          result[p.orderId] = { products: 0, fees: 0 };
         }
         const amountInAZN = p.amount * (p.paymentCurrency === 'AZN' ? 1 : (p.paymentExchangeRate || currencyRates[p.paymentCurrency] || 1));
         result[p.orderId][p.paymentCategory as keyof typeof result[number]] += amountInAZN;
@@ -84,7 +82,7 @@ export const usePaymentFormCalculations = ({
         return;
       }
 
-      const currentOrderPayments = paymentsByOrderAndCategoryAZN[order.id] || { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
+      const currentOrderPayments = paymentsByOrderAndCategoryAZN[order.id] || { products: 0, fees: 0 }; // Updated categories
 
       let adjustedPaymentsAZN = { ...currentOrderPayments };
       if (isEdit && payment.orderId === order.id && payment.paymentCategory !== 'manual') {
@@ -131,59 +129,19 @@ export const usePaymentFormCalculations = ({
           });
         }
 
-        if (purchaseOrder.transportationFees > 0) {
-          const feeAmountNative = purchaseOrder.transportationFees;
-          const feeCurrency = purchaseOrder.transportationFeesCurrency;
+        if (purchaseOrder.fees > 0) { // Only one fees field now
+          const feeAmountNative = purchaseOrder.fees;
+          const feeCurrency = purchaseOrder.feesCurrency;
           const feeAmountAZN = feeAmountNative * (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
-          const remainingFeeBalanceAZN = feeAmountAZN - adjustedPaymentsAZN.transportationFees;
+          const remainingFeeBalanceAZN = feeAmountAZN - adjustedPaymentsAZN.fees;
           const remainingFeeBalanceNative = remainingFeeBalanceAZN / (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
 
           if (remainingFeeBalanceNative > 0.001) {
             list.push({
               id: purchaseOrder.id,
-              display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('transportationFees')} - ${t('remaining')}: ${remainingFeeBalanceNative.toFixed(2)} ${feeCurrency}`,
+              display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('fees')} - ${t('remaining')}: ${remainingFeeBalanceNative.toFixed(2)} ${feeCurrency}`,
               remainingAmount: remainingFeeBalanceNative,
-              category: 'transportationFees',
-              orderType: 'purchase',
-              currency: feeCurrency,
-              orderDate: purchaseOrder.orderDate,
-            });
-          }
-        }
-
-        if (purchaseOrder.customFees > 0) {
-          const feeAmountNative = purchaseOrder.customFees;
-          const feeCurrency = purchaseOrder.customFeesCurrency;
-          const feeAmountAZN = feeAmountNative * (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
-          const remainingFeeBalanceAZN = feeAmountAZN - adjustedPaymentsAZN.customFees;
-          const remainingFeeBalanceNative = remainingFeeBalanceAZN / (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
-
-          if (remainingFeeBalanceNative > 0.001) {
-            list.push({
-              id: purchaseOrder.id,
-              display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('customFees')} - ${t('remaining')}: ${remainingFeeBalanceNative.toFixed(2)} ${feeCurrency}`,
-              remainingAmount: remainingFeeBalanceNative,
-              category: 'customFees',
-              orderType: 'purchase',
-              currency: feeCurrency,
-              orderDate: purchaseOrder.orderDate,
-            });
-          }
-        }
-
-        if (purchaseOrder.additionalFees > 0) {
-          const feeAmountNative = purchaseOrder.additionalFees;
-          const feeCurrency = purchaseOrder.additionalFeesCurrency;
-          const feeAmountAZN = feeAmountNative * (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
-          const remainingFeeBalanceAZN = feeAmountAZN - adjustedPaymentsAZN.additionalFees;
-          const remainingFeeBalanceNative = remainingFeeBalanceAZN / (feeCurrency === 'AZN' ? 1 : currencyRates[feeCurrency] || 1);
-
-          if (remainingFeeBalanceNative > 0.001) {
-            list.push({
-              id: purchaseOrder.id,
-              display: `${t('orderId')} #${purchaseOrder.id} (${supplierName}) - ${purchaseOrder.orderDate} - ${t('additionalFees')} - ${t('remaining')}: ${remainingFeeBalanceNative.toFixed(2)} ${feeCurrency}`,
-              remainingAmount: remainingFeeBalanceNative,
-              category: 'additionalFees',
+              category: 'fees',
               orderType: 'purchase',
               currency: feeCurrency,
               orderDate: purchaseOrder.orderDate,

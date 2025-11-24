@@ -74,12 +74,9 @@ export const usePurchaseOrderActions = ({
       items: finalOrderItems,
       currency: selectedCurrency,
       exchangeRate: selectedCurrency === 'AZN' ? undefined : currentExchangeRate,
-      transportationFees: order.transportationFees || 0,
-      transportationFeesCurrency: order.transportationFeesCurrency || 'AZN',
-      customFees: order.customFees || 0,
-      customFeesCurrency: order.customFeesCurrency || 'AZN',
-      additionalFees: order.additionalFees || 0,
-      additionalFeesCurrency: order.additionalFeesCurrency || 'AZN',
+      fees: order.fees || 0, // Renamed from transportationFees, customFees, additionalFees
+      feesCurrency: order.feesCurrency || 'AZN', // Renamed from transportationFeesCurrency, customFeesCurrency, additionalFeesCurrency
+      comment: order.comment || undefined, // New: Save comment
       total: order.total || 0,
     };
 

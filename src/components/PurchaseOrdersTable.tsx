@@ -12,8 +12,8 @@ interface PurchaseOrdersTableProps {
     supplierName: string;
     warehouseName: string;
     productsSubtotalNative: number;
-    totalAdditionalCostsAZN: number;
-    additionalFeesDisplayString: string;
+    totalFeesAZN: number; // Renamed from totalAdditionalCostsAZN
+    feesDisplayString: string; // Renamed from additionalFeesDisplayString
   })[];
   handleEditOrder: (id: number) => void;
   handleDeleteOrder: (id: number) => void;
@@ -73,8 +73,8 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('productsSubtotalNative')}>
               {t('productsSubtotal')} {getSortIndicator('productsSubtotalNative')}
             </TableHead>
-            <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalAdditionalCostsAZN')}>
-              {t('additionalCosts')} {getSortIndicator('totalAdditionalCostsAZN')}
+            <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalFeesAZN')}>
+              {t('fees')} {getSortIndicator('totalFeesAZN')}
             </TableHead>
             <TableHead className="p-3">{t('actions')}</TableHead>
           </TableRow>
@@ -98,7 +98,7 @@ const PurchaseOrdersTable: React.FC<PurchaseOrdersTableProps> = ({
                   </span>
                 </TableCell>
                 <TableCell className="p-3 font-bold text-sky-600 dark:text-sky-400">{order.productsSubtotalNative.toFixed(2)} {order.currency}</TableCell>
-                <TableCell className="p-3 font-bold text-orange-600 dark:text-orange-400">{order.additionalFeesDisplayString}</TableCell>
+                <TableCell className="p-3 font-bold text-orange-600 dark:text-orange-400">{order.feesDisplayString}</TableCell>
                 <TableCell className="p-3">
                   <Button variant="link" onClick={() => viewOrderDetails(order.id)} className="mr-2 p-0 h-auto">
                     {t('view')}

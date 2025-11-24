@@ -51,6 +51,9 @@ const PurchaseOrdersMultiSheetExportButton: React.FC<PurchaseOrdersMultiSheetExp
       if (order.currency !== 'AZN') {
         data.push([t('exchangeRateToAZN'), order.exchangeRate || currencyRates[order.currency] || 1]);
       }
+      if (order.comment) { // New: Add comment to summary
+        data.push([t('comment'), order.comment]);
+      }
       data.push([]); // Spacer
 
       // --- Order Items ---
@@ -90,9 +93,7 @@ const PurchaseOrdersMultiSheetExportButton: React.FC<PurchaseOrdersMultiSheetExp
 
       // --- Fees ---
       data.push([{ v: t('fees'), s: { font: { bold: true, sz: 12 } } }]);
-      data.push([t('transportationFees'), `${order.transportationFees.toFixed(2)} ${order.transportationFeesCurrency}`]);
-      data.push([t('customFees'), `${order.customFees.toFixed(2)} ${order.customFeesCurrency}`]);
-      data.push([t('additionalFees'), `${order.additionalFees.toFixed(2)} ${order.additionalFeesCurrency}`]);
+      data.push([t('fees'), `${order.fees.toFixed(2)} ${order.feesCurrency}`]);
       data.push([]); // Spacer
 
       // --- Totals ---

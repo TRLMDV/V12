@@ -31,12 +31,9 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       status: 'Draft',
       currency: 'AZN',
       warehouseId: defaultWarehouse, // Set default warehouseId
-      transportationFees: 0,
-      transportationFeesCurrency: 'AZN',
-      customFees: 0,
-      customFeesCurrency: 'AZN',
-      additionalFees: 0,
-      additionalFeesCurrency: 'AZN',
+      fees: 0, // Renamed from transportationFees, customFees, additionalFees
+      feesCurrency: 'AZN', // Renamed from transportationFeesCurrency, customFeesCurrency, additionalFeesCurrency
+      comment: '', // New: Default empty comment
       total: 0,
     };
   });
@@ -92,12 +89,9 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         status: 'Draft',
         currency: 'AZN',
         warehouseId: defaultWarehouse, // Set default warehouseId
-        transportationFees: 0,
-        transportationFeesCurrency: 'AZN',
-        customFees: 0,
-        customFeesCurrency: 'AZN',
-        additionalFees: 0,
-        additionalFeesCurrency: 'AZN',
+        fees: 0, // Reset fees
+        feesCurrency: 'AZN', // Reset fees currency
+        comment: '', // Reset comment
         total: 0,
       });
       setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '', packingUnitId: undefined, packingQuantity: '' }]);

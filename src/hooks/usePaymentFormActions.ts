@@ -28,9 +28,7 @@ interface UsePaymentFormActionsProps {
   paymentsByOrderAndCategoryAZN: {
     [orderId: number]: {
       products: number;
-      transportationFees: number;
-      customFees: number;
-      additionalFees: number;
+      fees: number; // Renamed from transportationFees, customFees, additionalFees
     };
   };
   sellOrderMap: { [key: number]: SellOrder };
@@ -121,16 +119,12 @@ export const usePaymentFormActions = ({
               const productsSubtotalNative = (order as PurchaseOrder).items?.reduce((sum, item) => sum + (item.qty * item.price), 0) || 0;
               totalCategoryValueAZN = productsSubtotalNative * ((order as PurchaseOrder).currency === 'AZN' ? 1 : ((order as PurchaseOrder).exchangeRate || currencyRates[(order as PurchaseOrder).currency] || 1));
             }
-          } else if (selectedOrderOption.category === 'transportationFees') {
-            totalCategoryValueAZN = (order as PurchaseOrder).transportationFees * ((order as PurchaseOrder).transportationFeesCurrency === 'AZN' ? 1 : currencyRates[(order as PurchaseOrder).transportationFeesCurrency] || 1);
-          } else if (selectedOrderOption.category === 'customFees') {
-            totalCategoryValueAZN = (order as PurchaseOrder).customFees * ((order as PurchaseOrder).customFeesCurrency === 'AZN' ? 1 : currencyRates[(order as PurchaseOrder).customFeesCurrency] || 1);
-          } else if (selectedOrderOption.category === 'additionalFees') {
-            totalCategoryValueAZN = (order as PurchaseOrder).additionalFees * ((order as PurchaseOrder).additionalFeesCurrency === 'AZN' ? 1 : currencyRates[(order as PurchaseOrder).additionalFeesCurrency] || 1);
+          } else if (selectedOrderOption.category === 'fees') { // Only one fees category now
+            totalCategoryValueAZN = (order as PurchaseOrder).fees * ((order as PurchaseOrder).feesCurrency === 'AZN' ? 1 : currencyRates[(order as PurchaseOrder).feesCurrency] || 1);
           }
         }
 
-        const currentOrderPayments = paymentsByOrderAndCategoryAZN[selectedOrderOption.id] || { products: 0, transportationFees: 0, customFees: 0, additionalFees: 0 };
+        const currentOrderPayments = paymentsByOrderAndCategoryAZN[selectedOrderOption.id] || { products: 0, fees: 0 }; // Updated categories
         let adjustedPaymentsAZN = { ...currentOrderPayments };
         if (isEdit && paymentId === paymentToSave.id && paymentToSave.paymentCategory !== 'manual') {
           const existingPaymentAmountInAZN = (payment.amount || 0) * (payment.paymentCurrency === 'AZN' ? 1 : (payment.paymentExchangeRate || currencyRates[payment.paymentCurrency || 'AZN'] || 1));
