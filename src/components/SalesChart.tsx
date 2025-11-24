@@ -118,69 +118,31 @@ const SalesChart: React.FC<SalesChartProps> = () => {
         }));
       }
     } else { // displayMode === 'all'
-      if (chartType === 'yearly') { // All years, monthly data
-        const monthsInYear = eachMonthOfInterval({ start: startOfYear(currentDate), end: endOfYear(currentDate) });
-        const dataMap: { [monthKey: string]: { name: string; [year: string]: number } } = {};
+      // For both 'yearly' and 'monthly' chart types in 'all' mode,
+      // we want to show monthly sales data, comparing across all years.
+      const monthsInYear = eachMonthOfInterval({ start: startOfYear(currentDate), end: endOfYear(currentDate) });
+      const dataMap: { [monthKey: string]: { name: string; [year: string]: number } } = {};
 
-        monthsInYear.forEach(month => {
-          const monthName = t(format(month, 'MMM').toLowerCase() as keyof typeof t);
-          dataMap[monthName] = { name: monthName };
-          allYears.forEach(year => {
-            dataMap[monthName][String(year)] = 0; // Initialize sales for each year
-          });
+      monthsInYear.forEach(month => {
+        const monthName = t(format(month, 'MMM').toLowerCase() as keyof typeof t);
+        dataMap[monthName] = { name: monthName };
+        allYears.forEach(year => {
+          dataMap[monthName][String(year)] = 0; // Initialize sales for each year
         });
+      });
 
-        filteredOrders.forEach(order => {
-          const orderDate = parseISO(order.orderDate);
-          const year = getYear(orderDate);
-          const monthName = t(format(orderDate, 'MMM').toLowerCase() as keyof typeof t);
-          const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency);
+      filteredOrders.forEach(order => {
+        const orderDate = parseISO(order.orderDate);
+        const year = getYear(orderDate);
+        const monthName = t(format(orderDate, 'MMM').toLowerCase() as keyof typeof t);
+        const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency);
 
-          if (dataMap[monthName] && allYears.includes(year)) {
-            dataMap[monthName][String(year)] = parseFloat(((dataMap[monthName][String(year)] || 0) + salesValue).toFixed(2));
-          }
-        });
+        if (dataMap[monthName] && allYears.includes(year)) {
+          dataMap[monthName][String(year)] = parseFloat(((dataMap[monthName][String(year)] || 0) + salesValue).toFixed(2));
+        }
+      });
 
-        return Object.values(dataMap);
-      } else { // All months, daily data (for the current selected year)
-        const yearStart = startOfYear(currentDate);
-        const yearEnd = endOfYear(currentDate);
-        const daysInYear = eachDayOfInterval({ start: yearStart, end: yearEnd });
-
-        const dataMap: { [dayKey: string]: { name: string; [month: string]: number } } = {};
-
-        // Initialize dataMap for all days of the year
-        daysInYear.forEach(day => {
-          const dayNum = getDate(day);
-          const dayKey = `${t('day')} ${dayNum}`;
-          dataMap[dayKey] = { name: dayKey };
-          allMonths.forEach(monthIndex => {
-            const monthName = t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t);
-            dataMap[dayKey][monthName] = 0; // Initialize sales for each month
-          });
-        });
-
-        filteredOrders.forEach(order => {
-          const orderDate = parseISO(order.orderDate);
-          if (getYear(orderDate) === currentYear) {
-            const dayNum = getDate(orderDate);
-            const monthIndex = getMonth(orderDate);
-            const dayKey = `${t('day')} ${dayNum}`;
-            const monthName = t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t);
-            const salesValue = convertCurrency(order.total, mainCurrency, mainCurrency);
-
-            if (dataMap[dayKey] && dataMap[dayKey][monthName] !== undefined) {
-              dataMap[dayKey][monthName] = parseFloat(((dataMap[dayKey][monthName] || 0) + salesValue).toFixed(2));
-            }
-          }
-        });
-
-        // Filter out days that don't exist in the current month if chartType is monthly
-        // This part needs careful consideration. If we show "all months" for a *single year*,
-        // the X-axis should be days 1-31. Days that don't exist in a month (e.g., Feb 30) will just have 0 sales.
-        // The current `daysInYear` approach is correct for this.
-        return Object.values(dataMap);
-      }
+      return Object.values(dataMap);
     }
   }, [sellOrders, chartType, displayMode, currentDate, currentYear, currentMonth, mainCurrency, convertCurrency, allYears, allMonths]);
 
@@ -188,12 +150,10 @@ const SalesChart: React.FC<SalesChartProps> = () => {
     if (salesData.length === 0) return [];
     if (displayMode === 'single') {
       return [t('totalSalesValue')];
-    } else if (chartType === 'yearly') { // All years, monthly data
+    } else { // displayMode === 'all' (now unified for both chartType 'yearly' and 'monthly')
       return allYears.map(String);
-    } else { // All months, daily data
-      return allMonths.map(monthIndex => t(format(setMonth(new Date(), monthIndex), 'MMM').toLowerCase() as keyof typeof t));
     }
-  }, [salesData, displayMode, chartType, allYears, allMonths]);
+  }, [salesData, displayMode, allYears]);
 
   return (
     <Card className="dark:bg-slate-800 dark:border-slate-700 mb-6">
