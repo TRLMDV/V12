@@ -430,49 +430,45 @@ export const useSellOrderActions = ({
 
   // --- Debug Logs for Button States ---
   const isGenerateMovementDisabled = useMemo(() => {
-    const disabled =
-      !order ||
-      !order.warehouseId ||
-      !mainWarehouse ||
-      order.warehouseId === mainWarehouse.id ||
-      order.status !== 'Shipped' ||
-      order.productMovementId ||
-      orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
+    const noOrder = !order;
+    const noWarehouseId = !order?.warehouseId;
+    const noMainWarehouse = !mainWarehouse;
+    const sameWarehouse = order?.warehouseId === mainWarehouse?.id;
+    const notShipped = order?.status !== 'Shipped';
+    const movementAlreadyGenerated = !!order?.productMovementId;
+    const noValidItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
 
-    console.log("DEBUG: [Button State] Generate Product Movement Button:");
-    console.log("  - order exists:", !!order);
-    if (order) {
-      console.log("  - order.warehouseId:", order.warehouseId);
-      console.log("  - order.status:", order.status);
-      console.log("  - order.productMovementId:", order.productMovementId);
-    }
-    console.log("  - mainWarehouse exists:", !!mainWarehouse);
-    if (mainWarehouse && order) {
-      console.log("  - order.warehouseId === mainWarehouse.id:", order.warehouseId === mainWarehouse.id);
-    }
-    console.log("  - valid items count:", orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length);
-    console.log("  -> DISABLED:", disabled);
+    const disabled = noOrder || noWarehouseId || noMainWarehouse || sameWarehouse || notShipped || movementAlreadyGenerated || noValidItems;
+
+    console.log("DEBUG: [Movement Button State] Conditions for DISABLED:");
+    console.log(`  - No Order (!order): ${noOrder}`);
+    console.log(`  - No Order Warehouse ID (!order.warehouseId): ${noWarehouseId}`);
+    console.log(`  - No Main Warehouse (!mainWarehouse): ${noMainWarehouse}`);
+    console.log(`  - Same Warehouse (order.warehouseId === mainWarehouse.id): ${sameWarehouse}`);
+    console.log(`  - Not Shipped (order.status !== 'Shipped'): ${notShipped}`);
+    console.log(`  - Movement Already Generated (!!order.productMovementId): ${movementAlreadyGenerated}`);
+    console.log(`  - No Valid Items (orderItems.filter(...).length === 0): ${noValidItems}`);
+    console.log(`  -> FINAL DISABLED STATE: ${disabled}`);
 
     return disabled;
   }, [order, mainWarehouse, orderItems]);
 
   const isGeneratePaymentDisabled = useMemo(() => {
-    const disabled =
-      !order ||
-      order.status !== 'Shipped' ||
-      order.incomingPaymentId ||
-      orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0 ||
-      !bankAccounts.some(ba => ba.currency === mainCurrency); // Disable if no main currency bank account exists
+    const noOrder = !order;
+    const notShipped = order?.status !== 'Shipped';
+    const paymentAlreadyGenerated = !!order?.incomingPaymentId;
+    const noValidItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
+    const noMainCurrencyBankAccount = !bankAccounts.some(ba => ba.currency === mainCurrency);
 
-    console.log("DEBUG: [Button State] Generate Incoming Payment Button:");
-    console.log("  - order exists:", !!order);
-    if (order) {
-      console.log("  - order.status:", order.status);
-      console.log("  - order.incomingPaymentId:", order.incomingPaymentId);
-    }
-    console.log("  - valid items count:", orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length);
-    console.log("  - main currency bank account exists:", bankAccounts.some(ba => ba.currency === mainCurrency));
-    console.log("  -> DISABLED:", disabled);
+    const disabled = noOrder || notShipped || paymentAlreadyGenerated || noValidItems || noMainCurrencyBankAccount;
+
+    console.log("DEBUG: [Payment Button State] Conditions for DISABLED:");
+    console.log(`  - No Order (!order): ${noOrder}`);
+    console.log(`  - Not Shipped (order.status !== 'Shipped'): ${notShipped}`);
+    console.log(`  - Payment Already Generated (!!order.incomingPaymentId): ${paymentAlreadyGenerated}`);
+    console.log(`  - No Valid Items (orderItems.filter(...).length === 0): ${noValidItems}`);
+    console.log(`  - No Main Currency Bank Account (!bankAccounts.some(...)): ${noMainCurrencyBankAccount}`);
+    console.log(`  -> FINAL DISABLED STATE: ${disabled}`);
 
     return disabled;
   }, [order, orderItems, bankAccounts, mainCurrency]);
