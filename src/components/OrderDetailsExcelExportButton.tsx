@@ -117,7 +117,7 @@ const OrderDetailsExcelExportButton: React.FC<OrderDetailsExcelExportButtonProps
         { [t('feeType')]: t('fees'), [t('amount')]: `${po.fees.toFixed(2)} ${po.feesCurrency}` },
       ];
       if (po.feesCurrency !== 'AZN' && po.feesExchangeRate) {
-        feesData.push({ [t('feeType')]: t('feesExchangeRateToAZN'), [t('amount')]: po.feesExchangeRate });
+        feesData.push({ [t('feeType')]: t('feesExchangeRateToAZN'), [t('amount')]: String(po.feesExchangeRate) });
       }
       const wsFees = XLSX.utils.json_to_sheet(feesData);
       XLSX.utils.book_append_sheet(wb, wsFees, t('orderFees'));
