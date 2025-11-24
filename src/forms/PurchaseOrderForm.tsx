@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from 'react'; // Ensure React is imported for JSX
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -185,7 +185,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                 value={manualFeesExchangeRateInput}
                 onChange={handleFeesExchangeRateChange}
                 placeholder={t('exchangeRatePlaceholder')}
-                className="mb-1 w-1/2" {/* Adjusted width here */}
+                className="mb-1 w-1/2"
                 required
               />
               <p className="text-xs text-gray-500 dark:text-slate-400">{t('exchangeRateHelpText')}</p>
