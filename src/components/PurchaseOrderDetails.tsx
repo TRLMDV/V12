@@ -35,7 +35,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
   };
 
   let totalFeesNative = 0;
-  totalFeesNative += convertFeeToOrderNativeCurrency(order.fees, order.feesCurrency, order.feesExchangeRate);
+  totalFeesNative += convertFeeToOrderNativeCurrency(order.fees ?? 0, order.feesCurrency, order.feesExchangeRate);
 
   const totalValueNative = productsSubtotalNative + totalFeesNative;
 
@@ -92,7 +92,7 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
           </TableRow>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
             <TableCell colSpan={5} className="p-2 text-right">{t('fees')} ({order.feesCurrency}):</TableCell> {/* Adjusted colSpan */}
-            <TableCell className="p-2">{order.fees.toFixed(2)} {order.feesCurrency}</TableCell>
+            <TableCell className="p-2">{(order.fees ?? 0).toFixed(2)} {order.feesCurrency}</TableCell>
           </TableRow>
           {order.feesCurrency !== 'AZN' && order.feesExchangeRate && (
             <TableRow className="bg-gray-100 dark:bg-slate-700">
