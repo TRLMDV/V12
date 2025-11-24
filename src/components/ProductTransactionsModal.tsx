@@ -6,8 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Product, PurchaseOrder, SellOrder, Supplier, Customer, Currency } from '@/types';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'; // Import Collapsible components
-import { ChevronDown, ChevronUp } from 'lucide-react'; // Import Chevron icons
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react'; // Import ArrowUpDown for sort indicator
+import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 
 interface ProductTransactionsModalProps {
   isOpen: boolean;
@@ -15,21 +16,81 @@ interface ProductTransactionsModalProps {
   productId: number;
 }
 
+type SortConfig = {
+  key: 'orderDate' | 'orderId' | 'supplierName' | 'customerName' | 'quantity' | 'priceInOrderCurrency' | 'priceExclVat' | 'priceInclVat';
+  direction: 'ascending' | 'descending';
+};
+
+const ITEMS_PER_PAGE = 100; // Define items per page
+
 const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isOpen, onClose, productId }) => {
   const { products, purchaseOrders, sellOrders, suppliers, customers, currencyRates, settings } = useData();
   const mainCurrency = settings.mainCurrency;
 
-  const [isPurchaseOrdersOpen, setIsPurchaseOrdersOpen] = useState(false); // Changed to false
-  const [isSalesOrdersOpen, setIsSalesOrdersOpen] = useState(false); // Changed to false
+  const [isPurchaseOrdersOpen, setIsPurchaseOrdersOpen] = useState(false);
+  const [isSalesOrdersOpen, setIsSalesOrdersOpen] = useState(false);
+
+  // Sorting and Pagination states for Purchase Orders
+  const [purchaseOrderSortConfig, setPurchaseOrderSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
+  const [purchaseOrderCurrentPage, setPurchaseOrderCurrentPage] = useState(1);
+
+  // Sorting and Pagination states for Sales Orders
+  const [salesOrderSortConfig, setSalesOrderSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
+  const [salesOrderCurrentPage, setSalesOrderCurrentPage] = useState(1);
 
   const product = useMemo(() => products.find(p => p.id === productId), [products, productId]);
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s }), {} as { [key: number]: Supplier }), [suppliers]);
   const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c }), {} as { [key: number]: Customer }), [customers]);
 
+  // Helper for sorting logic
+  const applySorting = (items: any[], sortConfig: SortConfig) => {
+    if (!sortConfig.key) return items;
+
+    return [...items].sort((a, b) => {
+      const key = sortConfig.key;
+      let valA: any = a[key];
+      let valB: any = b[key];
+
+      if (key === 'orderDate') {
+        valA = new Date(valA).getTime();
+        valB = new Date(valB).getTime();
+      }
+
+      let comparison = 0;
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        comparison = valA.localeCompare(valB);
+      } else if (typeof valA === 'number' && typeof valB === 'number') {
+        comparison = valA - valB;
+      } else {
+        comparison = String(valA).localeCompare(String(valB));
+      }
+
+      return sortConfig.direction === 'ascending' ? comparison : -comparison;
+    });
+  };
+
+  // Helper for getting sort indicator
+  const getSortIndicator = (currentKey: SortConfig['key'], sortConfig: SortConfig) => {
+    if (sortConfig.key === currentKey) {
+      return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
+    }
+    return '';
+  };
+
+  // Helper for handling sort click
+  const handleSortClick = (key: SortConfig['key'], currentSortConfig: SortConfig, setSortConfig: React.Dispatch<React.SetStateAction<SortConfig>>, setCurrentPage: React.Dispatch<React.SetStateAction<number>>) => () => {
+    let direction: SortConfig['direction'] = 'ascending';
+    if (currentSortConfig.key === key && currentSortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1); // Reset to first page on sort change
+  };
+
   const relevantPurchaseOrders = useMemo(() => {
     if (!product) return [];
 
-    return purchaseOrders
+    const rawOrders = purchaseOrders
       .filter(order => order.items.some(item => item.productId === productId))
       .map(order => {
         const orderItem = order.items.find(item => item.productId === productId);
@@ -39,7 +100,6 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
         const priceInOrderCurrency = orderItem?.price || 0;
         const quantity = orderItem?.qty || 0;
 
-        // Get the exchange rate for the order's currency to the main currency
         const rateToMainCurrency = orderCurrency === mainCurrency
           ? 1
           : (order.exchangeRate || currencyRates[orderCurrency] || 1) / (currencyRates[mainCurrency] || 1);
@@ -53,21 +113,30 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
           orderCurrency: orderCurrency,
           rateToMainCurrency: rateToMainCurrency,
         };
-      })
-      .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()); // Sort by date descending
-  }, [product, purchaseOrders, supplierMap, mainCurrency, currencyRates, productId]);
+      });
+
+    const sortedOrders = applySorting(rawOrders, purchaseOrderSortConfig);
+    const startIndex = (purchaseOrderCurrentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return sortedOrders.slice(startIndex, endIndex);
+  }, [product, purchaseOrders, supplierMap, mainCurrency, currencyRates, productId, purchaseOrderSortConfig, purchaseOrderCurrentPage]);
+
+  const totalPurchaseOrders = useMemo(() => {
+    if (!product) return 0;
+    return purchaseOrders.filter(order => order.items.some(item => item.productId === productId)).length;
+  }, [product, purchaseOrders, productId]);
 
   const relevantSellOrders = useMemo(() => {
     if (!product) return [];
 
-    return sellOrders
+    const rawOrders = sellOrders
       .filter(order => order.items.some(item => item.productId === productId))
       .map(order => {
         const orderItem = order.items.find(item => item.productId === productId);
         const customer = customerMap[order.contactId];
 
         const quantity = orderItem?.qty || 0;
-        const pricePerBaseUnit = orderItem?.price || 0; // Price per base unit in main currency
+        const pricePerBaseUnit = orderItem?.price || 0;
 
         const itemTotalExclVat = quantity * pricePerBaseUnit;
         const itemTotalInclVat = itemTotalExclVat * (1 + (order.vatPercent / 100));
@@ -80,9 +149,18 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
           priceExclVat: itemTotalExclVat,
           priceInclVat: itemTotalInclVat,
         };
-      })
-      .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()); // Sort by date descending
-  }, [product, sellOrders, customerMap, productId]);
+      });
+
+    const sortedOrders = applySorting(rawOrders, salesOrderSortConfig);
+    const startIndex = (salesOrderCurrentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return sortedOrders.slice(startIndex, endIndex);
+  }, [product, sellOrders, customerMap, productId, salesOrderSortConfig, salesOrderCurrentPage]);
+
+  const totalSellOrders = useMemo(() => {
+    if (!product) return 0;
+    return sellOrders.filter(order => order.items.some(item => item.productId === productId)).length;
+  }, [product, sellOrders, productId]);
 
   if (!product) return null;
 
@@ -105,30 +183,48 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
           <CollapsibleContent>
             <div className="overflow-x-auto">
               {relevantPurchaseOrders.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-100 dark:bg-slate-700">
-                      <TableHead className="p-3">{t('orderId')}</TableHead>
-                      <TableHead className="p-3">{t('orderDate')}</TableHead>
-                      <TableHead className="p-3">{t('supplier')}</TableHead>
-                      <TableHead className="p-3">{t('qty')}</TableHead>
-                      <TableHead className="p-3">{t('priceInOrderCurrency')}</TableHead>
-                      <TableHead className="p-3">{t('currencyRateToMainCurrency', { mainCurrency })}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {relevantPurchaseOrders.map((po, index) => (
-                      <TableRow key={po.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                        <TableCell className="p-3 font-semibold">#{po.orderId}</TableCell>
-                        <TableCell className="p-3">{po.orderDate}</TableCell>
-                        <TableCell className="p-3">{po.supplierName}</TableCell>
-                        <TableCell className="p-3">{po.quantity}</TableCell>
-                        <TableCell className="p-3">{po.priceInOrderCurrency.toFixed(2)} {po.orderCurrency}</TableCell>
-                        <TableCell className="p-3">1 {po.orderCurrency} = {po.rateToMainCurrency.toFixed(4)} {mainCurrency}</TableCell>
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-100 dark:bg-slate-700">
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('orderId', purchaseOrderSortConfig, setPurchaseOrderSortConfig, setPurchaseOrderCurrentPage)}>
+                          {t('orderId')} {getSortIndicator('orderId', purchaseOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('orderDate', purchaseOrderSortConfig, setPurchaseOrderSortConfig, setPurchaseOrderCurrentPage)}>
+                          {t('orderDate')} {getSortIndicator('orderDate', purchaseOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('supplierName', purchaseOrderSortConfig, setPurchaseOrderSortConfig, setPurchaseOrderCurrentPage)}>
+                          {t('supplier')} {getSortIndicator('supplierName', purchaseOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('quantity', purchaseOrderSortConfig, setPurchaseOrderSortConfig, setPurchaseOrderCurrentPage)}>
+                          {t('qty')} {getSortIndicator('quantity', purchaseOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('priceInOrderCurrency', purchaseOrderSortConfig, setPurchaseOrderSortConfig, setPurchaseOrderCurrentPage)}>
+                          {t('priceInOrderCurrency')} {getSortIndicator('priceInOrderCurrency', purchaseOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3">{t('currencyRateToMainCurrency', { mainCurrency })}</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {relevantPurchaseOrders.map((po) => (
+                        <TableRow key={po.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                          <TableCell className="p-3 font-semibold">#{po.orderId}</TableCell>
+                          <TableCell className="p-3">{po.orderDate}</TableCell>
+                          <TableCell className="p-3">{po.supplierName}</TableCell>
+                          <TableCell className="p-3">{po.quantity}</TableCell>
+                          <TableCell className="p-3">{po.priceInOrderCurrency.toFixed(2)} {po.orderCurrency}</TableCell>
+                          <TableCell className="p-3">1 {po.orderCurrency} = {po.rateToMainCurrency.toFixed(4)} {mainCurrency}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <PaginationControls
+                    totalItems={totalPurchaseOrders}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    currentPage={purchaseOrderCurrentPage}
+                    onPageChange={setPurchaseOrderCurrentPage}
+                  />
+                </>
               ) : (
                 <p className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noPurchaseOrdersFoundForProduct')}
@@ -149,30 +245,50 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
           <CollapsibleContent>
             <div className="overflow-x-auto">
               {relevantSellOrders.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-100 dark:bg-slate-700">
-                      <TableHead className="p-3">{t('orderId')}</TableHead>
-                      <TableHead className="p-3">{t('customer')}</TableHead>
-                      <TableHead className="p-3">{t('saleDate')}</TableHead>
-                      <TableHead className="p-3">{t('qty')}</TableHead>
-                      <TableHead className="p-3">{t('priceExclVat')}</TableHead>
-                      <TableHead className="p-3">{t('priceInclVat')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {relevantSellOrders.map((so, index) => (
-                      <TableRow key={so.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                        <TableCell className="p-3 font-semibold">#{so.orderId}</TableCell>
-                        <TableCell className="p-3">{so.customerName}</TableCell>
-                        <TableCell className="p-3">{so.orderDate}</TableCell>
-                        <TableCell className="p-3">{so.quantity}</TableCell>
-                        <TableCell className="p-3">{so.priceExclVat.toFixed(2)} {mainCurrency}</TableCell>
-                        <TableCell className="p-3">{so.priceInclVat.toFixed(2)} {mainCurrency}</TableCell>
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-100 dark:bg-slate-700">
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('orderId', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
+                          {t('orderId')} {getSortIndicator('orderId', salesOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('customerName', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
+                          {t('customer')} {getSortIndicator('customerName', salesOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('orderDate', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
+                          {t('saleDate')} {getSortIndicator('orderDate', salesOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('quantity', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
+                          {t('qty')} {getSortIndicator('quantity', salesOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('priceExclVat', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
+                          {t('priceExclVat')} {getSortIndicator('priceExclVat', salesOrderSortConfig)}
+                        </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('priceInclVat', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
+                          {t('priceInclVat')} {getSortIndicator('priceInclVat', salesOrderSortConfig)}
+                        </TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {relevantSellOrders.map((so) => (
+                        <TableRow key={so.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                          <TableCell className="p-3 font-semibold">#{so.orderId}</TableCell>
+                          <TableCell className="p-3">{so.customerName}</TableCell>
+                          <TableCell className="p-3">{so.orderDate}</TableCell>
+                          <TableCell className="p-3">{so.quantity}</TableCell>
+                          <TableCell className="p-3">{so.priceExclVat.toFixed(2)} {mainCurrency}</TableCell>
+                          <TableCell className="p-3">{so.priceInclVat.toFixed(2)} {mainCurrency}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <PaginationControls
+                    totalItems={totalSellOrders}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    currentPage={salesOrderCurrentPage}
+                    onPageChange={setSalesOrderCurrentPage}
+                  />
+                </>
               ) : (
                 <p className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noSalesOrdersFoundForProduct')}
