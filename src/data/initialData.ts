@@ -68,7 +68,7 @@ export const initialSettings: Settings = {
   ],
   mainCurrency: 'AZN',
   activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD', 'AFN', 'ALL', 'DZD', 'AOA', 'XCD', 'ARS', 'AMD', 'AWG', 'SHP', 'BSD', 'BDT', 'BBD', 'BYN', 'BZD', 'XOF', 'BMD', 'BTN', 'BOB', 'BAM', 'BWP', 'BRL', 'BND', 'BGN', 'BIF', 'KHR', 'XAF', 'CVE', 'CDF', 'KMF', 'NZD', 'CRC', 'CUP', 'XCG', 'CZK', 'DKK', 'DJF', 'DOP', 'EGP', 'ERN', 'SZL', 'ZAR', 'ETB', 'FKP', 'FJD', 'XPF', 'GMD', 'GEL', 'GHS', 'GTQ', 'GNF', 'GYD', 'HTG', 'HNL', 'HKD', 'HUF', 'ISK', 'IDR', 'IRR', 'IQD', 'ILS', 'JMD', 'KZT', 'KES', 'KPW', 'KGS', 'LAK', 'LBP', 'LSL', 'LRD', 'LYD', 'MDL', 'MOP', 'MGA', 'MWK', 'MYR', 'MVR', 'MRU', 'MZN', 'MMK', 'NAD', 'NPR', 'NIO', 'NGN', 'NOK', 'PKR', 'PGK', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RSD', 'SCR', 'SLE', 'SBD', 'SOS', 'SSP', 'STN', 'SRD', 'SYP', 'TWD', 'TJS', 'TZS', 'TTD', 'TND', 'TRY', 'TMT', 'UGX', 'UAH', 'UYU', 'UZS', 'VUV', 'VES', 'VED', 'VND', 'YER', 'ZMW', 'ZWG'],
-  showDashboardCurrencyRates: true,
+  showDashboardCurrencyRates: false, // Changed to false
   packingUnits: [
     { id: 1, name: 'Piece', baseUnit: 'piece', conversionFactor: 1 },
     { id: 2, name: 'Pack', baseUnit: 'piece', conversionFactor: 10 },
@@ -77,10 +77,5 @@ export const initialSettings: Settings = {
     { id: 5, name: 'Bottle (liter)', baseUnit: 'liter', conversionFactor: 1 },
     { id: 6, name: 'Barrel (liter)', baseUnit: 'liter', conversionFactor: 200 },
   ],
-  quickButtons: [
-    { id: 1, label: 'Quick PO', action: 'addPurchaseOrder', size: 'md', color: 'bg-blue-500 hover:bg-blue-600' },
-    { id: 2, label: 'Quick SO', action: 'addSellOrder', size: 'md', color: 'bg-green-500 hover:bg-green-600' },
-    { id: 3, label: 'Add Product', action: 'addProduct', size: 'sm', color: 'bg-purple-500 hover:bg-purple-600' },
-    { id: 4, label: 'Bank Deposit', action: 'bankDeposit', size: 'lg', color: 'bg-emerald-500 hover:bg-emerald-600' },
-  ],
+  quickButtons: [], // Changed to an empty array
 };
