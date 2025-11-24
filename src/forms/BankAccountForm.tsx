@@ -27,6 +27,7 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
   const [name, setName] = useState('');
   const [currency, setCurrency] = useState<Currency>(settings.mainCurrency);
   const [initialBalance, setInitialBalance] = useState('0.00');
+  const [creationDate, setCreationDate] = useState(MOCK_CURRENT_DATE.toISOString().slice(0, 10)); // New state for creation date
 
   useEffect(() => {
     if (isEdit) {
@@ -35,11 +36,13 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
         setName(existingAccount.name);
         setCurrency(existingAccount.currency);
         setInitialBalance(String(existingAccount.initialBalance));
+        setCreationDate(existingAccount.creationDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10)); // Load existing date or default
       }
     } else {
       setName('');
       setCurrency(settings.mainCurrency);
       setInitialBalance('0.00');
+      setCreationDate(MOCK_CURRENT_DATE.toISOString().slice(0, 10)); // Default to current date for new accounts
     }
   }, [bankAccountId, isEdit, bankAccounts, settings.mainCurrency]);
 
@@ -63,12 +66,17 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
       showAlertModal(t('validationError'), t('invalidInitialBalance'));
       return;
     }
+    if (!creationDate) {
+      showAlertModal(t('validationError'), t('bankAccountCreationDateRequired'));
+      return;
+    }
 
     const accountToSave: BankAccount = {
       id: bankAccountId || 0, // ID will be handled by saveItem if new
       name: name.trim(),
       currency: currency,
       initialBalance: parsedInitialBalance,
+      creationDate: creationDate, // Save the creation date
     };
 
     console.log("BankAccountForm: Calling saveItem with:", accountToSave);
@@ -106,6 +114,19 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="creationDate" className="text-right">
+            {t('creationDate')}
+          </Label>
+          <Input
+            id="creationDate"
+            type="date"
+            value={creationDate}
+            onChange={(e) => setCreationDate(e.target.value)}
+            className="col-span-3"
+            required
+          />
         </div>
         {!isEdit && ( // Only show initial balance for new accounts
           <div className="grid grid-cols-4 items-center gap-4">

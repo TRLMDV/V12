@@ -48,7 +48,7 @@ export function useBankTransactionsLogic(
 
     transactions.push({
       id: `initial-${selectedAccount.id}`,
-      date: '1970-01-01',
+      date: selectedAccount.creationDate || '1970-01-01', // Use creationDate for initial balance
       description: t('initialBalance'),
       amount: selectedAccount.initialBalance,
       type: 'initial',

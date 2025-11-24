@@ -222,6 +222,8 @@ const i18n = {
     withdrawal: 'Withdrawal',
     pleaseAddBankAccountInstruction: 'To view transactions, please add a bank account first using the "Add Bank Account" button.',
     bankAccountBalance: 'Bank Account Balance',
+    creationDate: 'Creation Date', // New: Creation Date label
+    bankAccountCreationDateRequired: 'Bank account creation date is required.', // New: Validation message
     // New Utilization Order translations
     utilizationOrders: 'Utilization Orders',
     addUtilizationOrder: 'Add Utilization Order',
