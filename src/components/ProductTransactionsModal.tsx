@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import FormModal from '@/components/FormModal';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Product, PurchaseOrder, SellOrder, Supplier, Customer, Currency } from '@/types';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'; // Import Collapsible components
+import { ChevronDown, ChevronUp } from 'lucide-react'; // Import Chevron icons
 
 interface ProductTransactionsModalProps {
   isOpen: boolean;
@@ -16,6 +18,9 @@ interface ProductTransactionsModalProps {
 const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isOpen, onClose, productId }) => {
   const { products, purchaseOrders, sellOrders, suppliers, customers, currencyRates, settings } = useData();
   const mainCurrency = settings.mainCurrency;
+
+  const [isPurchaseOrdersOpen, setIsPurchaseOrdersOpen] = useState(true); // State for Purchase Orders collapsible
+  const [isSalesOrdersOpen, setIsSalesOrdersOpen] = useState(true); // State for Sales Orders collapsible
 
   const product = useMemo(() => products.find(p => p.id === productId), [products, productId]);
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s }), {} as { [key: number]: Supplier }), [suppliers]);
@@ -90,78 +95,92 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     >
       <div className="space-y-8">
         {/* Purchase Orders Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('purchaseOrdersWithProduct')}</h3>
-          <div className="overflow-x-auto">
-            {relevantPurchaseOrders.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-100 dark:bg-slate-700">
-                    <TableHead className="p-3">{t('orderId')}</TableHead>
-                    <TableHead className="p-3">{t('orderDate')}</TableHead>
-                    <TableHead className="p-3">{t('supplier')}</TableHead>
-                    <TableHead className="p-3">{t('qty')}</TableHead>
-                    <TableHead className="p-3">{t('priceInOrderCurrency')}</TableHead>
-                    <TableHead className="p-3">{t('currencyRateToMainCurrency', { mainCurrency })}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {relevantPurchaseOrders.map((po, index) => (
-                    <TableRow key={po.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                      <TableCell className="p-3 font-semibold">#{po.orderId}</TableCell>
-                      <TableCell className="p-3">{po.orderDate}</TableCell>
-                      <TableCell className="p-3">{po.supplierName}</TableCell>
-                      <TableCell className="p-3">{po.quantity}</TableCell>
-                      <TableCell className="p-3">{po.priceInOrderCurrency.toFixed(2)} {po.orderCurrency}</TableCell>
-                      <TableCell className="p-3">1 {po.orderCurrency} = {po.rateToMainCurrency.toFixed(4)} {mainCurrency}</TableCell>
+        <Collapsible open={isPurchaseOrdersOpen} onOpenChange={setIsPurchaseOrdersOpen}>
+          <CollapsibleTrigger asChild>
+            <button className="flex justify-between items-center w-full text-lg font-semibold text-gray-700 dark:text-slate-300 mb-4 focus:outline-none">
+              {t('purchaseOrdersWithProduct')}
+              {isPurchaseOrdersOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="overflow-x-auto">
+              {relevantPurchaseOrders.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100 dark:bg-slate-700">
+                      <TableHead className="p-3">{t('orderId')}</TableHead>
+                      <TableHead className="p-3">{t('orderDate')}</TableHead>
+                      <TableHead className="p-3">{t('supplier')}</TableHead>
+                      <TableHead className="p-3">{t('qty')}</TableHead>
+                      <TableHead className="p-3">{t('priceInOrderCurrency')}</TableHead>
+                      <TableHead className="p-3">{t('currencyRateToMainCurrency', { mainCurrency })}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="p-4 text-center text-gray-500 dark:text-slate-400">
-                {t('noPurchaseOrdersFoundForProduct')}
-              </p>
-            )}
-          </div>
-        </div>
+                  </TableHeader>
+                  <TableBody>
+                    {relevantPurchaseOrders.map((po, index) => (
+                      <TableRow key={po.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                        <TableCell className="p-3 font-semibold">#{po.orderId}</TableCell>
+                        <TableCell className="p-3">{po.orderDate}</TableCell>
+                        <TableCell className="p-3">{po.supplierName}</TableCell>
+                        <TableCell className="p-3">{po.quantity}</TableCell>
+                        <TableCell className="p-3">{po.priceInOrderCurrency.toFixed(2)} {po.orderCurrency}</TableCell>
+                        <TableCell className="p-3">1 {po.orderCurrency} = {po.rateToMainCurrency.toFixed(4)} {mainCurrency}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="p-4 text-center text-gray-500 dark:text-slate-400">
+                  {t('noPurchaseOrdersFoundForProduct')}
+                </p>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Sales Orders Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('salesOrdersWithProduct')}</h3>
-          <div className="overflow-x-auto">
-            {relevantSellOrders.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-100 dark:bg-slate-700">
-                    <TableHead className="p-3">{t('orderId')}</TableHead>
-                    <TableHead className="p-3">{t('customer')}</TableHead>
-                    <TableHead className="p-3">{t('saleDate')}</TableHead>
-                    <TableHead className="p-3">{t('qty')}</TableHead>
-                    <TableHead className="p-3">{t('priceExclVat')}</TableHead>
-                    <TableHead className="p-3">{t('priceInclVat')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {relevantSellOrders.map((so, index) => (
-                    <TableRow key={so.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                      <TableCell className="p-3 font-semibold">#{so.orderId}</TableCell>
-                      <TableCell className="p-3">{so.customerName}</TableCell>
-                      <TableCell className="p-3">{so.orderDate}</TableCell>
-                      <TableCell className="p-3">{so.quantity}</TableCell>
-                      <TableCell className="p-3">{so.priceExclVat.toFixed(2)} {mainCurrency}</TableCell>
-                      <TableCell className="p-3">{so.priceInclVat.toFixed(2)} {mainCurrency}</TableCell>
+        <Collapsible open={isSalesOrdersOpen} onOpenChange={setIsSalesOrdersOpen}>
+          <CollapsibleTrigger asChild>
+            <button className="flex justify-between items-center w-full text-lg font-semibold text-gray-700 dark:text-slate-300 mb-4 focus:outline-none">
+              {t('salesOrdersWithProduct')}
+              {isSalesOrdersOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="overflow-x-auto">
+              {relevantSellOrders.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100 dark:bg-slate-700">
+                      <TableHead className="p-3">{t('orderId')}</TableHead>
+                      <TableHead className="p-3">{t('customer')}</TableHead>
+                      <TableHead className="p-3">{t('saleDate')}</TableHead>
+                      <TableHead className="p-3">{t('qty')}</TableHead>
+                      <TableHead className="p-3">{t('priceExclVat')}</TableHead>
+                      <TableHead className="p-3">{t('priceInclVat')}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="p-4 text-center text-gray-500 dark:text-slate-400">
-                {t('noSalesOrdersFoundForProduct')}
-              </p>
-            )}
-          </div>
-        </div>
+                  </TableHeader>
+                  <TableBody>
+                    {relevantSellOrders.map((so, index) => (
+                      <TableRow key={so.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
+                        <TableCell className="p-3 font-semibold">#{so.orderId}</TableCell>
+                        <TableCell className="p-3">{so.customerName}</TableCell>
+                        <TableCell className="p-3">{so.orderDate}</TableCell>
+                        <TableCell className="p-3">{so.quantity}</TableCell>
+                        <TableCell className="p-3">{so.priceExclVat.toFixed(2)} {mainCurrency}</TableCell>
+                        <TableCell className="p-3">{so.priceInclVat.toFixed(2)} {mainCurrency}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="p-4 text-center text-gray-500 dark:text-slate-400">
+                  {t('noSalesOrdersFoundForProduct')}
+                </p>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </FormModal>
   );
