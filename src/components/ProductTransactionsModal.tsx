@@ -19,8 +19,8 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
   const { products, purchaseOrders, sellOrders, suppliers, customers, currencyRates, settings } = useData();
   const mainCurrency = settings.mainCurrency;
 
-  const [isPurchaseOrdersOpen, setIsPurchaseOrdersOpen] = useState(true); // State for Purchase Orders collapsible
-  const [isSalesOrdersOpen, setIsSalesOrdersOpen] = useState(true); // State for Sales Orders collapsible
+  const [isPurchaseOrdersOpen, setIsPurchaseOrdersOpen] = useState(false); // Changed to false
+  const [isSalesOrdersOpen, setIsSalesOrdersOpen] = useState(false); // Changed to false
 
   const product = useMemo(() => products.find(p => p.id === productId), [products, productId]);
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s }), {} as { [key: number]: Supplier }), [suppliers]);
