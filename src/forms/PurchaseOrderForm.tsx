@@ -185,7 +185,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
                 value={manualFeesExchangeRateInput}
                 onChange={handleFeesExchangeRateChange}
                 placeholder={t('exchangeRatePlaceholder')}
-                className="mb-1 w-1/4"
+                className="mb-1 w-1/5"
                 required
               />
               <p className="text-xs text-gray-500 dark:text-slate-400">{t('exchangeRateHelpText')}</p>
