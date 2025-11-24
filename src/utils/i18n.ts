@@ -292,6 +292,22 @@ const i18n = {
     allCurrenciesDeselected: 'All active currencies deselected (except main currency).', // New translation key
     exportTransactionsToExcel: 'Export Transactions to Excel', // New translation key
     feesExchangeRateToAZN: 'Fees Exchange Rate to AZN', // New translation key
+    // New sales chart translations
+    salesChart: 'Sales Chart',
+    showSalesChartOnDashboard: 'Show Sales Chart on Dashboard',
+    yearlySales: 'Yearly Sales',
+    monthlySales: 'Monthly Sales',
+    selectYear: 'Select Year',
+    selectMonth: 'Select Month',
+    totalSalesValue: 'Total Sales Value',
+    noSalesData: 'No sales data available for the selected period.',
+    salesOverview: 'Sales Overview',
+    salesByMonth: 'Sales by Month',
+    salesByDay: 'Sales by Day',
+    previous: 'Previous',
+    next: 'Next',
+    jan: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr', may: 'May', jun: 'Jun', jul: 'Jul', aug: 'Aug', sep: 'Sep', oct: 'Oct', nov: 'Nov', dec: 'Dec',
+    day: 'Day',
   }
 };
 

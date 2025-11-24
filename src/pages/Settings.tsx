@@ -18,7 +18,8 @@ import PaymentCategoriesSettings from '@/components/settings/PaymentCategoriesSe
 import EraseAllDataSection from '@/components/settings/EraseAllDataSection';
 import DashboardCurrencyRatesToggle from '@/components/settings/DashboardCurrencyRatesToggle';
 import PackingSettings from '@/components/settings/PackingSettings';
-import QuickButtonsSettings from '@/components/settings/QuickButtonsSettings'; // New import
+import QuickButtonsSettings from '@/components/settings/QuickButtonsSettings';
+import SalesChartSettings from '@/components/settings/SalesChartSettings'; // New import
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -128,6 +129,12 @@ const SettingsPage: React.FC = () => {
       />
 
       <DashboardCurrencyRatesToggle
+        settings={settings}
+        setSettings={setSettings}
+        t={t}
+      />
+
+      <SalesChartSettings
         settings={settings}
         setSettings={setSettings}
         t={t}

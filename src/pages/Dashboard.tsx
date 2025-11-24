@@ -6,13 +6,15 @@ import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import { AlertCircle } from 'lucide-react';
 import { Product, SellOrder, Payment, CurrencyRates, Currency } from '@/types'; // Import types from types file
-import QuickButtonsGrid from '@/components/QuickButtonsGrid'; // New import
+import QuickButtonsGrid from '@/components/QuickButtonsGrid';
+import SalesChart from '@/components/SalesChart'; // New import
 
 const Dashboard: React.FC = () => {
   const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
   const activeCurrencies = settings.activeCurrencies || []; // Ensure it's an array
-  const showDashboardCurrencyRates = settings.showDashboardCurrencyRates; // New setting
+  const showDashboardCurrencyRates = settings.showDashboardCurrencyRates;
+  const showSalesChartOnDashboard = settings.showSalesChartOnDashboard; // New setting
   const quickButtons = settings.quickButtons || []; // Get quick buttons from settings
 
   const getOverdueSellOrders = () => {
@@ -79,6 +81,10 @@ const Dashboard: React.FC = () => {
       
       {quickButtons.length > 0 && (
         <QuickButtonsGrid quickButtons={quickButtons} />
+      )}
+
+      {showSalesChartOnDashboard && (
+        <SalesChart />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
