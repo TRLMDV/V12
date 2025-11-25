@@ -35,179 +35,6 @@ const i18n = {
     outgoing: 'Outgoing',
     balance: 'Balance',
     noTransactionsFound: 'No transactions found for the selected period.',
-    allSuppliers: 'All Suppliers',
-    allProducts: 'All Products',
-    allCustomers: 'All Customers',
-    confirmation: 'Confirmation',
-    areYouSure: 'Are You Sure?',
-    productSubtotalNative: 'Product Subtotal (Native)',
-    stockAvailable: 'Stock Available',
-    exportDataToJson: 'Export Data to JSON',
-    export: 'Export',
-    noProductsToAnalyze: 'No products to analyze for this period.',
-    cancel: 'Cancel',
-    selectSupplier: 'Select Supplier',
-    selectWarehouse: 'Select Warehouse',
-    selectCustomer: 'Select Customer',
-    detailsForOrder: 'Details for Order',
-    costOfGoodsSold: 'Cost of Goods Sold',
-    vatCollectedFromSales: 'VAT Collected From Sales',
-    chooseJsonFile: 'Choose JSON File',
-    searchProductBySku: 'Search product by name or SKU...', // Updated placeholder
-    noProductFound: 'No product found.',
-    generateProductMovement: 'Generate Product Movement',
-    warehouseType: 'Warehouse Type',
-    mainWarehouseType: 'Main',
-    secondaryWarehouseType: 'Secondary',
-    selectWarehouseType: 'Select Warehouse Type',
-    onlyOneMainWarehouse: 'Only one warehouse can be designated as Main. Please change the existing Main warehouse first.',
-    validationError: 'Validation Error',
-    mainWarehouseNotFound: 'Main Warehouse not found. Please ensure a warehouse of type "Main" exists.',
-    selectDestinationWarehouse: 'Please select a destination warehouse for the sell order first.',
-    movementNotNeeded: 'The sell order is already linked to the Main Warehouse. No movement needed.',
-    noValidProductsForMovement: 'No valid products for the sell order to generate a movement for.',
-    productMovementAlreadyGenerated: 'A product movement has been generated for this sell order.',
-    totalLandedCost: 'Total Landed Cost',
-    paymentForProducts: 'Payment for Products',
-    paymentForFees: 'Payment for Fees',
-    itemTotal: 'Item Total',
-    searchBySku: 'Search by SKU',
-    enterSku: 'Enter the SKU',
-    totalVat: 'Total VAT',
-    totalCleanProfit: 'Total Clean Profit',
-    landedCost: 'Landed Cost',
-    importExcelFile: 'Import Excel File',
-    exportExcelFile: 'Export Excel File',
-    exportExcelFileDetailed: 'Export Excel File (Detailed)',
-    excelImportSuccess: 'Excel Import Success',
-    excelImportError: 'Excel Import Error',
-    noFileSelected: 'No file selected.',
-    emptyOrInvalidExcel: 'The Excel file is empty or has an invalid format.',
-    missingRequiredColumns: 'Missing required columns',
-    importedSuccessfully: 'imported successfully',
-    duplicateProductsSkipped: 'Some products were skipped because their SKUs already exist.',
-    duplicateCustomersSkipped: 'Some customers were skipped because their emails already exist.',
-    eraseAllData: 'Erase All Data',
-    eraseAllDataDescription: 'This action will permanently delete ALL application data stored locally and reset the application to its initial state. This cannot be undone.',
-    eraseAllDataWarning: 'Are you absolutely sure you want to erase all data? This action is irreversible and will reset the application to its default state.',
-    eraseAllData100PercentSure: 'Are you 100% sure? This action is irreversible.',
-    allDataErased: 'All application data has been erased.',
-    finalConfirmation: 'Final Confirmation',
-    enterCodeToConfirm: 'To confirm, please type the following 4-digit code:',
-    enterCode: 'Enter Code',
-    enterTheCodeHere: 'Enter the code here',
-    confirmErase: 'Confirm Erase',
-    codeMismatchError: 'Code Mismatch',
-    pleaseEnterCorrectCode: 'Please enter the correct code to proceed.',
-    filterByProduct: 'Filter by Product',
-    exportToExcel: 'Export to Excel',
-    totalRevenueExVat: 'Total Revenue (Excl. VAT)',
-    fullyPaid: 'Fully Paid',
-    productsImportExportDescription: 'Manage your product data by importing new products or exporting your existing product list to an Excel file.',
-    customersImportExportDescription: 'Manage your customer data by importing new customers or exporting your existing customer list to an Excel file.',
-    suppliersImportExportDescription: 'Manage your supplier data by importing new suppliers or exporting your existing supplier list to an Excel file.',
-    purchaseOrdersImportExportDescription: 'Import new purchase orders (items must be added manually) or export detailed purchase orders, with each order on a separate sheet.',
-    sellOrdersImportExportDescription: 'Import new sell orders (items must be added manually) or export detailed sell orders, with each order on a separate sheet.',
-    incomingPaymentsImportExportDescription: 'Import new incoming payments or export your existing incoming payment records.',
-    outgoingPaymentsImportExportDescription: 'Import new outgoing payment records or export your existing outgoing payment records.',
-    productMovementsImportExportDescription: 'Import new product movements (items must be added manually) or export your existing product movement records.',
-    itemsNotImportedWarning: 'Order/Movement items were not imported and must be added manually.',
-    settings: 'Settings',
-    defaultWarehouse: 'Default Warehouse',
-    selectDefaultWarehouse: 'Select Default Warehouse',
-    none: 'None',
-    recycleBin: 'Recycle Bin',
-    itemMovedToRecycleBin: 'Item moved to Recycle Bin.',
-    itemNotFound: 'Item not found.',
-    itemNotFoundInRecycleBin: 'Item not found in Recycle Bin.',
-    unknownCollectionType: 'Unknown collection type.',
-    itemAlreadyExists: 'Item with this ID already exists in the active data. Restore aborted.',
-    itemRestored: 'Item restored successfully.',
-    deletePermanently: 'Delete Permanently',
-    deletePermanentlyWarning: 'Are you sure you want to permanently delete this item? This action is irreversible.',
-    itemDeletedPermanently: 'Item deleted permanently.',
-    cleanRecycleBin: 'Clean Recycle Bin',
-    cleanRecycleBinWarning: 'Are you sure you want to permanently delete ALL items from the Recycle Bin? This action is irreversible.',
-    recycleBinCleaned: 'Recycle Bin cleaned successfully.',
-    itemType: 'Item Type',
-    originalId: 'Original ID',
-    dataSummary: 'Data Summary',
-    deletedAt: 'Deleted At',
-    restore: 'Restore',
-    movement: 'Movement',
-    programDisplayScaling: 'Program Display Scaling',
-    displayScale: 'Display Scale',
-    additionalCosts: 'Additional Costs',
-    filterBySupplier: 'Filter by Supplier',
-    searchSupplierByName: 'Search supplier by name...',
-    noSupplierFound: 'No supplier found.',
-    searchCustomerByName: 'Search customer by name...',
-    noCustomerFound: 'No customer found.',
-    generateIncomingPayment: 'Generate Incoming Payment',
-    incomingPayment: 'Incoming Payment',
-    incomingPaymentAlreadyGenerated: 'An incoming payment has already been generated for this sell order.',
-    incomingPaymentAlreadyExists: 'An incoming payment for this order already exists. Linking it to the order.',
-    generatedSuccessfully: 'generated successfully',
-    autoGenerated: 'Auto-generated',
-    paymentCategories: 'Payment Categories',
-    addCategory: 'Add Category',
-    editCategory: 'Edit Category',
-    deleteCategory: 'Delete Category',
-    categoryName: 'Category Name',
-    categoryNameRequired: 'Category name is required.',
-    saveCategory: 'Save Category',
-    noPaymentCategoriesFound: 'No payment categories found. Add some to organize your manual expenses!',
-    categoryAdded: 'Payment category added successfully.',
-    categoryUpdated: 'Payment category updated successfully.',
-    categoryDeleted: 'Payment category deleted successfully.',
-    mainCurrencySettings: 'Main Currency Settings',
-    mainCurrency: 'Main Currency',
-    saveMainCurrency: 'Save Main Currency',
-    mainCurrencyUpdated: 'Main currency updated.',
-    currencyRatesDescription: 'Enter the exchange rate for 1 unit of each currency to {mainCurrency}. {mainCurrency} is always 1.00.',
-    activeCurrenciesSelection: 'Active Currencies Selection',
-    activeCurrenciesDescription: 'Select the currencies you actively use in your business. Only selected currencies will appear in forms and be configurable for rates.',
-    saveActiveCurrencies: 'Save Active Currencies',
-    activeCurrenciesUpdated: 'Active currencies updated.',
-    mainCurrencyCannotBeDeactivated: 'The main currency cannot be deactivated.',
-    dashboardCurrencyRates: 'Dashboard Currency Rates',
-    showCurrencyRatesOnDashboard: 'Show Currency Rates on Dashboard',
-    packingUnits: 'Packing Units',
-    packingUnit: 'Packing Unit',
-    addPackingUnit: 'Add Packing Unit',
-    editPackingUnit: 'Edit Packing Unit',
-    deletePackingUnit: 'Delete Packing Unit',
-    packingUnitName: 'Packing Unit Name',
-    baseUnit: 'Base Unit',
-    conversionFactor: 'Conversion Factor',
-    savePackingUnit: 'Save Packing Unit',
-    noPackingUnitsFound: 'No packing units found. Add some to define how your products are packaged!',
-    packingUnitAdded: 'Packing unit added successfully.',
-    packingUnitUpdated: 'Packing unit updated successfully.',
-    packingUnitDeleted: 'Packing unit deleted successfully.',
-    deletePackingUnitWarning: 'Are you sure you want to delete this packing unit? This action cannot be undone.',
-    selectPackingUnit: 'Select Packing Unit',
-    piece: 'Piece',
-    ml: 'ml',
-    liter: 'Liter',
-    packingUnitNameRequired: 'Packing unit name is required.',
-    baseUnitRequired: 'Base unit is required.',
-    conversionFactorPositive: 'Conversion factor must be a positive number.',
-    pieceConversionFactor: 'A "Piece" packing unit must have a conversion factor of 1.',
-    defaultPacking: 'Default Packing',
-    // New Bank Account related translations
-    bank: 'Bank',
-    bankAccount: 'Bank Account',
-    setInitialCapital: 'Set Initial Capital',
-    initialCapital: 'Initial Capital',
-    currentBalance: 'Current Balance',
-    transactionHistory: 'Transaction History',
-    date: 'Date',
-    description: 'Description',
-    incoming: 'Incoming',
-    outgoing: 'Outgoing',
-    balance: 'Balance',
-    noTransactionsFound: 'No transactions found for the selected period.',
     bankAccounts: 'Bank Accounts',
     yourBankAccounts: 'Your Bank Accounts',
     addBankAccount: 'Add Bank Account',
@@ -355,3 +182,278 @@ export function getKeyAsPageId(key: string): string {
   // from camelCase to kebab-case, e.g., purchaseOrders -> purchase-orders
   return key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
 }
+```
+<dyad-write path="src/forms/ProductMovementForm.tsx" description="Fixed useMemo import and Input onChange handler.">
+"use client";
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useData } from '@/context/DataContext';
+import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { t } from '@/utils/i18n';
+import { ProductMovement, Product, Warehouse } from '@/types'; // Import types from types file
+
+interface ProductMovementFormProps {
+  movementId?: number;
+  onSuccess: () => void;
+}
+
+interface MovementItemState {
+  productId: number | '';
+  quantity: number;
+}
+
+const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, onSuccess }) => {
+  const { productMovements, products, warehouses, saveItem, showAlertModal, setProducts } = useData();
+  const isEdit = movementId !== undefined;
+
+  const [sourceWarehouseId, setSourceWarehouseId] = useState<number | ''>('');
+  const [destWarehouseId, setDestWarehouseId] = useState<number | ''>('');
+  const [movementItems, setMovementItems] = useState<MovementItemState[]>([{ productId: '', quantity: 1 }]);
+  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
+  const [searchQuery, setSearchQuery] = useState(''); // New state for product search input
+
+  useEffect(() => {
+    if (isEdit) {
+      const existingMovement = productMovements.find(m => m.id === movementId);
+      if (existingMovement) {
+        setSourceWarehouseId(existingMovement.sourceWarehouseId);
+        setDestWarehouseId(existingMovement.destWarehouseId);
+        setMovementItems(existingMovement.items.map(item => ({ productId: item.productId, quantity: item.quantity })));
+      }
+    } else {
+      setSourceWarehouseId('');
+      setDestWarehouseId('');
+      setMovementItems([{ productId: '', quantity: 1 }]);
+    }
+  }, [movementId, isEdit, productMovements]);
+
+  const addMovementItem = useCallback(() => {
+    setMovementItems(prev => [...prev, { productId: '', quantity: 1 }]);
+  }, []);
+
+  const removeMovementItem = useCallback((index: number) => {
+    setMovementItems(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleItemChange = useCallback((index: number, field: keyof MovementItemState, value: any) => {
+    setMovementItems(prev =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    const trimmedSearchQuery = searchQuery.trim().toLowerCase();
+    if (trimmedSearchQuery === '') {
+      return products;
+    }
+    return products.filter(product => {
+      const productName = String(product.name).trim().toLowerCase();
+      const productSku = String(product.sku).trim().toLowerCase();
+      return productName.startsWith(trimmedSearchQuery) || productSku.startsWith(trimmedSearchQuery);
+    });
+  }, [products, searchQuery]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (sourceWarehouseId === '' || destWarehouseId === '') {
+      showAlertModal('Validation Error', 'Please select both source and destination warehouses.');
+      return;
+    }
+    if (sourceWarehouseId === destWarehouseId) {
+      showAlertModal('Validation Error', 'Source and Destination warehouses cannot be the same.');
+      return;
+    }
+
+    const newItems = movementItems.filter(item => item.productId !== '' && item.quantity > 0);
+    if (newItems.length === 0) {
+      showAlertModal('Validation Error', 'Please ensure all items have a selected product and a quantity greater than zero.');
+      return;
+    }
+
+    // Deep copy products for validation and potential update
+    const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
+    const currentMovement = isEdit ? productMovements.find(m => m.id === movementId) : null;
+
+    // --- Revert stock change if editing an existing movement ---
+    if (isEdit && currentMovement) {
+      currentMovement.items.forEach(item => {
+        const p = productsCopy.find(p => p.id === item.productId);
+        if (p && p.stock) {
+          p.stock[currentMovement.sourceWarehouseId] = (p.stock[currentMovement.sourceWarehouseId] || 0) + item.quantity;
+          p.stock[currentMovement.destWarehouseId] = (p.stock[currentMovement.destWarehouseId] || 0) - item.quantity;
+        }
+      });
+    }
+
+    // --- Check stock and apply new movement (dry run) ---
+    for (const item of newItems) {
+      const p = productsCopy.find(p => p.id === item.productId);
+      if (!p || !p.stock) {
+        showAlertModal('Error', `Product data missing for item ID ${item.productId}`);
+        return;
+      }
+
+      const stockInSource = p.stock[sourceWarehouseId as number] || 0;
+      if (stockInSource < item.quantity) {
+        const originalProduct = products.find(prod => prod.id === item.productId);
+        const safeProductName = originalProduct?.name || 'Unknown Product';
+        showAlertModal('Stock Error', `${t('notEnoughStock')} ${safeProductName}. ${t('available')}: ${stockInSource}, ${t('requested')}: ${item.quantity}.`);
+        return;
+      }
+      // Apply tentative stock changes for subsequent checks in the same form submission
+      p.stock[sourceWarehouseId as number] = stockInSource - item.quantity;
+      p.stock[destWarehouseId as number] = (p.stock[destWarehouseId as number] || 0) + item.quantity;
+    }
+
+    // If all checks pass, update the actual products state
+    setProducts(productsCopy);
+
+    const movementToSave: ProductMovement = {
+      id: movementId || 0,
+      sourceWarehouseId: sourceWarehouseId as number,
+      destWarehouseId: destWarehouseId as number,
+      items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
+      date: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+    };
+
+    saveItem('productMovements', movementToSave);
+    onSuccess();
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="sourceWarehouseId" className="text-right">
+            {t('fromWarehouse')}
+          </Label>
+          <Select onValueChange={(value) => setSourceWarehouseId(parseInt(value))} value={String(sourceWarehouseId)}>
+            <SelectTrigger className="col-span-3">
+              <SelectValue placeholder={t('sourceWarehouse')} />
+            </SelectTrigger>
+            <SelectContent>
+              {warehouses.map(w => (
+                <SelectItem key={w.id} value={String(w.id)}>
+                  {w.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="destWarehouseId" className="text-right">
+            {t('toWarehouse')}
+          </Label>
+          <Select onValueChange={(value) => setDestWarehouseId(parseInt(value))} value={String(destWarehouseId)}>
+            <SelectTrigger className="col-span-3">
+              <SelectValue placeholder={t('destinationWarehouse')} />
+            </SelectTrigger>
+            <SelectContent>
+              {warehouses.map(w => (
+                <SelectItem key={w.id} value={String(w.id)}>
+                  {w.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <h4 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('productsToMove')}</h4>
+        <div id="movement-items">
+          {movementItems.map((item, index) => (
+            <div key={index} className="grid grid-cols-10 gap-2 mb-2 items-center">
+              <Popover open={openComboboxIndex === index} onOpenChange={(open) => {
+                setOpenComboboxIndex(open ? index : null);
+                if (!open) {
+                  setSearchQuery(''); // Clear search query when popover closes
+                }
+              }}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openComboboxIndex === index}
+                    className="col-span-6 justify-between"
+                  >
+                    {item.productId
+                      ? products.find(p => p.id === item.productId)?.name || t('selectProduct')
+                      : t('selectProduct')}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <Command shouldFilter={false}>
+                    <div className="p-1">
+                      <Input
+                        placeholder={t('searchProductBySku')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    <CommandEmpty>{t('noProductFound')}</CommandEmpty>
+                    <CommandGroup key={searchQuery}>
+                      {filteredProducts.map((product) => (
+                        <CommandItem
+                          key={product.id}
+                          value={`${product.name} ${product.sku}`} // Searchable value
+                          onSelect={() => {
+                            handleItemChange(index, 'productId', product.id);
+                            setOpenComboboxIndex(null);
+                            setSearchQuery(''); // Clear search query after selection
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              item.productId === product.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {product.name} ({product.sku})
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <Input
+                type="number"
+                value={item.quantity}
+                onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 0)}
+                className="col-span-3"
+                min="1"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => removeMovementItem(index)}
+                className="col-span-1 text-red-500 hover:text-red-700"
+              >
+                &times;
+              </Button>
+            </div>
+          ))}
+        </div>
+        <Button type="button" onClick={addMovementItem} variant="outline" className="mt-2">
+          {t('addItem')}
+        </Button>
+      </div>
+      <div className="flex justify-end mt-6 border-t pt-4 dark:border-slate-700">
+        <Button type="submit">{t('saveMovement')}</Button>
+      </div>
+    </form>
+  );
+};
+
+export default ProductMovementForm;
