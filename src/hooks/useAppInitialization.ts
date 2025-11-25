@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { initialData, initialSettings, defaultCurrencyRates, MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
+import { initialData, initialSettings, defaultCurrencyRates, MOCK_CURRENT_DATE } from '@/data/initialData';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
   CurrencyRates, Settings, RecycleBinItem, PackingUnit, BankAccount, UtilizationOrder, QuickButton
@@ -54,6 +54,9 @@ export function useAppInitialization({
   const [initialized, setInitialized] = useLocalStorage<boolean>('initialized', false);
 
   useEffect(() => {
+    const piecePackingUnit = packingUnits.find(pu => pu.name === 'Piece');
+    const piecePackingUnitId = piecePackingUnit ? piecePackingUnit.id : undefined;
+
     // Helper to get the max ID from a collection
     const getMaxId = (collection: { id: number }[]): number => {
       return collection.length > 0 ? Math.max(...collection.map(item => item.id)) : 0;
@@ -114,12 +117,29 @@ export function useAppInitialization({
       const currentCalculatedNextIds = calculateNextIds();
       setNextIds(currentCalculatedNextIds);
       console.log("useAppInitialization: App already initialized. Recalculated nextIds:", currentCalculatedNextIds);
+
+      // --- NEW LOGIC: Ensure all existing products have 'Piece' as defaultPackingUnitId ---
+      if (piecePackingUnitId !== undefined) {
+        setProducts(prevProducts => {
+          let changed = false;
+          const updatedProducts = prevProducts.map(p => {
+            if (p.defaultPackingUnitId === undefined || p.defaultPackingUnitId === null) {
+              changed = true;
+              return { ...p, defaultPackingUnitId: piecePackingUnitId };
+            }
+            return p;
+          });
+          return changed ? updatedProducts : prevProducts;
+        });
+      }
+      // --- END NEW LOGIC ---
     }
   }, [
     initialized, setInitialized,
-    products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
+    products, setProducts, // Added products and setProducts as dependencies
+    suppliers, customers, warehouses, purchaseOrders, sellOrders,
     incomingPayments, outgoingPayments, productMovements, bankAccounts, utilizationOrders,
-    settings, currencyRates, packingUnits, recycleBin,
+    settings, currencyRates, packingUnits, recycleBin, // packingUnits is already a dependency
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders,
     setSettings, setCurrencyRates, setPackingUnits, setRecycleBin, setNextIds,
