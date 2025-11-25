@@ -51,28 +51,11 @@ const Dashboard: React.FC = () => {
         }
       }
     });
-    overdueOrders.sort((a, b) => b.daysOverdue - a.daysOverdue);
+    overdueOrders.sort((a, b) => b.daysOverdue - a.daysDue);
     return overdueOrders;
   };
 
   const lowStockProducts = products.filter(p => (p.stock ? Object.values(p.stock).reduce((a, b) => a + b, 0) : 0) < p.minStock);
-  const shippedSellOrders = sellOrders.filter(o => o.status === 'Shipped');
-
-  let totalRevenueInMainCurrency = 0;
-  let totalCOGSInMainCurrency = 0;
-
-  shippedSellOrders.forEach(order => {
-    // Order total is already in mainCurrency
-    totalRevenueInMainCurrency += order.total;
-    (order.items || []).forEach(item => {
-      const product = products.find(p => p.id === item.productId);
-      if (product) {
-        // product.averageLandedCost is now in mainCurrency
-        totalCOGSInMainCurrency += item.qty * (product.averageLandedCost || 0);
-      }
-    });
-  });
-  const grossProfitInMainCurrency = totalRevenueInMainCurrency - totalCOGSInMainCurrency;
   const overdueOrders = getOverdueSellOrders();
 
   return (
@@ -87,20 +70,6 @@ const Dashboard: React.FC = () => {
         <SalesChart />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('totalRevenueShipped')}</h2>
-          <p className="text-3xl font-bold text-green-500 mt-2">{totalRevenueInMainCurrency.toFixed(2)} {mainCurrency}</p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('cogs')}</h2>
-          <p className="text-3xl font-bold text-red-500 mt-2">{totalCOGSInMainCurrency.toFixed(2)} {mainCurrency}</p>
-        </div>
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300">{t('grossProfitShipped')}</h2>
-          <p className="text-3xl font-bold text-blue-500 mt-2">{grossProfitInMainCurrency.toFixed(2)} {mainCurrency}</p>
-        </div>
-      </div>
       {showDashboardCurrencyRates && ( // Conditionally render based on new setting
         <div className="mt-8 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('liveCurrencyRates', { mainCurrency })}</h2>
