@@ -32,6 +32,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   const [destWarehouseId, setDestWarehouseId] = useState<number | ''>('');
   const [movementItems, setMovementItems] = useState<MovementItemState[]>([{ productId: '', quantity: 1 }]);
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
+  const [searchQuery, setSearchQuery] = useState(''); // New state for product search input
 
   useEffect(() => {
     if (isEdit) {
@@ -61,6 +62,18 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
     );
   }, []);
+
+  const filteredProducts = useMemo(() => {
+    const trimmedSearchQuery = searchQuery.trim().toLowerCase();
+    if (trimmedSearchQuery === '') {
+      return products;
+    }
+    return products.filter(product => {
+      const productName = String(product.name).trim().toLowerCase();
+      const productSku = String(product.sku).trim().toLowerCase();
+      return productName.startsWith(trimmedSearchQuery) || productSku.startsWith(trimmedSearchQuery);
+    });
+  }, [products, searchQuery]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,7 +186,12 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
         <div id="movement-items">
           {movementItems.map((item, index) => (
             <div key={index} className="grid grid-cols-10 gap-2 mb-2 items-center">
-              <Popover open={openComboboxIndex === index} onOpenChange={(open) => setOpenComboboxIndex(open ? index : null)}>
+              <Popover open={openComboboxIndex === index} onOpenChange={(open) => {
+                setOpenComboboxIndex(open ? index : null);
+                if (!open) {
+                  setSearchQuery(''); // Clear search query when popover closes
+                }
+              }}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -188,17 +206,25 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command>
-                    <CommandInput placeholder={t('searchProductBySku')} />
+                  <Command shouldFilter={false}>
+                    <div className="p-1">
+                      <Input
+                        placeholder={t('searchProductBySku')}
+                        value={searchQuery}
+                        onValueChange={(currentValue) => setSearchQuery(currentValue)}
+                        className="w-full"
+                      />
+                    </div>
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup>
-                      {products.map((product) => (
+                    <CommandGroup key={searchQuery}>
+                      {filteredProducts.map((product) => (
                         <CommandItem
                           key={product.id}
                           value={`${product.name} ${product.sku}`} // Searchable value
                           onSelect={() => {
                             handleItemChange(index, 'productId', product.id);
                             setOpenComboboxIndex(null);
+                            setSearchQuery(''); // Clear search query after selection
                           }}
                         >
                           <Check

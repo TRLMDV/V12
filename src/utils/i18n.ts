@@ -53,8 +53,7 @@ const i18n = {
     costOfGoodsSold: 'Cost of Goods Sold',
     vatCollectedFromSales: 'VAT Collected From Sales',
     chooseJsonFile: 'Choose JSON File',
-    searchProductBySku: 'Search product by name or SKU...',
-    searchProductByExactSku: 'Search by exact SKU...',
+    searchProductBySku: 'Search product by name or SKU...', // Updated placeholder
     noProductFound: 'No product found.',
     generateProductMovement: 'Generate Product Movement',
     warehouseType: 'Warehouse Type',
@@ -197,6 +196,18 @@ const i18n = {
     pieceConversionFactor: 'A "Piece" packing unit must have a conversion factor of 1.',
     defaultPacking: 'Default Packing',
     // New Bank Account related translations
+    bank: 'Bank',
+    bankAccount: 'Bank Account',
+    setInitialCapital: 'Set Initial Capital',
+    initialCapital: 'Initial Capital',
+    currentBalance: 'Current Balance',
+    transactionHistory: 'Transaction History',
+    date: 'Date',
+    description: 'Description',
+    incoming: 'Incoming',
+    outgoing: 'Outgoing',
+    balance: 'Balance',
+    noTransactionsFound: 'No transactions found for the selected period.',
     bankAccounts: 'Bank Accounts',
     yourBankAccounts: 'Your Bank Accounts',
     addBankAccount: 'Add Bank Account',
@@ -323,6 +334,7 @@ const i18n = {
     priceExclVat: 'Price (Excl. VAT)', // New
     priceInclVat: 'Price (Incl. VAT)', // New
     noSalesOrdersFoundForProduct: 'No sales orders found for this product.', // New
+    landedCostPerUnit: 'Landed Cost Per Unit', // New translation key
   }
 };
 

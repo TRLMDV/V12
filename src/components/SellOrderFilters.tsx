@@ -36,6 +36,7 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
 
   const [openCustomerCombobox, setOpenCustomerCombobox] = useState(false);
   const [isProductComboboxOpen, setIsProductComboboxOpen] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState(''); // New state for product search input
 
   const customerMap = useMemo(() => {
     return customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
@@ -44,6 +45,19 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
   const productMap = useMemo(() => {
     return products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product });
   }, [products]);
+
+  // Filter products based on 'starts with' for SKU or name
+  const filteredProductsForCombobox = useMemo(() => {
+    const trimmedSearchQuery = productSearchQuery.trim().toLowerCase();
+    if (trimmedSearchQuery === '') {
+      return products; // Show all products when search is empty
+    }
+    return products.filter(product => {
+      const productName = String(product.name).trim().toLowerCase();
+      const productSku = String(product.sku).trim().toLowerCase();
+      return productName.startsWith(trimmedSearchQuery) || productSku.startsWith(trimmedSearchQuery);
+    });
+  }, [products, productSearchQuery]);
 
   useEffect(() => {
     onFiltersChange({
@@ -151,7 +165,12 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
           <Label htmlFor="product-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">
             {t('product')}
           </Label>
-          <Popover open={isProductComboboxOpen} onOpenChange={setIsProductComboboxOpen}>
+          <Popover open={isProductComboboxOpen} onOpenChange={(open) => {
+            setIsProductComboboxOpen(open);
+            if (!open) {
+              setProductSearchQuery(''); // Clear search query when popover closes
+            }
+          }}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -166,15 +185,21 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-              <Command>
-                <CommandInput placeholder={t('searchProductBySku')} />
+              <Command shouldFilter={false}>
+                <CommandInput placeholder={t('searchProductBySku')}
+                  value={productSearchQuery}
+                  onValueChange={(currentValue) => {
+                    setProductSearchQuery(currentValue);
+                  }}
+                />
                 <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                <CommandGroup>
+                <CommandGroup key={productSearchQuery}>
                   <CommandItem
                     value="all-products"
                     onSelect={() => {
                       setProductFilterId('all');
                       setIsProductComboboxOpen(false);
+                      setProductSearchQuery(''); // Clear search query after selection
                     }}
                   >
                     <Check
@@ -185,13 +210,14 @@ const SellOrderFilters: React.FC<SellOrderFiltersProps> = ({ onFiltersChange }) 
                     />
                     {t('allProducts')}
                   </CommandItem>
-                  {products.map((product) => (
+                  {filteredProductsForCombobox.map((product) => (
                     <CommandItem
                       key={product.id}
                       value={`${product.name} ${product.sku}`}
                       onSelect={() => {
                         setProductFilterId(product.id);
                         setIsProductComboboxOpen(false);
+                        setProductSearchQuery(''); // Clear search query after selection
                       }}
                     >
                       <Check

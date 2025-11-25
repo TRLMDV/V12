@@ -43,15 +43,16 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter products based on exact SKU match, or show all if search is empty
+  // Filter products based on 'starts with' for SKU or name
   const filteredProducts = useMemo(() => {
     const trimmedSearchQuery = searchQuery.trim().toLowerCase();
     if (trimmedSearchQuery === '') {
       return products; // Show all products when search is empty
     }
     return products.filter(product => {
-      const trimmedProductSku = String(product.sku).trim().toLowerCase();
-      return trimmedProductSku === trimmedSearchQuery; // Exact match
+      const productName = String(product.name).trim().toLowerCase();
+      const productSku = String(product.sku).trim().toLowerCase();
+      return productName.startsWith(trimmedSearchQuery) || productSku.startsWith(trimmedSearchQuery);
     });
   }, [products, searchQuery]);
 
@@ -99,7 +100,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                     {/* Replaced CommandInput with a regular Input */}
                     <div className="p-1">
                       <Input
-                        placeholder={t('searchProductByExactSku')}
+                        placeholder={t('searchProductBySku')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full"
