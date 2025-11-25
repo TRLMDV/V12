@@ -9,6 +9,8 @@ import { Product, PurchaseOrder, SellOrder, Supplier, Customer, Currency } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react'; // Import ArrowUpDown for sort indicator
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
+import { Input } from '@/components/ui/input'; // Import Input for date filters
+import { Label } from '@/components/ui/label'; // Import Label for date filters
 
 interface ProductTransactionsModalProps {
   isOpen: boolean;
@@ -29,6 +31,14 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
 
   const [isPurchaseOrdersOpen, setIsPurchaseOrdersOpen] = useState(false);
   const [isSalesOrdersOpen, setIsSalesOrdersOpen] = useState(false);
+
+  // Date filters for Purchase Orders
+  const [poStartDateFilter, setPoStartDateFilter] = useState<string>('');
+  const [poEndDateFilter, setPoEndDateFilter] = useState<string>('');
+
+  // Date filters for Sales Orders
+  const [soStartDateFilter, setSoStartDateFilter] = useState<string>('');
+  const [soEndDateFilter, setSoEndDateFilter] = useState<string>('');
 
   // Sorting and Pagination states for Purchase Orders
   const [purchaseOrderSortConfig, setPurchaseOrderSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
@@ -90,9 +100,18 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
   const relevantPurchaseOrders = useMemo(() => {
     if (!product) return [];
 
-    const rawOrders = purchaseOrders
-      .filter(order => order.items.some(item => item.productId === productId))
-      .map(order => {
+    let filteredOrders = purchaseOrders
+      .filter(order => order.items.some(item => item.productId === productId));
+
+    // Apply date filters
+    if (poStartDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate >= poStartDateFilter);
+    }
+    if (poEndDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate <= poEndDateFilter);
+    }
+
+    const rawOrders = filteredOrders.map(order => {
         const orderItem = order.items.find(item => item.productId === productId);
         const supplier = supplierMap[order.contactId];
 
@@ -119,19 +138,35 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     const startIndex = (purchaseOrderCurrentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return sortedOrders.slice(startIndex, endIndex);
-  }, [product, purchaseOrders, supplierMap, mainCurrency, currencyRates, productId, purchaseOrderSortConfig, purchaseOrderCurrentPage]);
+  }, [product, purchaseOrders, supplierMap, mainCurrency, currencyRates, productId, purchaseOrderSortConfig, purchaseOrderCurrentPage, poStartDateFilter, poEndDateFilter]);
 
   const totalPurchaseOrders = useMemo(() => {
     if (!product) return 0;
-    return purchaseOrders.filter(order => order.items.some(item => item.productId === productId)).length;
-  }, [product, purchaseOrders, productId]);
+    let filtered = purchaseOrders.filter(order => order.items.some(item => item.productId === productId));
+    if (poStartDateFilter) {
+      filtered = filtered.filter(order => order.orderDate >= poStartDateFilter);
+    }
+    if (poEndDateFilter) {
+      filtered = filtered.filter(order => order.orderDate <= poEndDateFilter);
+    }
+    return filtered.length;
+  }, [product, purchaseOrders, productId, poStartDateFilter, poEndDateFilter]);
 
   const relevantSellOrders = useMemo(() => {
     if (!product) return [];
 
-    const rawOrders = sellOrders
-      .filter(order => order.items.some(item => item.productId === productId))
-      .map(order => {
+    let filteredOrders = sellOrders
+      .filter(order => order.items.some(item => item.productId === productId));
+
+    // Apply date filters
+    if (soStartDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate >= soStartDateFilter);
+    }
+    if (soEndDateFilter) {
+      filteredOrders = filteredOrders.filter(order => order.orderDate <= soEndDateFilter);
+    }
+
+    const rawOrders = filteredOrders.map(order => {
         const orderItem = order.items.find(item => item.productId === productId);
         const customer = customerMap[order.contactId];
 
@@ -155,12 +190,19 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     const startIndex = (salesOrderCurrentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     return sortedOrders.slice(startIndex, endIndex);
-  }, [product, sellOrders, customerMap, productId, salesOrderSortConfig, salesOrderCurrentPage]);
+  }, [product, sellOrders, customerMap, productId, salesOrderSortConfig, salesOrderCurrentPage, soStartDateFilter, soEndDateFilter]);
 
   const totalSellOrders = useMemo(() => {
     if (!product) return 0;
-    return sellOrders.filter(order => order.items.some(item => item.productId === productId)).length;
-  }, [product, sellOrders, productId]);
+    let filtered = sellOrders.filter(order => order.items.some(item => item.productId === productId));
+    if (soStartDateFilter) {
+      filtered = filtered.filter(order => order.orderDate >= soStartDateFilter);
+    }
+    if (soEndDateFilter) {
+      filtered = filtered.filter(order => order.orderDate <= soEndDateFilter);
+    }
+    return filtered.length;
+  }, [product, sellOrders, productId, soStartDateFilter, soEndDateFilter]);
 
   if (!product) return null;
 
@@ -181,6 +223,36 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-slate-700 rounded-lg shadow">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div>
+                  <Label htmlFor="po-start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
+                  <Input
+                    type="date"
+                    id="po-start-date-filter"
+                    value={poStartDateFilter}
+                    onChange={(e) => {
+                      setPoStartDateFilter(e.target.value);
+                      setPurchaseOrderCurrentPage(1); // Reset to first page on filter change
+                    }}
+                    className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="po-end-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('endDate')}</Label>
+                  <Input
+                    type="date"
+                    id="po-end-date-filter"
+                    value={poEndDateFilter}
+                    onChange={(e) => {
+                      setPoEndDateFilter(e.target.value);
+                      setPurchaseOrderCurrentPage(1); // Reset to first page on filter change
+                    }}
+                    className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                  />
+                </div>
+              </div>
+            </div>
             <div className="overflow-x-auto">
               {relevantPurchaseOrders.length > 0 ? (
                 <>
@@ -243,6 +315,36 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-slate-700 rounded-lg shadow">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div>
+                  <Label htmlFor="so-start-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('startDate')}</Label>
+                  <Input
+                    type="date"
+                    id="so-start-date-filter"
+                    value={soStartDateFilter}
+                    onChange={(e) => {
+                      setSoStartDateFilter(e.target.value);
+                      setSalesOrderCurrentPage(1); // Reset to first page on filter change
+                    }}
+                    className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="so-end-date-filter" className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('endDate')}</Label>
+                  <Input
+                    type="date"
+                    id="so-end-date-filter"
+                    value={soEndDateFilter}
+                    onChange={(e) => {
+                      setSoEndDateFilter(e.target.value);
+                      setSalesOrderCurrentPage(1); // Reset to first page on filter change
+                    }}
+                    className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                  />
+                </div>
+              </div>
+            </div>
             <div className="overflow-x-auto">
               {relevantSellOrders.length > 0 ? (
                 <>
