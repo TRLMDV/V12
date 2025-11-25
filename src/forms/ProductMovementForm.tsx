@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { Input } from '@/components/ui/input';
@@ -211,7 +211,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                       <Input
                         placeholder={t('searchProductBySku')}
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)} // Changed onValueChange to onChange
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full"
                       />
                     </div>

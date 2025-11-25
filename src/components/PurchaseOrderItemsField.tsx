@@ -102,7 +102,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                       <Input
                         placeholder={t('searchProductBySku')}
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)} // Changed onValueChange to onChange
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full"
                       />
                     </div>
