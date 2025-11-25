@@ -214,6 +214,12 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
       description={t('productTransactionsDescription')}
     >
       <div className="space-y-8">
+        <div className="mb-4 text-gray-700 dark:text-slate-300">
+          <p className="text-md font-medium">
+            <strong>{t('avgLandedCost')}:</strong> {product.averageLandedCost.toFixed(2)} {mainCurrency}
+          </p>
+        </div>
+
         {/* Purchase Orders Section */}
         <Collapsible open={isPurchaseOrdersOpen} onOpenChange={setIsPurchaseOrdersOpen}>
           <CollapsibleTrigger asChild>
