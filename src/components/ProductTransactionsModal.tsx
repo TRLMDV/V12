@@ -19,7 +19,7 @@ interface ProductTransactionsModalProps {
 }
 
 type SortConfig = {
-  key: 'orderDate' | 'orderId' | 'supplierName' | 'customerName' | 'quantity' | 'priceInOrderCurrency' | 'priceExclVat' | 'priceInclVat';
+  key: 'orderDate' | 'orderId' | 'supplierName' | 'customerName' | 'quantity' | 'priceInOrderCurrency' | 'priceExclVat' | 'priceInclVat' | 'landedCostPerUnit'; // Added landedCostPerUnit
   direction: 'ascending' | 'descending';
 };
 
@@ -118,6 +118,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
         const orderCurrency = order.currency;
         const priceInOrderCurrency = orderItem?.price || 0;
         const quantity = orderItem?.qty || 0;
+        const landedCostPerUnit = orderItem?.landedCostPerUnit || 0; // Get landed cost per unit
 
         const rateToMainCurrency = orderCurrency === mainCurrency
           ? 1
@@ -131,6 +132,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
           priceInOrderCurrency: priceInOrderCurrency,
           orderCurrency: orderCurrency,
           rateToMainCurrency: rateToMainCurrency,
+          landedCostPerUnit: landedCostPerUnit, // Include landed cost per unit
         };
       });
 
@@ -280,6 +282,9 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                         <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('priceInOrderCurrency', purchaseOrderSortConfig, setPurchaseOrderSortConfig, setPurchaseOrderCurrentPage)}>
                           {t('priceInOrderCurrency')} {getSortIndicator('priceInOrderCurrency', purchaseOrderSortConfig)}
                         </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('landedCostPerUnit', purchaseOrderSortConfig, setPurchaseOrderSortConfig, setPurchaseOrderCurrentPage)}>
+                          {t('landedCostPerUnit')} {getSortIndicator('landedCostPerUnit', purchaseOrderSortConfig)}
+                        </TableHead>
                         <TableHead className="p-3">{t('currencyRateToMainCurrency', { mainCurrency })}</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -291,6 +296,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                           <TableCell className="p-3">{po.supplierName}</TableCell>
                           <TableCell className="p-3">{po.quantity}</TableCell>
                           <TableCell className="p-3">{po.priceInOrderCurrency.toFixed(2)} {po.orderCurrency}</TableCell>
+                          <TableCell className="p-3">{po.landedCostPerUnit.toFixed(2)} {mainCurrency}</TableCell>
                           <TableCell className="p-3">1 {po.orderCurrency} = {po.rateToMainCurrency.toFixed(4)} {mainCurrency}</TableCell>
                         </TableRow>
                       ))}
