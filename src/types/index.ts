@@ -188,7 +188,7 @@ export interface CurrencyRates {
   KHR: number;
   XAF: number;
   CVE: number;
-  CDF; // This was the problematic line
+  CDF: number; // Fixed: Added ': number'
   KMF: number;
   NZD: number;
   CRC: number;
