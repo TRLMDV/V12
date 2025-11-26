@@ -51,12 +51,12 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) return (existingOrder.items || []).map(item => ({ // Added defensive || []
         productId: item.productId,
-        qty: String(item.qty), // Base unit quantity
-        price: String(item.price),
-        itemTotal: String(item.qty * item.price),
+        qty: String(item.qty.toFixed(4)), // Apply toFixed here
+        price: String(item.price.toFixed(4)), // Apply toFixed here
+        itemTotal: String((item.qty * item.price).toFixed(4)), // Apply toFixed here
         landedCost: productMap[item.productId]?.averageLandedCost,
         packingUnitId: item.packingUnitId, // Load existing packing unit
-        packingQuantity: String(item.packingQuantity || ''), // Load existing packing quantity
+        packingQuantity: String((item.packingQuantity || 0).toFixed(4)), // Apply toFixed here
       }));
     }
     return [{ productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined, packingUnitId: undefined, packingQuantity: '' }];
@@ -77,12 +77,12 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
         setOrder(existingOrder);
         setOrderItems((existingOrder.items || []).map(item => ({ // Added defensive || []
           productId: item.productId,
-          qty: String(item.qty),
-          price: String(item.price),
-          itemTotal: String(item.qty * item.price),
+          qty: String(item.qty.toFixed(4)),
+          price: String(item.price.toFixed(4)),
+          itemTotal: String((item.qty * item.price).toFixed(4)),
           landedCost: productMap[item.productId]?.averageLandedCost,
           packingUnitId: item.packingUnitId,
-          packingQuantity: String(item.packingQuantity || ''),
+          packingQuantity: String((item.packingQuantity || 0).toFixed(4)),
         })));
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);

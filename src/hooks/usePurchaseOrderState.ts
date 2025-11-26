@@ -44,13 +44,13 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
       if (existingOrder) return existingOrder.items.map(item => ({
         productId: item.productId,
-        qty: String(item.qty), // Base unit quantity
-        price: String(item.price),
-        itemTotal: String(item.qty * item.price),
+        qty: String(item.qty.toFixed(4)), // Apply toFixed here
+        price: String(item.price.toFixed(4)), // Apply toFixed here
+        itemTotal: String((item.qty * item.price).toFixed(4)), // Apply toFixed here
         currency: item.currency || existingOrder.currency,
         landedCostPerUnit: item.landedCostPerUnit,
-        packingUnitId: item.packingUnitId, // Load existing packing unit
-        packingQuantity: String(item.packingQuantity || ''), // Load existing packing quantity
+        packingUnitId: item.packingUnitId,
+        packingQuantity: String((item.packingQuantity || 0).toFixed(4)), // Apply toFixed here
       }));
     }
     return [{ productId: '', qty: '', price: '', itemTotal: '', packingUnitId: undefined, packingQuantity: '' }];
@@ -72,13 +72,13 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         setOrder(existingOrder);
         setOrderItems(existingOrder.items.map(item => ({
           productId: item.productId,
-          qty: String(item.qty),
-          price: String(item.price),
-          itemTotal: String(item.qty * item.price),
+          qty: String(item.qty.toFixed(4)), // Apply toFixed here
+          price: String(item.price.toFixed(4)), // Apply toFixed here
+          itemTotal: String((item.qty * item.price).toFixed(4)), // Apply toFixed here
           currency: item.currency || existingOrder.currency,
           landedCostPerUnit: item.landedCostPerUnit,
           packingUnitId: item.packingUnitId,
-          packingQuantity: String(item.packingQuantity || ''),
+          packingQuantity: String((item.packingQuantity || 0).toFixed(4)), // Apply toFixed here
         })));
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);
