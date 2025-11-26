@@ -157,7 +157,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
           <Input
             id="fees"
             type="number"
-            step="0.01"
+            step="0.0001"
             value={String(order.fees || 0)}
             onChange={(e) => handleNumericChange('fees', e.target.value)}
             className="col-span-2"
