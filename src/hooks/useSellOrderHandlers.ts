@@ -114,7 +114,7 @@ export const useSellOrderHandlers = ({
         const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
+          item.qty = String((packingQtyNum * selectedPackingUnit.conversionFactor).toFixed(4));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
@@ -123,7 +123,7 @@ export const useSellOrderHandlers = ({
         const packingQtyNum = parseFloat(value) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = String(packingQtyNum * selectedPackingUnit.conversionFactor);
+          item.qty = String((packingQtyNum * selectedPackingUnit.conversionFactor).toFixed(4));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
@@ -134,7 +134,7 @@ export const useSellOrderHandlers = ({
         const qtyNum = parseFloat(String(item.qty)) || 0;
         const itemTotalNum = parseFloat(value) || 0;
         if (qtyNum > 0) {
-          item.price = String(itemTotalNum / qtyNum);
+          item.price = String((itemTotalNum / qtyNum).toFixed(4));
         } else {
           item.price = '0';
         }
@@ -143,7 +143,7 @@ export const useSellOrderHandlers = ({
       // Recalculate itemTotal based on base qty and price
       const finalQtyNum = parseFloat(String(item.qty)) || 0;
       const finalPriceNum = parseFloat(String(item.price)) || 0;
-      item.itemTotal = String(finalQtyNum * finalPriceNum);
+      item.itemTotal = String((finalQtyNum * finalPriceNum).toFixed(4));
 
       newItems[index] = item;
       return newItems;
