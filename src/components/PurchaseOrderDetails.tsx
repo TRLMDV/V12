@@ -72,8 +72,8 @@ const PurchaseOrderDetails: React.FC<PurchaseOrderDetailsProps> = ({
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
       items = items.filter(item =>
-        item.productName.toLowerCase().includes(lowercasedQuery) ||
-        item.sku.toLowerCase().includes(lowercasedQuery)
+        String(item.productName).toLowerCase().includes(lowercasedQuery) ||
+        String(item.sku).toLowerCase().includes(lowercasedQuery)
       );
     }
 
