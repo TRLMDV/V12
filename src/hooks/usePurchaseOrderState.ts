@@ -23,7 +23,10 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
   const [order, setOrder] = useState<Partial<PurchaseOrder>>(() => {
     if (isEdit && orderId !== undefined) {
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
-      if (existingOrder) return existingOrder;
+      if (existingOrder) return {
+        ...existingOrder,
+        fees: parseFloat((existingOrder.fees || 0).toFixed(4)), // Format fees here
+      };
     }
     const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined;
     return {
@@ -69,7 +72,10 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     if (isEdit && orderId !== undefined) {
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
       if (existingOrder) {
-        setOrder(existingOrder);
+        setOrder({
+          ...existingOrder,
+          fees: parseFloat((existingOrder.fees || 0).toFixed(4)), // Format fees here
+        });
         setOrderItems(existingOrder.items.map(item => ({
           productId: item.productId,
           qty: String(item.qty.toFixed(4)), // Apply toFixed here
