@@ -99,6 +99,7 @@ export const useSellOrderHandlers = ({
     setOrderItems(prev => {
       const newItems = [...prev];
       const item = { ...newItems[index] };
+      let shouldRecalculateItemTotalAtEnd = true; // Flag to control the final recalculation
 
       if (field === 'productId') {
         item.productId = value;
@@ -130,20 +131,24 @@ export const useSellOrderHandlers = ({
       } else if (field === 'price') {
         item.price = value;
       } else if (field === 'itemTotal') {
-        item.itemTotal = value;
+        const parsedValue = parseFloat(value) || 0;
+        item.itemTotal = String(parsedValue.toFixed(4)); // Format user input for itemTotal
         const qtyNum = parseFloat(String(item.qty)) || 0;
-        const itemTotalNum = parseFloat(value) || 0;
+        const itemTotalNum = parseFloat(item.itemTotal) || 0; // Use the formatted itemTotal for price calculation
         if (qtyNum > 0) {
           item.price = String((itemTotalNum / qtyNum).toFixed(4));
         } else {
           item.price = '0';
         }
+        shouldRecalculateItemTotalAtEnd = false; // User explicitly set itemTotal, do not recalculate at the end
       }
       
-      // Recalculate itemTotal based on base qty and price
-      const finalQtyNum = parseFloat(String(item.qty)) || 0;
-      const finalPriceNum = parseFloat(String(item.price)) || 0;
-      item.itemTotal = String((finalQtyNum * finalPriceNum).toFixed(4));
+      // Recalculate itemTotal based on base qty and price, but only if not explicitly set by user
+      if (shouldRecalculateItemTotalAtEnd) {
+        const finalQtyNum = parseFloat(String(item.qty)) || 0;
+        const finalPriceNum = parseFloat(String(item.price)) || 0;
+        item.itemTotal = String((finalQtyNum * finalPriceNum).toFixed(4));
+      }
 
       newItems[index] = item;
       return newItems;

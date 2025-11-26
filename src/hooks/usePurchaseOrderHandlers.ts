@@ -159,9 +159,10 @@ export const usePurchaseOrderHandlers = ({
         const finalPriceNum = parseFloat(String(item.price)) || 0;
         item.itemTotal = String((finalQtyNum * finalPriceNum).toFixed(4));
       } else if (field === 'itemTotal') {
-        item.itemTotal = value; // User's input for itemTotal
+        const parsedValue = parseFloat(value) || 0;
+        item.itemTotal = String(parsedValue.toFixed(4)); // Format user input for itemTotal
         const qtyNum = parseFloat(String(item.qty)) || 0;
-        const itemTotalNum = parseFloat(value) || 0;
+        const itemTotalNum = parseFloat(item.itemTotal) || 0; // Use the formatted itemTotal for price calculation
         if (qtyNum > 0) {
           item.price = String((itemTotalNum / qtyNum).toFixed(4)); // Calculate price based on user's itemTotal
         } else {
