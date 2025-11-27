@@ -139,7 +139,11 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
             localStorage.setItem('initialized', 'true');
 
             toast.success(t('restoreSuccess'));
-            window.location.reload(); // Reload immediately after synchronous writes
+            // Add a small delay to ensure localStorage has time to persist before reload
+            setTimeout(() => {
+              window.location.reload();
+            }, 100); // 100ms delay
+
           },
           t('restore') // Pass action label
         );
