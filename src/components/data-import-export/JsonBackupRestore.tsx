@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  Settings, CurrencyRates, UtilizationOrder, RecycleBinItem
+  Settings, CurrencyRates, UtilizationOrder, RecycleBinItem, BankAccount // Import BankAccount type
 } from '@/types';
 import { initialSettings, defaultCurrencyRates } from '@/data/initialData'; // Import initial settings and currency rates
 
@@ -23,6 +23,7 @@ interface JsonBackupRestoreProps {
   outgoingPayments: Payment[];
   productMovements: ProductMovement[];
   utilizationOrders: UtilizationOrder[];
+  bankAccounts: BankAccount[]; // Ensure this prop is correctly typed
   settings: Settings;
   currencyRates: CurrencyRates;
   nextIds: { [key: string]: number }; // Add nextIds
@@ -47,11 +48,13 @@ interface JsonBackupRestoreProps {
 
 const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
-  incomingPayments, outgoingPayments, productMovements, utilizationOrders, settings, currencyRates,
-  nextIds, recycleBin, // Destructure new props
+  incomingPayments, outgoingPayments, productMovements, utilizationOrders,
+  bankAccounts, // <--- CORRECTLY DESTRUCTURE THE PROP HERE
+  settings, currencyRates,
+  nextIds, recycleBin,
   setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders,
   setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements,
-  setUtilizationOrders, setSettings, setCurrencyRates, setNextIds, setRecycleBin, // Destructure new setters
+  setUtilizationOrders, setSettings, setCurrencyRates, setNextIds, setRecycleBin,
   showConfirmationModal, t
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -71,10 +74,11 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
       outgoingPayments,
       productMovements,
       utilizationOrders,
+      bankAccounts, // <--- NOW THIS WILL REFER TO THE CORRECT PROP
       settings,
       currencyRates,
-      nextIds, // Include nextIds in export
-      recycleBin, // Include recycleBin in export
+      nextIds,
+      recycleBin,
     };
 
     const jsonString = JSON.stringify(dataToExport, null, 2);
