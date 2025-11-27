@@ -57,12 +57,10 @@ export function useAppInitialization({
     const piecePackingUnit = packingUnits.find(pu => pu.name === 'Piece');
     const piecePackingUnitId = piecePackingUnit ? piecePackingUnit.id : undefined;
 
-    // Helper to get the max ID from a collection
     const getMaxId = (collection: { id: number }[]): number => {
       return collection.length > 0 ? Math.max(...collection.map(item => item.id)) : 0;
     };
 
-    // Calculate nextIds based on current data in localStorage (or initialData if localStorage is empty)
     const calculateNextIds = () => {
       const newNextIds: { [key: string]: number } = {
         products: getMaxId(products) + 1,
@@ -76,7 +74,6 @@ export function useAppInitialization({
         productMovements: getMaxId(productMovements) + 1,
         bankAccounts: getMaxId(bankAccounts) + 1,
         utilizationOrders: getMaxId(utilizationOrders) + 1,
-        // For settings-managed collections, use the settings object directly
         paymentCategories: getMaxId(settings.paymentCategories || []) + 1,
         packingUnits: getMaxId(settings.packingUnits || []) + 1,
         quickButtons: getMaxId(settings.quickButtons || []) + 1,
@@ -84,64 +81,63 @@ export function useAppInitialization({
       return newNextIds;
     };
 
-    // This effect runs on every mount/data change, but the initialization logic only runs once
-    // or if localStorage is completely empty.
+    // This block ensures that if the app is truly starting fresh (localStorage 'initialized' is false)
+    // AND a collection is empty, it gets populated with its initialData (which are empty arrays).
+    // This is to ensure the structure exists, even if empty.
+    // If data was just imported, the collections will NOT be empty, so this block will be skipped for them.
     if (!initialized) {
-      console.log("useAppInitialization: App not initialized. Setting default data and calculating nextIds.");
-      // Initialize with empty data and default settings
-      setWarehouses(initialData.warehouses);
-      setProducts(initialData.products);
-      setSuppliers(initialData.suppliers);
-      setCustomers(initialData.customers);
-      setPurchaseOrders(initialData.purchaseOrders);
-      setSellOrders(initialData.sellOrders);
-      setIncomingPayments(initialData.incomingPayments);
-      setOutgoingPayments(initialData.outgoingPayments);
-      setProductMovements(initialData.productMovements);
-      setBankAccounts(initialData.bankAccounts);
-      setUtilizationOrders(initialData.utilizationOrders);
-      setSettings(initialSettings);
-      setCurrencyRates(defaultCurrencyRates);
-      setPackingUnits(initialSettings.packingUnits);
-      setRecycleBin([]);
+      console.log("useAppInitialization: App not initialized. Checking for empty collections to set initial data.");
+      if (warehouses.length === 0) setWarehouses(initialData.warehouses);
+      if (products.length === 0) setProducts(initialData.products);
+      if (suppliers.length === 0) setSuppliers(initialData.suppliers);
+      if (customers.length === 0) setCustomers(initialData.customers);
+      if (purchaseOrders.length === 0) setPurchaseOrders(initialData.purchaseOrders);
+      if (sellOrders.length === 0) setSellOrders(initialData.sellOrders);
+      if (incomingPayments.length === 0) setIncomingPayments(initialData.incomingPayments);
+      if (outgoingPayments.length === 0) setOutgoingPayments(initialData.outgoingPayments);
+      if (productMovements.length === 0) setProductMovements(initialData.productMovements);
+      if (bankAccounts.length === 0) setBankAccounts(initialData.bankAccounts);
+      if (utilizationOrders.length === 0) setUtilizationOrders(initialData.utilizationOrders);
+      if (packingUnits.length === 0) setPackingUnits(initialSettings.packingUnits);
+      if (recycleBin.length === 0) setRecycleBin([]);
 
-      // Calculate and set nextIds based on these initial (empty) collections
-      const calculatedInitialNextIds = calculateNextIds();
-      setNextIds(calculatedInitialNextIds);
+      // For settings and currencyRates, useLocalStorage already handles initial population
+      // if localStorage is empty. We don't need to explicitly set them here if they are already populated
+      // by useLocalStorage reading initialSettings/defaultCurrencyRates.
+      // However, if settings.companyName is still empty, it means initialSettings wasn't fully applied or was cleared.
+      if (!settings.companyName) setSettings(initialSettings);
+      if (!currencyRates['AZN']) setCurrencyRates(defaultCurrencyRates);
+
+      // After ensuring all collections have at least their initial (possibly empty) structure, mark as initialized.
       setInitialized(true);
-      console.log("useAppInitialization: App initialized with nextIds:", calculatedInitialNextIds);
-    } else {
-      // If already initialized, ensure nextIds are always up-to-date with current data
-      // This handles cases where items might have been added/deleted and nextIds in localStorage
-      // might not reflect the true max ID.
-      const currentCalculatedNextIds = calculateNextIds();
-      setNextIds(currentCalculatedNextIds);
-      console.log("useAppInitialization: App already initialized. Recalculated nextIds:", currentCalculatedNextIds);
+      console.log("useAppInitialization: App initialized. Next IDs calculated.");
+    }
 
-      // --- NEW LOGIC: Ensure all existing products have 'Piece' as defaultPackingUnitId ---
-      if (piecePackingUnitId !== undefined) {
-        setProducts(prevProducts => {
-          let changed = false;
-          const updatedProducts = prevProducts.map(p => {
-            if (p.defaultPackingUnitId === undefined || p.defaultPackingUnitId === null) {
-              changed = true;
-              return { ...p, defaultPackingUnitId: piecePackingUnitId };
-            }
-            return p;
-          });
-          return changed ? updatedProducts : prevProducts;
+    // This part always runs to keep nextIds up-to-date and apply default packing unit
+    const currentCalculatedNextIds = calculateNextIds();
+    setNextIds(currentCalculatedNextIds);
+    console.log("useAppInitialization: Recalculated nextIds:", currentCalculatedNextIds);
+
+    // Ensure all existing products have 'Piece' as defaultPackingUnitId
+    if (piecePackingUnitId !== undefined) {
+      setProducts(prevProducts => {
+        let changed = false;
+        const updatedProducts = prevProducts.map(p => {
+          if (p.defaultPackingUnitId === undefined || p.defaultPackingUnitId === null) {
+            changed = true;
+            return { ...p, defaultPackingUnitId: piecePackingUnitId };
+          }
+          return p;
         });
-      }
-      // --- END NEW LOGIC ---
+        return changed ? updatedProducts : prevProducts;
+      });
     }
   }, [
     initialized, setInitialized,
-    products, setProducts, // Added products and setProducts as dependencies
-    suppliers, customers, warehouses, purchaseOrders, sellOrders,
-    incomingPayments, outgoingPayments, productMovements, bankAccounts, utilizationOrders,
-    settings, currencyRates, packingUnits, recycleBin, // packingUnits is already a dependency
-    setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
-    setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders,
-    setSettings, setCurrencyRates, setPackingUnits, setRecycleBin, setNextIds,
+    products, setProducts, suppliers, setSuppliers, customers, setCustomers, warehouses, setWarehouses,
+    purchaseOrders, setPurchaseOrders, sellOrders, setSellOrders, incomingPayments, setIncomingPayments,
+    outgoingPayments, setOutgoingPayments, productMovements, setProductMovements, bankAccounts, setBankAccounts,
+    utilizationOrders, setUtilizationOrders, settings, setSettings, currencyRates, setCurrencyRates,
+    packingUnits, setPackingUnits, recycleBin, setRecycleBin, setNextIds,
   ]);
 }
