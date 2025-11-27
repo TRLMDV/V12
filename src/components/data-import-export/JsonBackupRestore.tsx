@@ -8,8 +8,9 @@ import { toast } from 'sonner';
 import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  Settings, CurrencyRates, UtilizationOrder
+  Settings, CurrencyRates, UtilizationOrder, RecycleBinItem
 } from '@/types';
+import { initialSettings, defaultCurrencyRates } from '@/data/initialData'; // Import initial settings and currency rates
 
 interface JsonBackupRestoreProps {
   products: Product[];
@@ -21,9 +22,11 @@ interface JsonBackupRestoreProps {
   incomingPayments: Payment[];
   outgoingPayments: Payment[];
   productMovements: ProductMovement[];
-  utilizationOrders: UtilizationOrder[]; // New: utilizationOrders
+  utilizationOrders: UtilizationOrder[];
   settings: Settings;
   currencyRates: CurrencyRates;
+  nextIds: { [key: string]: number }; // Add nextIds
+  recycleBin: RecycleBinItem[]; // Add recycleBin
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   setSuppliers: React.Dispatch<React.SetStateAction<Supplier[]>>;
   setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
@@ -33,24 +36,28 @@ interface JsonBackupRestoreProps {
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
-  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
   setCurrencyRates: React.Dispatch<React.SetStateAction<CurrencyRates>>;
-  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void; // Corrected signature here
+  setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>; // Add setNextIds
+  setRecycleBin: React.Dispatch<React.SetStateAction<RecycleBinItem[]>>; // Add setRecycleBin
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void;
   t: (key: string, replacements?: { [key: string]: string | number }) => string;
 }
 
 const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
   incomingPayments, outgoingPayments, productMovements, utilizationOrders, settings, currencyRates,
+  nextIds, recycleBin, // Destructure new props
   setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders,
   setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements,
-  setUtilizationOrders, setSettings, setCurrencyRates, showConfirmationModal, t
+  setUtilizationOrders, setSettings, setCurrencyRates, setNextIds, setRecycleBin, // Destructure new setters
+  showConfirmationModal, t
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uniqueId = useId(); // Generate a unique ID for this component instance
+  const uniqueId = useId();
 
-  const importInputId = `import-file-${uniqueId}`; // Use uniqueId in the ID
+  const importInputId = `import-file-${uniqueId}`;
 
   const handleExportData = () => {
     const dataToExport = {
@@ -63,9 +70,11 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
       incomingPayments,
       outgoingPayments,
       productMovements,
-      utilizationOrders, // New: utilizationOrders
+      utilizationOrders,
       settings,
       currencyRates,
+      nextIds, // Include nextIds in export
+      recycleBin, // Include recycleBin in export
     };
 
     const jsonString = JSON.stringify(dataToExport, null, 2);
@@ -78,7 +87,7 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success(t('success'), { description: t('backupData') + ' exported successfully to JSON.' });
+    toast.success(t('success'), { description: `${t('backupData')} exported successfully to JSON.` });
   };
 
   const handleImportButtonClick = () => {
@@ -107,20 +116,30 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
           t('restoreData'),
           t('restoreWarning'),
           () => {
-            setProducts(importedData.products || []);
-            setSuppliers(importedData.suppliers || []);
-            setCustomers(importedData.customers || []);
-            setWarehouses(importedData.warehouses || []);
-            setPurchaseOrders(importedData.purchaseOrders || []);
-            setSellOrders(importedData.sellOrders || []);
-            setIncomingPayments(importedData.incomingPayments || []);
-            setOutgoingPayments(importedData.outgoingPayments || []);
-            setProductMovements(importedData.productMovements || []);
-            setUtilizationOrders(importedData.utilizationOrders || []); // New: setUtilizationOrders
-            setSettings(importedData.settings || {});
-            setCurrencyRates(importedData.currencyRates || currencyRates);
+            // Directly write to localStorage for all top-level collections
+            // This ensures data is persisted BEFORE reload, bypassing useEffect's async nature.
+            localStorage.setItem('products', JSON.stringify(importedData.products || []));
+            localStorage.setItem('suppliers', JSON.stringify(importedData.suppliers || []));
+            localStorage.setItem('customers', JSON.stringify(importedData.customers || []));
+            localStorage.setItem('warehouses', JSON.stringify(importedData.warehouses || []));
+            localStorage.setItem('purchaseOrders', JSON.stringify(importedData.purchaseOrders || []));
+            localStorage.setItem('sellOrders', JSON.stringify(importedData.sellOrders || []));
+            localStorage.setItem('incomingPayments', JSON.stringify(importedData.incomingPayments || []));
+            localStorage.setItem('outgoingPayments', JSON.stringify(importedData.outgoingPayments || []));
+            localStorage.setItem('productMovements', JSON.stringify(importedData.productMovements || []));
+            localStorage.setItem('bankAccounts', JSON.stringify(importedData.bankAccounts || [])); // Crucial fix for bank accounts
+            localStorage.setItem('utilizationOrders', JSON.stringify(importedData.utilizationOrders || []));
+            localStorage.setItem('settings', JSON.stringify(importedData.settings || initialSettings));
+            localStorage.setItem('currencyRates', JSON.stringify(importedData.currencyRates || defaultCurrencyRates));
+            localStorage.setItem('nextIds', JSON.stringify(importedData.nextIds || {})); // Also restore nextIds
+            localStorage.setItem('recycleBin', JSON.stringify(importedData.recycleBin || [])); // Also restore recycleBin
+
+            // Ensure the 'initialized' flag is set to true after a successful import
+            // This prevents useAppInitialization from trying to re-populate empty arrays with initialData.
+            localStorage.setItem('initialized', 'true');
+
             toast.success(t('restoreSuccess'));
-            setTimeout(() => window.location.reload(), 1000);
+            window.location.reload(); // Reload immediately after synchronous writes
           },
           t('restore') // Pass action label
         );

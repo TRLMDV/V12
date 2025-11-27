@@ -22,14 +22,14 @@ import { Product, Customer, Supplier, Warehouse } from '@/types';
 const DataImportExport: React.FC = () => {
   const {
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
-    incomingPayments, outgoingPayments, productMovements, utilizationOrders, settings, currencyRates, // Added utilizationOrders
+    incomingPayments, outgoingPayments, productMovements, utilizationOrders, settings, currencyRates,
+    nextIds, recycleBin, // Destructure nextIds and recycleBin from useData
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders,
-    setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, // Added setUtilizationOrders
-    setSettings, setCurrencyRates,
+    setSellOrders, setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders,
+    setSettings, setCurrencyRates, setNextIds, setRecycleBin, // Destructure setters for nextIds and recycleBin
     showConfirmationModal,
     getNextId,
     setNextIdForCollection,
-    recycleBin,
     restoreFromRecycleBin,
     deletePermanentlyFromRecycleBin,
     cleanRecycleBin,
@@ -56,9 +56,11 @@ const DataImportExport: React.FC = () => {
         incomingPayments={incomingPayments}
         outgoingPayments={outgoingPayments}
         productMovements={productMovements}
-        utilizationOrders={utilizationOrders} // Added utilizationOrders
+        utilizationOrders={utilizationOrders}
         settings={settings}
         currencyRates={currencyRates}
+        nextIds={nextIds} // Pass nextIds
+        recycleBin={recycleBin} // Pass recycleBin
         setProducts={setProducts}
         setSuppliers={setSuppliers}
         setCustomers={setCustomers}
@@ -68,9 +70,11 @@ const DataImportExport: React.FC = () => {
         setIncomingPayments={setIncomingPayments}
         setOutgoingPayments={setOutgoingPayments}
         setProductMovements={setProductMovements}
-        setUtilizationOrders={setUtilizationOrders} // Added setUtilizationOrders
+        setUtilizationOrders={setUtilizationOrders}
         setSettings={setSettings}
         setCurrencyRates={setCurrencyRates}
+        setNextIds={setNextIds} // Pass setNextIds
+        setRecycleBin={setRecycleBin} // Pass setRecycleBin
         showConfirmationModal={showConfirmationModal}
         t={t}
       />
@@ -133,7 +137,7 @@ const DataImportExport: React.FC = () => {
         incomingPayments={incomingPayments}
         setIncomingPayments={setIncomingPayments}
         sellOrders={sellOrders}
-        customers={customerMap} // Pass customerMap for display
+        customers={customerMap}
         currencyRates={currencyRates}
         getNextId={getNextId}
         setNextIdForCollection={setNextIdForCollection}
@@ -145,7 +149,7 @@ const DataImportExport: React.FC = () => {
         outgoingPayments={outgoingPayments}
         setOutgoingPayments={setOutgoingPayments}
         purchaseOrders={purchaseOrders}
-        suppliers={supplierMap} // Pass supplierMap for display
+        suppliers={supplierMap}
         currencyRates={currencyRates}
         getNextId={getNextId}
         setNextIdForCollection={setNextIdForCollection}

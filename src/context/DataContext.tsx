@@ -82,6 +82,9 @@ interface DataContextType {
 
   // Running balances for bank accounts
   runningBalancesMap: Map<number, Map<string, number>>;
+
+  // Next IDs
+  nextIds: { [key: string]: number };
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -329,6 +332,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
     runningBalancesMap,
+    nextIds, // Pass nextIds
   }), [
     productsWithTotalStock, setProducts,
     suppliers, setSuppliers,
@@ -353,6 +357,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
     runningBalancesMap,
+    nextIds, // Add nextIds as dependency
   ]);
 
   return (
