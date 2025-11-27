@@ -268,7 +268,7 @@ const OutgoingPayments: React.FC = () => {
               <SelectTrigger className="w-full mt-1">
                 <SelectValue placeholder={t('allCategories')} />
               </SelectTrigger>
-              <SelectContent>
+            <SelectContent>
                 <SelectItem value="all">{t('allCategories')}</SelectItem>
                 {allUniqueCategories.map(cat => (
                   <SelectItem key={cat} value={cat}>
@@ -286,9 +286,7 @@ const OutgoingPayments: React.FC = () => {
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
               <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('id')}>
-                {t('paymentId')} {getSortIndicator('id')}
-              </TableHead>
+              {/* Removed Payment ID column */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('linkedOrderDisplay')}>
                 {t('linkedOrder')} / {t('manualExpense')} {getSortIndicator('linkedOrderDisplay')}
               </TableHead>
@@ -316,9 +314,7 @@ const OutgoingPayments: React.FC = () => {
                 return (
                   <TableRow key={p.id} className={p.rowClass}>
                     <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
-                    <TableCell className="p-3 font-semibold">
-                      #{p.id}
-                    </TableCell>
+                    {/* Removed Payment ID cell */}
                     <TableCell className="p-3">{p.linkedOrderDisplay}</TableCell>
                     <TableCell className="p-3">{p.categoryDisplay}</TableCell> {/* New Category Cell */}
                     <TableCell className="p-3">{p.date}</TableCell>
@@ -342,7 +338,7 @@ const OutgoingPayments: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400"> {/* Adjusted colSpan */}
+                <TableCell colSpan={8} className="p-4 text-center text-gray-500 dark:text-slate-400"> {/* Adjusted colSpan */}
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>
