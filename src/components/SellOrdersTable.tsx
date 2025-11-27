@@ -61,11 +61,9 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
           <TableRow className="bg-gray-100 dark:bg-slate-700">
             <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('id')}>
-              {t('orderId')} {getSortIndicator('id')}
+              {t('orderId')} / {t('customer')} {getSortIndicator('id')}
             </TableHead>
-            <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('customerName')}>
-              {t('customer')} {getSortIndicator('customerName')}
-            </TableHead>
+            {/* Removed original Customer Name column */}
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('orderDate')}>
               {t('orderDate')} {getSortIndicator('orderDate')}
             </TableHead>
@@ -92,8 +90,8 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
             orders.map((order, index) => (
               <TableRow key={order.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                 <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
-                <TableCell className="p-3 font-semibold">#{order.id}</TableCell>
-                <TableCell className="p-3">{order.customerName}</TableCell>
+                <TableCell className="p-3 font-semibold">#{order.id} ({order.customerName})</TableCell>
+                {/* Removed original Customer Name cell */}
                 <TableCell className="p-3">{order.orderDate}</TableCell>
                 <TableCell className="p-3">{order.warehouseName}</TableCell>
                 <TableCell className="p-3">
@@ -131,7 +129,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={10} className="p-4 text-center text-gray-500 dark:text-slate-400">
+              <TableCell colSpan={9} className="p-4 text-center text-gray-500 dark:text-slate-400">
                 {t('noItemsFound')}
               </TableCell>
             </TableRow>
@@ -139,7 +137,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
         </TableBody>
         <TableFooter>
           <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
-            <TableCell colSpan={7} className="p-3 text-right text-lg">{t('totals')}:</TableCell><TableCell className="p-3 text-lg text-gray-700 dark:text-slate-300">{totalSumExclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3 text-lg text-sky-600 dark:text-sky-400">{totalSumInclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3"></TableCell>
+            <TableCell colSpan={6} className="p-3 text-right text-lg">{t('totals')}:</TableCell><TableCell className="p-3 text-lg text-gray-700 dark:text-slate-300">{totalSumExclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3 text-lg text-sky-600 dark:text-sky-400">{totalSumInclVat.toFixed(2)} AZN</TableCell><TableCell className="p-3"></TableCell>
           </TableRow>
         </TableFooter>
       </Table>

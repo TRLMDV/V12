@@ -18,7 +18,7 @@ import PaginationControls from '@/components/PaginationControls'; // Import Pagi
 import { SellOrder, Product, Customer, Warehouse } from '@/types'; // Import types from types file
 
 type SortConfig = {
-  key: keyof SellOrder | 'customerName' | 'warehouseName' | 'totalItems' | 'totalValueAZN' | 'paymentStatus' | 'totalInclVat' | 'totalExclVat';
+  key: keyof SellOrder | 'warehouseName' | 'totalItems' | 'totalValueAZN' | 'paymentStatus' | 'totalInclVat' | 'totalExclVat'; // Removed 'customerName'
   direction: 'ascending' | 'descending';
 };
 
@@ -199,8 +199,7 @@ const SellOrders: React.FC = () => {
           case 'orderDate':
             comparison = new Date(valA).getTime() - new Date(valB).getTime();
             break;
-          case 'customerName':
-          case 'warehouseName':
+          case 'warehouseName': // Removed 'customerName'
           case 'status':
           case 'paymentStatus':
             comparison = String(valA).localeCompare(String(valB));
