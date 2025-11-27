@@ -102,11 +102,12 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
           fileName={`${selectedAccountName || 'Bank Transactions'}_transactions`}
           sheetName="Transactions"
           columns={[
+            { header: t('transactionId'), accessor: 'Transaction ID' }, // Added Transaction ID
             { header: t('date'), accessor: 'Date' },
             { header: t('description'), accessor: 'Description' },
-            { header: t('incoming'), accessor: 'Incoming' },
-            { header: t('outgoing'), accessor: 'Outgoing' },
-            { header: t('balance'), accessor: 'Balance' },
+            { header: 'Incoming', accessor: 'Incoming' },
+            { header: 'Outgoing', accessor: 'Outgoing' },
+            { header: 'Balance', accessor: 'Balance' },
           ]}
         />
       </div>
@@ -116,6 +117,7 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
               <TableHead className="p-3">No.</TableHead>
+              <TableHead className="p-3">{t('transactionId')}</TableHead> {/* Added Transaction ID */}
               <TableHead className="p-3">{t('date')}</TableHead>
               <TableHead className="p-3">{t('description')}</TableHead>
               <TableHead className="p-3 text-right">{t('incoming')}</TableHead>
@@ -128,6 +130,7 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
               paginatedTransactions.map((t, index) => (
                 <TableRow key={t.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{(transactionsCurrentPage - 1) * transactionsItemsPerPage + index + 1}.</TableCell>
+                  <TableCell className="p-3">{t.originalPaymentId === 0 ? 'N/A' : `#${t.originalPaymentId}`}</TableCell> {/* Display Transaction ID */}
                   <TableCell className="p-3">{format(new Date(t.date), 'yyyy-MM-dd')}</TableCell>
                   <TableCell className="p-3">{t.description}</TableCell>
                   <TableCell className="p-3 text-right text-green-600">
@@ -143,7 +146,7 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={7} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noTransactionsFound')}
                 </TableCell>
               </TableRow>

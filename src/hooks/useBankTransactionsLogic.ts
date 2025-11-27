@@ -168,6 +168,7 @@ export function useBankTransactionsLogic(
 
   const excelExportData = useMemo(() => {
     return filteredTransactions.map(t => ({
+      'Transaction ID': t.originalPaymentId === 0 ? 'N/A' : `#${t.originalPaymentId}`, // Added Transaction ID
       Date: format(new Date(t.date), 'yyyy-MM-dd'),
       Description: t.description,
       Incoming: (t.type === 'incoming' || t.type === 'initial') ? `${t.amount.toFixed(2)} ${selectedAccountCurrency}` : '',

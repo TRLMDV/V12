@@ -162,6 +162,7 @@ const i18n = {
     priceInclVat: 'Price (Incl. VAT)', // New
     noSalesOrdersFoundForProduct: 'No sales orders found for this product.', // New
     landedCostPerUnit: 'Landed Cost Per Unit', // New translation key
+    transactionId: 'Transaction ID', // New translation key
   }
 };
 
