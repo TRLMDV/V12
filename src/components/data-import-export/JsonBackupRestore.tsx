@@ -35,7 +35,7 @@ interface JsonBackupRestoreProps {
   setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
   setSellOrders: React.Dispatch<React.SetStateAction<SellOrder[]>>;
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
-  setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
+  setOutgoingPayments: React.SetStateAction<Payment[]>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
@@ -49,7 +49,7 @@ interface JsonBackupRestoreProps {
 const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders,
   incomingPayments, outgoingPayments, productMovements, utilizationOrders,
-  bankAccounts, // <--- CORRECTLY DESTRUCTURE THE PROP HERE
+  bankAccounts: allBankAccounts, // <--- Use the renamed prop here
   settings, currencyRates,
   nextIds, recycleBin,
   setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders,
@@ -62,7 +62,12 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
 
   const importInputId = `import-file-${uniqueId}`;
 
+  console.log("[JsonBackupRestore] allBankAccounts (prop):", allBankAccounts); // Added log
+  console.log("[JsonBackupRestore] nextIds (prop):", nextIds); // Added log
+
   const handleExportData = () => {
+    console.log("[JsonBackupRestore] handleExportData - allBankAccounts (before export):", allBankAccounts); // Added log
+    console.log("[JsonBackupRestore] handleExportData - nextIds (before export):", nextIds); // Added log
     const dataToExport = {
       products,
       suppliers,
@@ -74,7 +79,7 @@ const JsonBackupRestore: React.FC<JsonBackupRestoreProps> = ({
       outgoingPayments,
       productMovements,
       utilizationOrders,
-      bankAccounts, // <--- NOW THIS WILL REFER TO THE CORRECT PROP
+      bankAccounts: allBankAccounts, // <--- Use the renamed variable here
       settings,
       currencyRates,
       nextIds,

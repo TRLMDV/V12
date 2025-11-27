@@ -35,7 +35,11 @@ const DataImportExport: React.FC = () => {
     cleanRecycleBin,
     getItemSummary,
     showAlertModal,
+    bankAccounts: allBankAccounts, // Renamed to avoid potential conflict
   } = useData();
+
+  console.log("[DataImportExport] allBankAccounts (from useData):", allBankAccounts); // Added log
+  console.log("[DataImportExport] nextIds (from useData):", nextIds); // Added log
 
   const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s }), {} as { [key: number]: Supplier }), [suppliers]);
   const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c }), {} as { [key: number]: Customer }), [customers]);
@@ -57,6 +61,7 @@ const DataImportExport: React.FC = () => {
         outgoingPayments={outgoingPayments}
         productMovements={productMovements}
         utilizationOrders={utilizationOrders}
+        bankAccounts={allBankAccounts} // Pass the renamed variable
         settings={settings}
         currencyRates={currencyRates}
         nextIds={nextIds} // Pass nextIds

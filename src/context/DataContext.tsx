@@ -120,9 +120,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] outgoingPayments:", outgoingPayments);
   console.log("[DataContext] productMovements:", productMovements);
   console.log("[DataContext] packingUnits:", packingUnits);
-  console.log("[DataContext] bankAccounts:", bankAccounts);
+  console.log("[DataContext] bankAccounts (from useDataState):", bankAccounts); // Added log
   console.log("[DataContext] utilizationOrders:", utilizationOrders);
-  console.log("[DataContext] nextIds (initial load from localStorage):", nextIds);
+  console.log("[DataContext] nextIds (from useDataState):", nextIds); // Added log
 
   // 2. Modals
   const {
@@ -359,6 +359,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     runningBalancesMap,
     nextIds, // Add nextIds as dependency
   ]);
+
+  console.log("[DataContext] Final context value.bankAccounts:", value.bankAccounts); // Added log
+  console.log("[DataContext] Final context value.nextIds:", value.nextIds); // Added log
 
   return (
     <DataContext.Provider value={value}>
