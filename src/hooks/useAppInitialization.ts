@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { initialData, initialSettings, defaultCurrencyRates, MOCK_CURRENT_DATE } from '@/data/initialData';
+import { initialSettings } from '@/data/initialData'; // Only need initialSettings for settings-specific defaults
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
   CurrencyRates, Settings, RecycleBinItem, PackingUnit, BankAccount, UtilizationOrder, QuickButton
@@ -81,36 +81,19 @@ export function useAppInitialization({
       return newNextIds;
     };
 
-    // This block ensures that if the app is truly starting fresh (localStorage 'initialized' is false)
-    // AND a collection is empty, it gets populated with its initialData (which are empty arrays).
-    // This is to ensure the structure exists, even if empty.
-    // If data was just imported, the collections will NOT be empty, so this block will be skipped for them.
+    // This effect runs on every render, but the 'initialized' flag ensures
+    // certain first-time setup logic only executes once.
+    // The individual useLocalStorage hooks already handle populating with initialData
+    // if localStorage is empty for that specific key.
     if (!initialized) {
-      console.log("useAppInitialization: App not initialized. Checking for empty collections to set initial data.");
-      if (warehouses.length === 0) setWarehouses(initialData.warehouses);
-      if (products.length === 0) setProducts(initialData.products);
-      if (suppliers.length === 0) setSuppliers(initialData.suppliers);
-      if (customers.length === 0) setCustomers(initialData.customers);
-      if (purchaseOrders.length === 0) setPurchaseOrders(initialData.purchaseOrders);
-      if (sellOrders.length === 0) setSellOrders(initialData.sellOrders);
-      if (incomingPayments.length === 0) setIncomingPayments(initialData.incomingPayments);
-      if (outgoingPayments.length === 0) setOutgoingPayments(initialData.outgoingPayments);
-      if (productMovements.length === 0) setProductMovements(initialData.productMovements);
-      if (bankAccounts.length === 0) setBankAccounts(initialData.bankAccounts);
-      if (utilizationOrders.length === 0) setUtilizationOrders(initialData.utilizationOrders);
-      if (packingUnits.length === 0) setPackingUnits(initialSettings.packingUnits);
-      if (recycleBin.length === 0) setRecycleBin([]);
-
-      // For settings and currencyRates, useLocalStorage already handles initial population
-      // if localStorage is empty. We don't need to explicitly set them here if they are already populated
-      // by useLocalStorage reading initialSettings/defaultCurrencyRates.
-      // However, if settings.companyName is still empty, it means initialSettings wasn't fully applied or was cleared.
+      console.log("useAppInitialization: App not initialized. Performing first-time setup.");
+      // Ensure settings and currencyRates have their defaults if not already set by useLocalStorage
+      // (This is a fallback, useLocalStorage should handle it)
       if (!settings.companyName) setSettings(initialSettings);
-      if (!currencyRates['AZN']) setCurrencyRates(defaultCurrencyRates);
+      if (!currencyRates['AZN']) setCurrencyRates(initialSettings.currencyRates); // Use initialSettings.currencyRates
 
-      // After ensuring all collections have at least their initial (possibly empty) structure, mark as initialized.
       setInitialized(true);
-      console.log("useAppInitialization: App initialized. Next IDs calculated.");
+      console.log("useAppInitialization: App initialized.");
     }
 
     // This part always runs to keep nextIds up-to-date and apply default packing unit
@@ -134,10 +117,10 @@ export function useAppInitialization({
     }
   }, [
     initialized, setInitialized,
-    products, setProducts, suppliers, setSuppliers, customers, setCustomers, warehouses, setWarehouses,
-    purchaseOrders, setPurchaseOrders, sellOrders, setSellOrders, incomingPayments, setIncomingPayments,
-    outgoingPayments, setOutgoingPayments, productMovements, setProductMovements, bankAccounts, setBankAccounts,
-    utilizationOrders, setUtilizationOrders, settings, setSettings, currencyRates, setCurrencyRates,
+    products, setProducts, suppliers, customers, warehouses,
+    purchaseOrders, sellOrders, incomingPayments, outgoingPayments,
+    productMovements, bankAccounts, utilizationOrders,
+    settings, setSettings, currencyRates, setCurrencyRates,
     packingUnits, setPackingUnits, recycleBin, setRecycleBin, setNextIds,
   ]);
 }
