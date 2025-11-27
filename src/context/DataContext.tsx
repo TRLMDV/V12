@@ -85,6 +85,7 @@ interface DataContextType {
 
   // Next IDs
   nextIds: { [key: string]: number };
+  setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>; // Added setNextIds to DataContextType
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -333,6 +334,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     convertCurrency,
     runningBalancesMap,
     nextIds, // Pass nextIds
+    setNextIds, // Pass setNextIds
   }), [
     productsWithTotalStock, setProducts,
     suppliers, setSuppliers,
@@ -358,6 +360,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     convertCurrency,
     runningBalancesMap,
     nextIds, // Add nextIds as dependency
+    setNextIds, // Add setNextIds as dependency
   ]);
 
   console.log("[DataContext] Final context value.bankAccounts:", value.bankAccounts); // Added log

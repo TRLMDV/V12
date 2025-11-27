@@ -35,7 +35,7 @@ interface JsonBackupRestoreProps {
   setPurchaseOrders: React.Dispatch<React.SetStateAction<PurchaseOrder[]>>;
   setSellOrders: React.Dispatch<React.SetStateAction<SellOrder[]>>;
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
-  setOutgoingPayments: React.SetStateAction<Payment[]>;
+  setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>; // Corrected type here
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>;
   setSettings: React.Dispatch<React.SetStateAction<Settings>>;
