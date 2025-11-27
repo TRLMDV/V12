@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useData } from '@/context/DataContext';
-import { BankAccount, Currency, Payment } from '@/types';
+import { BankAccount, Currency, Payment, SellOrder, PurchaseOrder, PaymentCategorySetting } from '@/types';
 import { format } from 'date-fns';
 import { t } from '@/utils/i18n';
 
@@ -17,6 +17,7 @@ interface Transaction {
   originalPaymentCurrency: Currency;
   originalPaymentAmount: number;
   runningBalance?: number;
+  linkedOrderDisplay?: string; // New: Descriptive string for the transaction ID
 }
 
 export function useBankTransactionsLogic(
@@ -28,6 +29,8 @@ export function useBankTransactionsLogic(
   runningBalancesMap: Map<number, Map<string, number>>,
   mainCurrency: Currency,
 ) {
+  const { sellOrders, purchaseOrders, customers, suppliers, settings } = useData();
+
   const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
   const [startDateFilter, setStartDateFilter] = useState<string>('');
   const [endDateFilter, setEndDateFilter] = useState<string>('');
@@ -40,12 +43,21 @@ export function useBankTransactionsLogic(
     return account ? account.currency : mainCurrency;
   }, [selectedBankAccountId, bankAccountMap, mainCurrency]);
 
+  // Memoize maps for efficient lookups
+  const sellOrderMap = useMemo(() => sellOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: SellOrder }), [sellOrders]);
+  const purchaseOrderMap = useMemo(() => purchaseOrders.reduce((acc, o) => ({ ...acc, [o.id]: o }), {} as { [key: number]: PurchaseOrder }), [purchaseOrders]);
+  const customerMap = useMemo(() => customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string }), [customers]);
+  const supplierMap = useMemo(() => suppliers.reduce((acc, s) => ({ ...acc, [s.id]: s.name }), {} as { [key: number]: string }), [suppliers]);
+  const paymentCategoryMap = useMemo(() => (settings.paymentCategories || []).reduce((acc, cat) => ({ ...acc, [cat.name]: cat.name }), {} as { [key: string]: string }), [settings.paymentCategories]);
+
+
   const allTransactionsForSelectedAccount = useMemo(() => {
     const transactions: Omit<Transaction, 'runningBalance'>[] = [];
     const selectedAccount = bankAccountMap[selectedBankAccountId as number];
 
     if (!selectedAccount) return [];
 
+    // Initial balance as a transaction (using epoch date to ensure it's sorted first)
     transactions.push({
       id: `initial-${selectedAccount.id}`,
       date: selectedAccount.creationDate || '1970-01-01', // Use creationDate for initial balance
@@ -56,18 +68,24 @@ export function useBankTransactionsLogic(
       originalPaymentId: 0,
       originalPaymentCurrency: selectedAccount.currency,
       originalPaymentAmount: selectedAccount.initialBalance,
+      linkedOrderDisplay: t('initialBalance'), // Set descriptive ID
     });
 
     incomingPayments.forEach(p => {
       if (p.bankAccountId === selectedAccount.id) {
         const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, selectedAccount.currency);
         let description = p.manualDescription || '';
-        if (p.orderId !== 0) {
-          description = `${t('incomingPayment')} #${p.id} for ${t('orderId')} #${p.orderId}`;
-        } else if (p.paymentCategory === 'initialCapital') {
-          description = t('initialCapital');
-        } else if (p.paymentCategory) {
-          description = `${t(p.paymentCategory as keyof typeof t)}: ${p.manualDescription || ''}`;
+        let linkedOrderDisplay = '';
+
+        if (p.orderId === 0) {
+          const categoryName = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
+          description = `${t(categoryName as keyof typeof t)}: ${p.manualDescription || ''}`;
+          linkedOrderDisplay = `${t(categoryName as keyof typeof t)} ${p.manualDescription ? `- ${p.manualDescription}` : ''}`;
+        } else {
+          const order = sellOrderMap[p.orderId];
+          const customerName = order ? customerMap[order.contactId] || 'Unknown' : 'N/A';
+          description = `${t('incomingPayment')} #${p.id} for ${t('orderId')} #${p.orderId} (${customerName})`;
+          linkedOrderDisplay = `${t('orderId')} #${p.orderId} (${customerName}) ${t('paymentForProducts')}`;
         }
 
         transactions.push({
@@ -80,6 +98,7 @@ export function useBankTransactionsLogic(
           originalPaymentId: p.id,
           originalPaymentCurrency: p.paymentCurrency,
           originalPaymentAmount: p.amount,
+          linkedOrderDisplay: linkedOrderDisplay, // Set descriptive ID
         });
       }
     });
@@ -88,10 +107,23 @@ export function useBankTransactionsLogic(
       if (p.bankAccountId === selectedAccount.id) {
         const amountInAccountCurrency = convertCurrency(p.amount, p.paymentCurrency, selectedAccount.currency);
         let description = p.manualDescription || '';
-        if (p.orderId !== 0) {
-          description = `${t('outgoingPayment')} #${p.id} for ${t('orderId')} #${p.orderId}`;
-        } else if (p.paymentCategory) {
-          description = `${t(p.paymentCategory as keyof typeof t)}: ${p.manualDescription || ''}`;
+        let linkedOrderDisplay = '';
+
+        if (p.orderId === 0) {
+          const categoryName = p.paymentCategory && paymentCategoryMap[p.paymentCategory] ? p.paymentCategory : t('manualExpense');
+          description = `${t(categoryName as keyof typeof t)}: ${p.manualDescription || ''}`;
+          linkedOrderDisplay = `${t(categoryName as keyof typeof t)} ${p.manualDescription ? `- ${p.manualDescription}` : ''}`;
+        } else {
+          const order = purchaseOrderMap[p.orderId];
+          const supplierName = order ? supplierMap[order.contactId] || 'Unknown' : 'N/A';
+          let categoryText = '';
+          switch (p.paymentCategory) {
+            case 'products': categoryText = t('paymentForProducts'); break;
+            case 'fees': categoryText = t('paymentForFees'); break;
+            default: categoryText = ''; break;
+          }
+          description = `${t('outgoingPayment')} #${p.id} for ${t('orderId')} #${p.orderId} (${supplierName})`;
+          linkedOrderDisplay = `${t('orderId')} #${p.orderId} (${supplierName}) ${categoryText}`;
         }
 
         transactions.push({
@@ -104,6 +136,7 @@ export function useBankTransactionsLogic(
           originalPaymentId: p.id,
           originalPaymentCurrency: p.paymentCurrency,
           originalPaymentAmount: p.amount,
+          linkedOrderDisplay: linkedOrderDisplay, // Set descriptive ID
         });
       }
     });
@@ -131,7 +164,7 @@ export function useBankTransactionsLogic(
     });
 
     return transactionsWithRunningBalance;
-  }, [selectedBankAccountId, bankAccountMap, incomingPayments, outgoingPayments, convertCurrency, t]);
+  }, [selectedBankAccountId, bankAccountMap, incomingPayments, outgoingPayments, convertCurrency, sellOrderMap, purchaseOrderMap, customerMap, supplierMap, paymentCategoryMap, t]);
 
   const filteredTransactions = useMemo(() => {
     let filtered = allTransactionsForSelectedAccount;
@@ -168,7 +201,7 @@ export function useBankTransactionsLogic(
 
   const excelExportData = useMemo(() => {
     return filteredTransactions.map(t => ({
-      'Transaction ID': t.originalPaymentId === 0 ? 'N/A' : `#${t.originalPaymentId}`, // Added Transaction ID
+      'Transaction ID': t.linkedOrderDisplay || 'N/A', // Use the descriptive ID
       Date: format(new Date(t.date), 'yyyy-MM-dd'),
       Description: t.description,
       Incoming: (t.type === 'incoming' || t.type === 'initial') ? `${t.amount.toFixed(2)} ${selectedAccountCurrency}` : '',
@@ -178,8 +211,6 @@ export function useBankTransactionsLogic(
   }, [filteredTransactions, selectedAccountCurrency]);
 
   const handleViewTransactions = useCallback((id: number) => {
-    // This setter is passed from the parent Bank component
-    // setSelectedBankAccountId(id); // This is handled by the parent
     setIsTransactionsModalOpen(true);
     setTransactionsCurrentPage(1);
     setStartDateFilter('');
@@ -188,7 +219,6 @@ export function useBankTransactionsLogic(
 
   const handleTransactionsModalClose = useCallback(() => {
     setIsTransactionsModalOpen(false);
-    // setSelectedBankAccountId(undefined); // This is handled by the parent
     setStartDateFilter('');
     setEndDateFilter('');
     setTransactionsCurrentPage(1);

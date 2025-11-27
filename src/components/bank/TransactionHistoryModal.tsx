@@ -21,6 +21,7 @@ interface Transaction {
   originalPaymentCurrency: Currency;
   originalPaymentAmount: number;
   runningBalance?: number;
+  linkedOrderDisplay?: string; // New: Descriptive string for the transaction ID
 }
 
 interface TransactionHistoryModalProps {
@@ -130,7 +131,7 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
               paginatedTransactions.map((t, index) => (
                 <TableRow key={t.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{(transactionsCurrentPage - 1) * transactionsItemsPerPage + index + 1}.</TableCell>
-                  <TableCell className="p-3">{t.originalPaymentId === 0 ? 'N/A' : `#${t.originalPaymentId}`}</TableCell> {/* Display Transaction ID */}
+                  <TableCell className="p-3">{t.linkedOrderDisplay || 'N/A'}</TableCell> {/* Display descriptive ID */}
                   <TableCell className="p-3">{format(new Date(t.date), 'yyyy-MM-dd')}</TableCell>
                   <TableCell className="p-3">{t.description}</TableCell>
                   <TableCell className="p-3 text-right text-green-600">
