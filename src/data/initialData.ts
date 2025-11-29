@@ -4,7 +4,7 @@ import {
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
-export const MOCK_CURRENT_DATE = new Date('2025-10-29T15:53:00');
+export const MOCK_CURRENT_DATE = new Date(); // Changed to new Date()
 
 // --- Initial Data & Defaults ---
 export const initialData = {

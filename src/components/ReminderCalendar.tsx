@@ -45,14 +45,14 @@ const ReminderCalendar: React.FC = () => {
         
         const timeDifference = reminderDateTime.getTime() - now.getTime(); 
         
-        // Reminder is "due soon" if it's within 10 seconds in the past or 60 seconds in the future
-        const isDueSoon = timeDifference >= -10 * 1000 && timeDifference < 60 * 1000; 
+        // Reminder is "due soon" if it's within 5 seconds in the past or 10 seconds in the future
+        const isDueSoon = timeDifference >= -5 * 1000 && timeDifference < 10 * 1000; 
 
         console.log(`--- Checking reminder: "${reminder.message}" (ID: ${reminder.id}) ---`);
         console.log(`  Reminder time: ${reminderDateTime.toISOString()}`);
         console.log(`  Current time: ${now.toISOString()}`);
         console.log(`  Time difference (ms): ${timeDifference}`);
-        console.log(`  Is due soon (-10s to +60s window): ${isDueSoon}`);
+        console.log(`  Is due soon (-5s to +10s window): ${isDueSoon}`);
 
         const shownKey = `reminder_shown_${reminder.id}`;
         const isShownInLocalStorage = localStorage.getItem(shownKey);
@@ -77,11 +77,13 @@ const ReminderCalendar: React.FC = () => {
             audioRef.current.play().catch(e => console.error("Error playing sound:", e));
           }
 
-          // Temporarily reduced timeout for testing purposes
+          // Set timeout for removing the flag to 1 minute
           setTimeout(() => {
             localStorage.removeItem(shownKey);
             console.log(`  Removed shown key (${shownKey}) from localStorage.`);
-          }, 5 * 1000); // 5 seconds for testing
+          }, 60 * 1000); // 1 minute
+        } else if (isDueSoon && hasBeenShown) {
+          console.warn(`  Reminder "${reminder.message}" (ID: ${reminder.id}) is due but already shown (flag in localStorage).`);
         }
       });
     };
