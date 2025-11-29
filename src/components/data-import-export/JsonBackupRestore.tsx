@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  Settings, CurrencyRates, UtilizationOrder, RecycleBinItem, BankAccount // Import BankAccount type
+  Settings, CurrencyRates, UtilizationOrder, RecycleBinItem, BankAccount, Reminder // Import Reminder type
 } from '@/types';
 import { initialSettings, defaultCurrencyRates } from '@/data/initialData'; // Import initial settings and currency rates
 

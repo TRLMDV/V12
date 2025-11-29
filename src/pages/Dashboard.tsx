@@ -8,6 +8,8 @@ import { AlertCircle } from 'lucide-react';
 import { Product, SellOrder, Payment, CurrencyRates, Currency } from '@/types'; // Import types from types file
 import QuickButtonsGrid from '@/components/QuickButtonsGrid';
 import SalesChart from '@/components/SalesChart'; // New import
+import Clock from '@/components/Clock'; // New: Import Clock component
+import ReminderCalendar from '@/components/ReminderCalendar'; // New: Import ReminderCalendar component
 
 const Dashboard: React.FC = () => {
   const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
@@ -62,6 +64,11 @@ const Dashboard: React.FC = () => {
     <>
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('dashboard')}</h1>
       
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <Clock />
+        <ReminderCalendar />
+      </div>
+
       {quickButtons.length > 0 && (
         <QuickButtonsGrid quickButtons={quickButtons} />
       )}

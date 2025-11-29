@@ -5,7 +5,7 @@ import { toast as sonnerToast } from 'sonner';
 import { t } from '@/utils/i18n';
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CollectionKey, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder, QuickButton
+  CollectionKey, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder, QuickButton, Reminder
 } from '@/types';
 
 interface UseCrudOperationsProps {
@@ -20,7 +20,7 @@ interface UseCrudOperationsProps {
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
   setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // Added
-  setSettings: React.Dispatch<React.SetStateAction<Settings>>; // Added for paymentCategories
+  setSettings: React.Dispatch<React.SetStateAction<Settings>>; // Added for paymentCategories, quickButtons, reminders
   setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>; // Added
   nextIds: { [key: string]: number }; // Still need nextIds value for getNextId
   setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
@@ -42,7 +42,7 @@ interface UseCrudOperationsProps {
   productMovements: ProductMovement[];
   utilizationOrders: UtilizationOrder[]; // New: utilizationOrders
   packingUnits: PackingUnit[]; // Added
-  settings: Settings; // Added for paymentCategories
+  settings: Settings; // Added for paymentCategories, quickButtons, reminders
   bankAccounts: BankAccount[]; // Added
 }
 
@@ -79,7 +79,7 @@ export function useCrudOperations({
   }, [setNextIds]); // setNextIds is stable.
 
   const saveItem = useCallback((key: CollectionKey, item: any) => {
-    let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>> | React.Dispatch<React.SetStateAction<BankAccount[]>> | React.Dispatch<React.SetStateAction<QuickButton[]>>;
+    let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>> | React.Dispatch<React.SetStateAction<BankAccount[]>> | React.Dispatch<React.SetStateAction<QuickButton[]>> | React.Dispatch<React.SetStateAction<Reminder[]>>;
     let currentCollection: any[] = []; // To be populated for validation
 
     switch (key) {
@@ -129,6 +129,23 @@ export function useCrudOperations({
             updatedButtons = existingButtons.map((i: any) => i.id === item.id ? item : i);
           }
           return { ...prevSettings, quickButtons: updatedButtons };
+        });
+        sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
+        return;
+      case 'reminders': // New: Reminders
+        setSettings((prevSettings: Settings) => {
+          const existingReminders = prevSettings.reminders || [];
+          const existingItemIndex = existingReminders.findIndex((i: any) => i.id === item.id);
+          let updatedReminders;
+
+          if (item.id === 0 || existingItemIndex === -1) { // New item
+            const newItemId = getNextId(key);
+            updatedReminders = [...existingReminders, { ...item, id: newItemId }];
+            setNextIdForCollection(key, newItemId + 1);
+          } else { // Existing item, update it
+            updatedReminders = existingReminders.map((i: any) => i.id === item.id ? item : i);
+          }
+          return { ...prevSettings, reminders: updatedReminders };
         });
         sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
         return;
@@ -243,6 +260,19 @@ export function useCrudOperations({
         setSettings((prevSettings: Settings) => ({
           ...prevSettings,
           quickButtons: (prevSettings.quickButtons || []).filter((b: QuickButton) => b.id !== id),
+        }));
+        sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
+        return;
+      case 'reminders': // New: Reminders
+        const reminderToDelete = (settings.reminders || []).find((r: Reminder) => r.id === id);
+        if (!reminderToDelete) {
+          showAlertModal(t('error'), t('itemNotFound'));
+          return;
+        }
+        addToRecycleBin(reminderToDelete, key);
+        setSettings((prevSettings: Settings) => ({
+          ...prevSettings,
+          reminders: (prevSettings.reminders || []).filter((r: Reminder) => r.id !== id),
         }));
         sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
         return;

@@ -5,7 +5,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { initialSettings } from '@/data/initialData'; // Only need initialSettings for settings-specific defaults
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, PackingUnit, BankAccount, UtilizationOrder, QuickButton
+  CurrencyRates, Settings, RecycleBinItem, PackingUnit, BankAccount, UtilizationOrder, QuickButton, Reminder
 } from '@/types';
 
 interface UseAppInitializationProps {
@@ -77,6 +77,7 @@ export function useAppInitialization({
         paymentCategories: getMaxId(settings.paymentCategories || []) + 1,
         packingUnits: getMaxId(settings.packingUnits || []) + 1,
         quickButtons: getMaxId(settings.quickButtons || []) + 1,
+        reminders: getMaxId(settings.reminders || []) + 1, // New: Reminders
       };
       return newNextIds;
     };

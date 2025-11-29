@@ -5,7 +5,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { t } from '@/utils/i18n';
 import {
-  RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder, QuickButton
+  RecycleBinItem, CollectionKey, Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement, PackingUnit, PaymentCategorySetting, Settings, BankAccount, UtilizationOrder, QuickButton, Reminder
 } from '@/types';
 // Removed: import { useModals } from './useModals'; // No longer needed here
 
@@ -111,6 +111,9 @@ export function useRecycleBin({
       case 'quickButtons':
         const qb = item as QuickButton;
         return `${qb.label} (${t(qb.action as keyof typeof t)})`;
+      case 'reminders': // New: Reminder summary
+        const rem = item as Reminder;
+        return `${format(parseISO(rem.dateTime), 'yyyy-MM-dd HH:mm')} - ${rem.message}`;
       default:
         return JSON.stringify(item);
     }
@@ -169,6 +172,13 @@ export function useRecycleBin({
               setSettings(prevSettings => ({
                 ...prevSettings,
                 quickButtons: [...(prevSettings.quickButtons || []), data],
+              }));
+              showAlertModal(t('success'), t('itemRestored'));
+              return prevRecycleBin.filter(item => item.id !== recycleItemId);
+            case 'reminders': // New: Reminders
+              setSettings(prevSettings => ({
+                ...prevSettings,
+                reminders: [...(prevSettings.reminders || []), data],
               }));
               showAlertModal(t('success'), t('itemRestored'));
               return prevRecycleBin.filter(item => item.id !== recycleItemId);

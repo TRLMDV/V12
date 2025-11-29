@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trash2, RotateCcw, XCircle, ChevronDown, ChevronUp } from 'lucide-react'; // Import Chevron icons
 import { format } from 'date-fns';
-import { RecycleBinItem, CollectionKey, QuickButton } from '@/types';
+import { RecycleBinItem, CollectionKey, QuickButton, Reminder } from '@/types'; // Import Reminder
 
 interface RecycleBinSectionProps {
   recycleBin: RecycleBinItem[];

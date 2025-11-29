@@ -16,7 +16,7 @@ import { useBankBalances } from '@/hooks/useBankBalances';
 
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PackingUnit, BankAccount, UtilizationOrder, Currency
+  CurrencyRates, Settings, RecycleBinItem, CollectionKey, PackingUnit, BankAccount, UtilizationOrder, Currency, Reminder
 } from '@/types';
 
 // --- Context Definition ---

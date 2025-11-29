@@ -308,6 +308,13 @@ export interface QuickButton {
   color: QuickButtonColor;
 }
 
+// New: Reminder interface
+export interface Reminder {
+  id: number;
+  message: string;
+  dateTime: string; // ISO string
+}
+
 export interface Settings {
   companyName: string;
   companyLogo: string;
@@ -323,10 +330,11 @@ export interface Settings {
   showSalesChartOnDashboard: boolean; // New: Toggle for sales chart visibility
   packingUnits: PackingUnit[]; // New: Custom packing units
   quickButtons: QuickButton[]; // New: Quick buttons for the dashboard
+  reminders: Reminder[]; // New: Reminders for the calendar
 }
 
 // --- Recycle Bin Types ---
-export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories' | 'bankAccounts' | 'utilizationOrders' | 'quickButtons'; // Added 'utilizationOrders' and 'quickButtons'
+export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories' | 'bankAccounts' | 'utilizationOrders' | 'quickButtons' | 'reminders'; // Added 'utilizationOrders', 'quickButtons', 'reminders'
 
 export interface RecycleBinItem {
   id: string; // Unique ID for the recycle bin entry

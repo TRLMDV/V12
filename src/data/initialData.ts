@@ -1,6 +1,6 @@
 import {
   Product, Supplier, Customer, Warehouse, PurchaseOrder, SellOrder, Payment, ProductMovement,
-  CurrencyRates, Settings, PaymentCategorySetting, Currency, PackingUnit, BankAccount, UtilizationOrder, QuickButton
+  CurrencyRates, Settings, PaymentCategorySetting, Currency, PackingUnit, BankAccount, UtilizationOrder, QuickButton, Reminder
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
@@ -67,7 +67,7 @@ export const initialSettings: Settings = {
     { id: 10, name: 'Withdrawal' }, // New: Withdrawal category
   ],
   mainCurrency: 'AZN',
-  activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD', 'AFN', 'ALL', 'DZD', 'AOA', 'XCD', 'ARS', 'AMD', 'AWG', 'SHP', 'BSD', 'BDT', 'BBD', 'BYN', 'BZD', 'XOF', 'BMD', 'BTN', 'BOB', 'BAM', 'BRL', 'BND', 'BGN', 'BIF', 'KHR', 'XAF', 'CVE', 'CDF', 'KMF', 'NZD', 'CRC', 'CUP', 'XCG', 'CZK', 'DKK', 'DJF', 'DOP', 'EGP', 'ERN', 'SZL', 'ZAR', 'ETB', 'FKP', 'FJD', 'XPF', 'GMD', 'GEL', 'GHS', 'GTQ', 'GNF', 'GYD', 'HTG', 'HNL', 'HKD', 'HUF', 'ISK', 'IDR', 'IRR', 'IQD', 'ILS', 'JMD', 'KZT', 'KES', 'KPW', 'KGS', 'LAK', 'LBP', 'LSL', 'LRD', 'LYD', 'MDL', 'MOP', 'MGA', 'MWK', 'MYR', 'MVR', 'MRU', 'MZN', 'MMK', 'NAD', 'NPR', 'NIO', 'NGN', 'NOK', 'PKR', 'PGK', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RSD', 'SCR', 'SLE', 'SBD', 'SOS', 'SSP', 'STN', 'SRD', 'SYP', 'TWD', 'TJS', 'TZS', 'TTD', 'TND', 'TRY', 'TMT', 'UGX', 'UAH', 'UYU', 'UZS', 'VUV', 'VES', 'VED', 'VND', 'YER', 'ZMW', 'ZWG'],
+  activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD', 'AFN', 'ALL', 'DZD', 'AOA', 'XCD', 'ARS', 'AMD', 'AWG', 'SHP', 'BSD', 'BDT', 'BBD', 'BYN', 'BZD', 'XOF', 'BMD', 'BTN', 'BOB', 'BAM', 'BRL', 'BND', 'BGN', 'BIF', 'KHR', 'XAF', 'CVE', 'CDF', 'KMF', 'NZD', 'CRC', 'CUP', 'XCG', 'CZK', 'DKK', '1.00', 'DJF', 'DOP', 'EGP', 'ERN', 'SZL', 'ZAR', 'ETB', 'FKP', 'FJD', 'XPF', 'GMD', 'GEL', 'GHS', 'GTQ', 'GNF', 'GYD', 'HTG', 'HNL', 'HKD', 'HUF', 'ISK', 'IDR', 'IRR', 'IQD', 'ILS', 'JMD', 'KZT', 'KES', 'KPW', 'KGS', 'LAK', 'LBP', 'LSL', 'LRD', 'LYD', 'MDL', 'MOP', 'MGA', 'MWK', 'MYR', 'MVR', 'MRU', 'MZN', 'MMK', 'NAD', 'NPR', 'NIO', 'NGN', 'NOK', 'PKR', 'PGK', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RSD', 'SCR', 'SLE', 'SBD', 'SOS', 'SSP', 'STN', 'SRD', 'SYP', 'TWD', 'TJS', 'TZS', 'TTD', 'TND', 'TRY', 'TMT', 'UGX', 'UAH', 'UYU', 'UZS', 'VUV', 'VES', 'VED', 'VND', 'YER', 'ZMW', 'ZWG'],
   showDashboardCurrencyRates: false,
   showSalesChartOnDashboard: true, // New: Default to true
   packingUnits: [
@@ -79,4 +79,5 @@ export const initialSettings: Settings = {
     { id: 6, name: 'Barrel (liter)', baseUnit: 'liter', conversionFactor: 200 },
   ],
   quickButtons: [], // Changed to an empty array
+  reminders: [], // New: Empty array for reminders
 };

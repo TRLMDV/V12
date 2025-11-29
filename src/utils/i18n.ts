@@ -163,6 +163,24 @@ const i18n = {
     noSalesOrdersFoundForProduct: 'No sales orders found for this product.', // New
     landedCostPerUnit: 'Landed Cost Per Unit', // New translation key
     transactionId: 'Transaction ID', // New translation key
+    // New calendar and reminder translations
+    calendarAndReminders: 'Calendar & Reminders',
+    addReminder: 'Add Reminder',
+    editReminder: 'Edit Reminder',
+    saveReminder: 'Save Reminder',
+    deleteReminder: 'Delete Reminder',
+    deleteReminderWarning: 'Are you sure you want to delete this reminder? This action cannot be undone.',
+    noRemindersForSelectedDate: 'No reminders for the selected date.',
+    selectADate: 'Select a date to view reminders.',
+    message: 'Message',
+    time: 'Time',
+    pickADate: 'Pick a date',
+    allFieldsRequired: 'All fields are required.',
+    reminderAdded: 'Reminder added successfully.',
+    reminderUpdated: 'Reminder updated successfully.',
+    reminderDeleted: 'Reminder deleted successfully.',
+    reminder: 'Reminder',
+    dismiss: 'Dismiss',
   }
 };
 
