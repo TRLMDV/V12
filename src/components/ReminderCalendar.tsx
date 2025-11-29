@@ -247,6 +247,13 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
       return;
     }
 
+    // Validate time format (HH:mm)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(time)) {
+      toast.error(t('validationError'), { description: t('invalidTimeFormat') });
+      return;
+    }
+
     const [hours, minutes] = time.split(':').map(Number);
     let reminderDateTime = setHours(date, hours);
     reminderDateTime = setMinutes(reminderDateTime, minutes);
@@ -298,13 +305,17 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
           <Label htmlFor="time" className="text-right">{t('time')}</Label>
           <Input
             id="time"
-            type="time"
+            type="text" // Changed to type="text"
             value={time}
             onChange={(e) => setTime(e.target.value)}
             className="col-span-3"
+            placeholder="HH:mm (e.g., 14:30)" // Added placeholder
             required
-            step="60"
+            maxLength={5} // Limit input length to HH:mm
           />
+          <div className="col-span-4 col-start-2 text-xs text-gray-500 dark:text-slate-400 -mt-2">
+            {t('enterTimeIn24HourFormat')} {/* New helper text */}
+          </div>
         </div>
       </div>
       <div className="flex justify-end gap-2">

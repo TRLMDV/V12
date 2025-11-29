@@ -126,8 +126,6 @@ const i18n = {
     alsoDeleteAssociatedItems: 'This will also move the following associated items to the Recycle Bin', // New translation key
     selectAll: 'Select All', // New translation key
     deselectAll: 'Deselect All', // New translation key
-    allCurrenciesSelected: 'All active currencies selected.', // New translation key
-    allCurrenciesDeselected: 'All active currencies deselected (except main currency).', // New translation key
     exportTransactionsToExcel: 'Export Transactions to Excel', // New translation key
     feesExchangeRateToAZN: 'Fees Exchange Rate to AZN', // New translation key
     // New sales chart translations
@@ -186,6 +184,8 @@ const i18n = {
     showClockOnDashboard: 'Show Clock on Dashboard',
     calendarSettings: 'Calendar Settings',
     showCalendarOnDashboard: 'Show Calendar on Dashboard',
+    enterTimeIn24HourFormat: 'Enter time in HH:mm (24-hour format)', // New translation key
+    invalidTimeFormat: 'Invalid time format. Please use HH:mm (e.g., 14:30).', // New translation key
   }
 };
 
