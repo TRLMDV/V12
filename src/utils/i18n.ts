@@ -186,25 +186,6 @@ const i18n = {
     showCalendarOnDashboard: 'Show Calendar on Dashboard',
     enterTimeIn24HourFormat: 'Enter time in HH:mm (24-hour format)', // New translation key
     invalidTimeFormat: 'Invalid time format. Please use HH:mm (e.g., 14:30).', // New translation key
-    // New weather widget translations
-    weatherWidget: 'Weather Widget',
-    weatherSettings: 'Weather Settings',
-    showWeatherOnDashboard: 'Show Weather on Dashboard',
-    defaultWeatherCity: 'Default Weather City',
-    enterCityName: 'Enter city name (e.g., London, New York)',
-    saveDefaultWeatherCity: 'Save Default City',
-    weatherVisibilityUpdated: 'Weather widget visibility updated.',
-    weatherCityRequired: 'Default city name is required.',
-    defaultWeatherCityUpdated: 'Default weather city updated.',
-    weatherApiKeyMissing: 'OpenWeatherMap API key is missing. Please add VITE_OPEN_WEATHER_API_KEY to your .env file.',
-    weatherCityMissing: 'City name is missing for weather forecast.',
-    failedToFetchWeather: 'Failed to fetch weather data',
-    cityNotFound: 'City "{city}" not found.',
-    failedToFetchWeatherGeneric: 'Failed to fetch weather data. Please check your internet connection or API key.',
-    weatherLoading: 'Loading weather...',
-    weatherError: 'Weather Error',
-    noWeatherData: 'No weather data available.',
-    feelsLike: 'Feels like',
   }
 };
 

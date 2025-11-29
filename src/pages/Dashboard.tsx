@@ -10,7 +10,6 @@ import QuickButtonsGrid from '@/components/QuickButtonsGrid';
 import SalesChart from '@/components/SalesChart'; // New import
 import Clock from '@/components/Clock'; // New: Import Clock component
 import ReminderCalendar from '@/components/ReminderCalendar'; // New: Import ReminderCalendar component
-import WeatherWidget from '@/components/WeatherWidget'; // New: Import WeatherWidget component
 
 const Dashboard: React.FC = () => {
   const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
@@ -20,8 +19,6 @@ const Dashboard: React.FC = () => {
   const showSalesChartOnDashboard = settings.showSalesChartOnDashboard; // New setting
   const showClockOnDashboard = settings.showClockOnDashboard; // New setting
   const showCalendarOnDashboard = settings.showCalendarOnDashboard; // New setting
-  const showWeatherOnDashboard = settings.showWeatherOnDashboard; // New setting
-  const defaultWeatherCity = settings.defaultWeatherCity; // New setting
   const quickButtons = settings.quickButtons || []; // Get quick buttons from settings
 
   const getOverdueSellOrders = () => {
@@ -65,17 +62,16 @@ const Dashboard: React.FC = () => {
   const lowStockProducts = products.filter(p => (p.stock ? Object.values(p.stock).reduce((a, b) => a + b, 0) : 0) < p.minStock);
   const overdueOrders = getOverdueSellOrders();
 
-  const shouldShowClockOrCalendarOrWeather = showClockOnDashboard || showCalendarOnDashboard || showWeatherOnDashboard;
+  const shouldShowClockOrCalendar = showClockOnDashboard || showCalendarOnDashboard;
 
   return (
     <>
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('dashboard')}</h1>
       
-      {shouldShowClockOrCalendarOrWeather && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-6"> {/* Adjusted grid columns */}
+      {shouldShowClockOrCalendar && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {showClockOnDashboard && <Clock />}
           {showCalendarOnDashboard && <ReminderCalendar />}
-          {showWeatherOnDashboard && <WeatherWidget city={defaultWeatherCity} />} {/* New: Weather Widget */}
         </div>
       )}
 
