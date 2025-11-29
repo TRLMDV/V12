@@ -303,6 +303,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
             onChange={(e) => setTime(e.target.value)}
             className="col-span-3"
             required
+            step="60"
           />
         </div>
       </div>
