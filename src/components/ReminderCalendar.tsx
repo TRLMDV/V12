@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, isSameDay, isPast, isToday, parseISO, setHours, setMinutes, setSeconds, isFuture } from 'date-fns';
+import { format, isSameDay, isPast, isToday, parseISO, setHours, setMinutes, setSeconds, isFuture, getHours, getMinutes } from 'date-fns';
 import { PlusCircle, BellRing, Trash2, Edit } from 'lucide-react';
 import { toast }
  from 'sonner';
@@ -17,6 +17,7 @@ import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Reminder } from '@/types';
 import ReminderModal from './ReminderModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 
 const ReminderCalendar: React.FC = () => {
   const { settings, saveItem, deleteItem, getNextId, setNextIdForCollection, showAlertModal, showConfirmationModal, setSettings } = useData();
@@ -263,36 +264,32 @@ interface ReminderFormProps {
 const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCancel, initialDate }) => {
   const [message, setMessage] = useState(reminder?.message || '');
   const [date, setDate] = useState<Date | undefined>(reminder ? parseISO(reminder.dateTime) : initialDate || new Date());
-  const [time, setTime] = useState(reminder ? format(parseISO(reminder.dateTime), 'HH:mm') : '09:00');
+  const [selectedHour, setSelectedHour] = useState<string>(reminder ? String(getHours(parseISO(reminder.dateTime))).padStart(2, '0') : '09');
+  const [selectedMinute, setSelectedMinute] = useState<string>(reminder ? String(getMinutes(parseISO(reminder.dateTime))).padStart(2, '0') : '00');
 
   useEffect(() => {
     if (reminder) {
       setMessage(reminder.message);
       setDate(parseISO(reminder.dateTime));
-      setTime(format(parseISO(reminder.dateTime), 'HH:mm'));
+      setSelectedHour(String(getHours(parseISO(reminder.dateTime))).padStart(2, '0'));
+      setSelectedMinute(String(getMinutes(parseISO(reminder.dateTime))).padStart(2, '0'));
     } else {
       setMessage('');
       setDate(initialDate || new Date());
-      setTime('09:00');
+      setSelectedHour('09');
+      setSelectedMinute('00');
     }
   }, [reminder, initialDate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !date || !time) {
+    if (!message.trim() || !date || !selectedHour || !selectedMinute) {
       toast.error(t('validationError'), { description: t('allFieldsRequired') });
       return;
     }
 
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timeRegex.test(time)) {
-      toast.error(t('validationError'), { description: t('invalidTimeFormat') });
-      return;
-    }
-
-    const [hours, minutes] = time.split(':').map(Number);
-    let reminderDateTime = setHours(date, hours);
-    reminderDateTime = setMinutes(reminderDateTime, minutes);
+    let reminderDateTime = setHours(date, parseInt(selectedHour));
+    reminderDateTime = setMinutes(reminderDateTime, parseInt(selectedMinute));
     reminderDateTime = setSeconds(reminderDateTime, 0);
 
     onSuccess({
@@ -301,6 +298,9 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
       dateTime: reminderDateTime.toISOString(),
     });
   };
+
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   return (
     <form onSubmit={handleSubmit}>
@@ -339,18 +339,27 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="time" className="text-right">{t('time')}</Label>
-          <Input
-            id="time"
-            type="text"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="col-span-3"
-            placeholder="HH:mm (e.g., 14:30)"
-            required
-            maxLength={5}
-          />
-          <div className="col-span-4 col-start-2 text-xs text-gray-500 dark:text-slate-400 -mt-2">
-            {t('enterTimeIn24HourFormat')}
+          <div className="col-span-3 flex gap-2">
+            <Select onValueChange={setSelectedHour} value={selectedHour}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder={t('selectHour')} />
+              </SelectTrigger>
+              <SelectContent>
+                {hours.map(h => (
+                  <SelectItem key={h} value={h}>{h}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={setSelectedMinute} value={selectedMinute}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder={t('selectMinute')} />
+              </SelectTrigger>
+              <SelectContent>
+                {minutes.map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>

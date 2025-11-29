@@ -184,8 +184,10 @@ const i18n = {
     showClockOnDashboard: 'Show Clock on Dashboard',
     calendarSettings: 'Calendar Settings',
     showCalendarOnDashboard: 'Show Calendar on Dashboard',
-    enterTimeIn24HourFormat: 'Enter time in HH:mm (24-hour format)', // New translation key
-    invalidTimeFormat: 'Invalid time format. Please use HH:mm (e.g., 14:30).', // New translation key
+    enterTimeIn24HourFormat: 'Enter time in HH:mm (24-hour format)', // New translation key (now unused, but kept for reference)
+    invalidTimeFormat: 'Invalid time format. Please use HH:mm (e.g., 14:30).', // New translation key (now unused, but kept for reference)
+    selectHour: 'Select Hour', // New translation key
+    selectMinute: 'Select Minute', // New translation key
   }
 };
 
