@@ -44,27 +44,39 @@ const ReminderCalendar: React.FC = () => {
   // Reminder pop-up logic
   useEffect(() => {
     const checkReminders = () => {
-      const now = new Date();
+      const now = new Date(); // Use actual current date here
       reminders.forEach(reminder => {
         const reminderDateTime = parseISO(reminder.dateTime);
-        // Check if reminder is due within the next minute and hasn't been shown recently
-        if (isFuture(reminderDateTime) && reminderDateTime.getTime() - now.getTime() < 60 * 1000 && reminderDateTime.getTime() - now.getTime() > -1000) {
-          // Use a simple flag in local storage to prevent repeated modals for the same reminder
-          const shownKey = `reminder_shown_${reminder.id}`;
-          if (!localStorage.getItem(shownKey)) {
-            // Show the central modal instead of a toast
-            setCurrentDueReminder(reminder);
-            setIsCentralReminderModalOpen(true);
-            localStorage.setItem(shownKey, 'true'); // Mark as shown
+        
+        // Calculate time difference in milliseconds
+        const timeDifference = reminderDateTime.getTime() - now.getTime(); 
+        
+        // Trigger if reminder is between 10 seconds in the past and 60 seconds in the future
+        const isDueSoon = timeDifference >= -10 * 1000 && timeDifference < 60 * 1000; 
 
-            // Play sound
-            if (audioRef.current) {
-              audioRef.current.play().catch(e => console.error("Error playing sound:", e));
-            }
+        console.log(`--- Checking reminder: "${reminder.message}" (ID: ${reminder.id}) ---`);
+        console.log(`  Reminder time: ${reminderDateTime.toISOString()}`);
+        console.log(`  Current time: ${now.toISOString()}`);
+        console.log(`  Time difference (ms): ${timeDifference}`);
+        console.log(`  Is due soon (-10s to +60s window): ${isDueSoon}`);
 
-            // Remove the flag after a day to allow it to show again if the app is restarted later
-            setTimeout(() => localStorage.removeItem(shownKey), 24 * 60 * 60 * 1000);
+        const shownKey = `reminder_shown_${reminder.id}`;
+        const isShown = localStorage.getItem(shownKey);
+        console.log(`  Shown key (${shownKey}): ${isShown}`);
+
+        if (isDueSoon && !isShown) {
+          console.log(`*** TRIGGERING REMINDER: "${reminder.message}" ***`);
+          setCurrentDueReminder(reminder);
+          setIsCentralReminderModalOpen(true);
+          localStorage.setItem(shownKey, 'true'); // Mark as shown
+
+          // Play sound
+          if (audioRef.current) {
+            audioRef.current.play().catch(e => console.error("Error playing sound:", e));
           }
+
+          // Remove the flag after a day to allow it to show again if the app is restarted later
+          setTimeout(() => localStorage.removeItem(shownKey), 24 * 60 * 60 * 1000);
         }
       });
     };
