@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'; // Import useRef
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,9 @@ const ReminderCalendar: React.FC = () => {
   const [isCentralReminderModalOpen, setIsCentralReminderModalOpen] = useState(false);
   const [currentDueReminder, setCurrentDueReminder] = useState<Reminder | null>(null);
 
+  // Create a ref for the audio element
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   // Reminders are now part of settings
   const reminders = settings.reminders || [];
 
@@ -53,6 +56,12 @@ const ReminderCalendar: React.FC = () => {
             setCurrentDueReminder(reminder);
             setIsCentralReminderModalOpen(true);
             localStorage.setItem(shownKey, 'true'); // Mark as shown
+
+            // Play sound
+            if (audioRef.current) {
+              audioRef.current.play().catch(e => console.error("Error playing sound:", e));
+            }
+
             // Remove the flag after a day to allow it to show again if the app is restarted later
             setTimeout(() => localStorage.removeItem(shownKey), 24 * 60 * 60 * 1000);
           }
@@ -219,6 +228,9 @@ const ReminderCalendar: React.FC = () => {
         reminder={currentDueReminder}
         t={t}
       />
+
+      {/* Audio element for notification sound */}
+      <audio ref={audioRef} src="/notification.mp3" preload="auto" />
     </Card>
   );
 };
