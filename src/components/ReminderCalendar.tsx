@@ -10,14 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, isSameDay, isPast, isToday, parseISO, setHours, setMinutes, setSeconds, isFuture } from 'date-fns';
 import { PlusCircle, BellRing, Trash2, Edit } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast }
+ from 'sonner';
 import FormModal from '@/components/FormModal';
 import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Reminder } from '@/types'; // Assuming Reminder type is defined in types/index.ts
 
 const ReminderCalendar: React.FC = () => {
-  const { settings, saveItem, deleteItem, getNextId, setNextIdForCollection, showAlertModal, showConfirmationModal } = useData();
+  const { settings, saveItem, deleteItem, getNextId, setNextIdForCollection, showAlertModal, showConfirmationModal, setSettings } = useData();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState<Reminder | undefined>(undefined);
