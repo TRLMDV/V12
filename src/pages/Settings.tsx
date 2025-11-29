@@ -22,6 +22,7 @@ import QuickButtonsSettings from '@/components/settings/QuickButtonsSettings';
 import SalesChartSettings from '@/components/settings/SalesChartSettings'; // New import
 import ClockSettings from '@/components/settings/ClockSettings'; // New import
 import CalendarSettings from '@/components/settings/CalendarSettings'; // New import
+import WeatherSettings from '@/components/settings/WeatherSettings'; // New import
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -149,6 +150,12 @@ const SettingsPage: React.FC = () => {
       />
 
       <CalendarSettings
+        settings={settings}
+        setSettings={setSettings}
+        t={t}
+      />
+
+      <WeatherSettings
         settings={settings}
         setSettings={setSettings}
         t={t}

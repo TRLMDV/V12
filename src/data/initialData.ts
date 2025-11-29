@@ -72,6 +72,8 @@ export const initialSettings: Settings = {
   showSalesChartOnDashboard: true, // New: Default to true
   showClockOnDashboard: true, // New: Default to true
   showCalendarOnDashboard: true, // New: Default to true
+  showWeatherOnDashboard: true, // New: Default to true
+  defaultWeatherCity: 'London', // New: Default city for weather widget
   packingUnits: [
     { id: 1, name: 'Piece', baseUnit: 'piece', conversionFactor: 1 },
     { id: 2, name: 'Pack', baseUnit: 'piece', conversionFactor: 10 },
