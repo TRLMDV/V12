@@ -20,6 +20,8 @@ import DashboardCurrencyRatesToggle from '@/components/settings/DashboardCurrenc
 import PackingSettings from '@/components/settings/PackingSettings';
 import QuickButtonsSettings from '@/components/settings/QuickButtonsSettings';
 import SalesChartSettings from '@/components/settings/SalesChartSettings'; // New import
+import ClockSettings from '@/components/settings/ClockSettings'; // New import
+import CalendarSettings from '@/components/settings/CalendarSettings'; // New import
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -135,6 +137,18 @@ const SettingsPage: React.FC = () => {
       />
 
       <SalesChartSettings
+        settings={settings}
+        setSettings={setSettings}
+        t={t}
+      />
+
+      <ClockSettings
+        settings={settings}
+        setSettings={setSettings}
+        t={t}
+      />
+
+      <CalendarSettings
         settings={settings}
         setSettings={setSettings}
         t={t}

@@ -17,6 +17,8 @@ const Dashboard: React.FC = () => {
   const activeCurrencies = settings.activeCurrencies || []; // Ensure it's an array
   const showDashboardCurrencyRates = settings.showDashboardCurrencyRates;
   const showSalesChartOnDashboard = settings.showSalesChartOnDashboard; // New setting
+  const showClockOnDashboard = settings.showClockOnDashboard; // New setting
+  const showCalendarOnDashboard = settings.showCalendarOnDashboard; // New setting
   const quickButtons = settings.quickButtons || []; // Get quick buttons from settings
 
   const getOverdueSellOrders = () => {
@@ -60,14 +62,18 @@ const Dashboard: React.FC = () => {
   const lowStockProducts = products.filter(p => (p.stock ? Object.values(p.stock).reduce((a, b) => a + b, 0) : 0) < p.minStock);
   const overdueOrders = getOverdueSellOrders();
 
+  const shouldShowClockOrCalendar = showClockOnDashboard || showCalendarOnDashboard;
+
   return (
     <>
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('dashboard')}</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Clock />
-        <ReminderCalendar />
-      </div>
+      {shouldShowClockOrCalendar && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {showClockOnDashboard && <Clock />}
+          {showCalendarOnDashboard && <ReminderCalendar />}
+        </div>
+      )}
 
       {quickButtons.length > 0 && (
         <QuickButtonsGrid quickButtons={quickButtons} />

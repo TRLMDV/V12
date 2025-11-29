@@ -328,6 +328,8 @@ export interface Settings {
   activeCurrencies: Currency[]; // New: Currencies the user wants to actively use
   showDashboardCurrencyRates: boolean; // New: Toggle for dashboard currency rates visibility
   showSalesChartOnDashboard: boolean; // New: Toggle for sales chart visibility
+  showClockOnDashboard: boolean; // New: Toggle for clock visibility
+  showCalendarOnDashboard: boolean; // New: Toggle for calendar visibility
   packingUnits: PackingUnit[]; // New: Custom packing units
   quickButtons: QuickButton[]; // New: Quick buttons for the dashboard
   reminders: Reminder[]; // New: Reminders for the calendar

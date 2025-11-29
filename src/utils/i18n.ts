@@ -181,6 +181,11 @@ const i18n = {
     reminderDeleted: 'Reminder deleted successfully.',
     reminder: 'Reminder',
     dismiss: 'Dismiss',
+    // New clock and calendar settings translations
+    clockSettings: 'Clock Settings',
+    showClockOnDashboard: 'Show Clock on Dashboard',
+    calendarSettings: 'Calendar Settings',
+    showCalendarOnDashboard: 'Show Calendar on Dashboard',
   }
 };
 
