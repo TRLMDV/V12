@@ -152,7 +152,7 @@ const ReminderCalendar: React.FC = () => {
     };
   }, [reminders]);
 
-  const modifiersStyles = {
+  const modifiersStyles: Record<string, React.CSSProperties> = { // Explicitly type as Record<string, React.CSSProperties>
     hasReminders: {
       position: 'relative',
     },
