@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'; // Import useRef
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,8 +15,8 @@ import { toast }
 import FormModal from '@/components/FormModal';
 import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
-import { Reminder } from '@/types'; // Assuming Reminder type is defined in types/index.ts
-import ReminderModal from './ReminderModal'; // New: Import ReminderModal
+import { Reminder } from '@/types';
+import ReminderModal from './ReminderModal';
 
 const ReminderCalendar: React.FC = () => {
   const { settings, saveItem, deleteItem, getNextId, setNextIdForCollection, showAlertModal, showConfirmationModal, setSettings } = useData();
@@ -24,34 +24,27 @@ const ReminderCalendar: React.FC = () => {
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState<Reminder | undefined>(undefined);
 
-  // New: State for the central reminder modal
   const [isCentralReminderModalOpen, setIsCentralReminderModalOpen] = useState(false);
   const [currentDueReminder, setCurrentDueReminder] = useState<Reminder | null>(null);
 
-  // Create a ref for the audio element
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Reminders are now part of settings
   const reminders = settings.reminders || [];
 
-  // Filter reminders for the selected date
   const remindersForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
     return reminders.filter(r => isSameDay(parseISO(r.dateTime), selectedDate))
       .sort((a, b) => parseISO(a.dateTime).getTime() - parseISO(b.dateTime).getTime());
   }, [reminders, selectedDate]);
 
-  // Reminder pop-up logic
   useEffect(() => {
     const checkReminders = () => {
-      const now = new Date(); // Use actual current date here
+      const now = new Date();
       reminders.forEach(reminder => {
         const reminderDateTime = parseISO(reminder.dateTime);
         
-        // Calculate time difference in milliseconds
         const timeDifference = reminderDateTime.getTime() - now.getTime(); 
         
-        // Trigger if reminder is between 10 seconds in the past and 60 seconds in the future
         const isDueSoon = timeDifference >= -10 * 1000 && timeDifference < 60 * 1000; 
 
         console.log(`--- Checking reminder: "${reminder.message}" (ID: ${reminder.id}) ---`);
@@ -68,20 +61,19 @@ const ReminderCalendar: React.FC = () => {
           console.log(`*** TRIGGERING REMINDER: "${reminder.message}" ***`);
           setCurrentDueReminder(reminder);
           setIsCentralReminderModalOpen(true);
-          localStorage.setItem(shownKey, 'true'); // Mark as shown
+          console.log(`  setIsCentralReminderModalOpen(true) called.`); // Added log
+          localStorage.setItem(shownKey, 'true');
 
-          // Play sound
           if (audioRef.current) {
             audioRef.current.play().catch(e => console.error("Error playing sound:", e));
           }
 
-          // Remove the flag after a day to allow it to show again if the app is restarted later
           setTimeout(() => localStorage.removeItem(shownKey), 24 * 60 * 60 * 1000);
         }
       });
     };
 
-    const intervalId = setInterval(checkReminders, 10 * 1000); // Check every 10 seconds
+    const intervalId = setInterval(checkReminders, 10 * 1000);
     return () => clearInterval(intervalId);
   }, [reminders, t]);
 
@@ -100,12 +92,12 @@ const ReminderCalendar: React.FC = () => {
       const existingReminders = prevSettings.reminders || [];
       let updatedReminders;
 
-      if (newReminder.id === 0) { // Add new reminder
+      if (newReminder.id === 0) {
         const newId = getNextId('reminders');
         updatedReminders = [...existingReminders, { ...newReminder, id: newId }];
         setNextIdForCollection('reminders', newId + 1);
         toast.success(t('success'), { description: t('reminderAdded') });
-      } else { // Update existing reminder
+      } else {
         updatedReminders = existingReminders.map(r =>
           r.id === newReminder.id ? { ...r, message: newReminder.message, dateTime: newReminder.dateTime } : r
         );
@@ -134,7 +126,6 @@ const ReminderCalendar: React.FC = () => {
     setSelectedDate(date);
   };
 
-  // Custom day renderer for the calendar to show dots for days with reminders
   const modifiers = useMemo(() => {
     const daysWithReminders: Date[] = [];
     reminders.forEach(r => {
@@ -165,6 +156,8 @@ const ReminderCalendar: React.FC = () => {
       </div>
     );
   };
+
+  console.log("ReminderCalendar rendering. isCentralReminderModalOpen:", isCentralReminderModalOpen, "currentDueReminder:", currentDueReminder); // Added log
 
   return (
     <Card className="dark:bg-slate-800 dark:border-slate-700">
@@ -233,7 +226,6 @@ const ReminderCalendar: React.FC = () => {
         />
       </FormModal>
 
-      {/* New: Central Reminder Modal */}
       <ReminderModal
         isOpen={isCentralReminderModalOpen}
         onClose={() => setIsCentralReminderModalOpen(false)}
@@ -241,7 +233,6 @@ const ReminderCalendar: React.FC = () => {
         t={t}
       />
 
-      {/* Audio element for notification sound */}
       <audio ref={audioRef} src="/notification.mp3" preload="auto" />
     </Card>
   );
@@ -278,7 +269,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
       return;
     }
 
-    // Validate time format (HH:mm)
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!timeRegex.test(time)) {
       toast.error(t('validationError'), { description: t('invalidTimeFormat') });
@@ -336,16 +326,16 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
           <Label htmlFor="time" className="text-right">{t('time')}</Label>
           <Input
             id="time"
-            type="text" // Changed to type="text"
+            type="text"
             value={time}
             onChange={(e) => setTime(e.target.value)}
             className="col-span-3"
-            placeholder="HH:mm (e.g., 14:30)" // Added placeholder
+            placeholder="HH:mm (e.g., 14:30)"
             required
-            maxLength={5} // Limit input length to HH:mm
+            maxLength={5}
           />
           <div className="col-span-4 col-start-2 text-xs text-gray-500 dark:text-slate-400 -mt-2">
-            {t('enterTimeIn24HourFormat')} {/* New helper text */}
+            {t('enterTimeIn24HourFormat')}
           </div>
         </div>
       </div>
