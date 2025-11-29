@@ -45,6 +45,7 @@ const ReminderCalendar: React.FC = () => {
         
         const timeDifference = reminderDateTime.getTime() - now.getTime(); 
         
+        // Reminder is "due soon" if it's within 10 seconds in the past or 60 seconds in the future
         const isDueSoon = timeDifference >= -10 * 1000 && timeDifference < 60 * 1000; 
 
         console.log(`--- Checking reminder: "${reminder.message}" (ID: ${reminder.id}) ---`);
@@ -54,15 +55,23 @@ const ReminderCalendar: React.FC = () => {
         console.log(`  Is due soon (-10s to +60s window): ${isDueSoon}`);
 
         const shownKey = `reminder_shown_${reminder.id}`;
-        const isShown = localStorage.getItem(shownKey);
-        console.log(`  Shown key (${shownKey}): ${isShown}`);
+        const isShownInLocalStorage = localStorage.getItem(shownKey);
+        const hasBeenShown = isShownInLocalStorage === 'true'; // Explicitly check for the string 'true'
+        console.log(`  Shown key (${shownKey}): ${isShownInLocalStorage}`);
+        console.log(`  Has been shown (parsed): ${hasBeenShown}`);
 
-        if (isDueSoon && !isShown) {
+
+        if (isDueSoon && !hasBeenShown) { // Use the parsed boolean
           console.log(`*** TRIGGERING REMINDER: "${reminder.message}" ***`);
           setCurrentDueReminder(reminder);
           setIsCentralReminderModalOpen(true);
-          console.log(`  setIsCentralReminderModalOpen(true) called.`); // Added log
-          localStorage.setItem(shownKey, 'true');
+          console.log(`  setIsCentralReminderModalOpen(true) called.`); 
+          
+          // Add a small delay before setting the flag to ensure the modal state update propagates
+          setTimeout(() => {
+            localStorage.setItem(shownKey, 'true');
+            console.log(`  Set shown key (${shownKey}) to localStorage after delay.`);
+          }, 100); // 100ms delay
 
           if (audioRef.current) {
             audioRef.current.play().catch(e => console.error("Error playing sound:", e));
