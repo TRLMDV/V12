@@ -68,7 +68,11 @@ const ReminderCalendar: React.FC = () => {
             audioRef.current.play().catch(e => console.error("Error playing sound:", e));
           }
 
-          setTimeout(() => localStorage.removeItem(shownKey), 24 * 60 * 60 * 1000);
+          // Temporarily reduced timeout for testing purposes
+          setTimeout(() => {
+            localStorage.removeItem(shownKey);
+            console.log(`  Removed shown key (${shownKey}) from localStorage.`);
+          }, 5 * 1000); // 5 seconds for testing
         }
       });
     };
