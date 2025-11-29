@@ -16,12 +16,17 @@ import FormModal from '@/components/FormModal';
 import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Reminder } from '@/types'; // Assuming Reminder type is defined in types/index.ts
+import ReminderModal from './ReminderModal'; // New: Import ReminderModal
 
 const ReminderCalendar: React.FC = () => {
   const { settings, saveItem, deleteItem, getNextId, setNextIdForCollection, showAlertModal, showConfirmationModal, setSettings } = useData();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState<Reminder | undefined>(undefined);
+
+  // New: State for the central reminder modal
+  const [isCentralReminderModalOpen, setIsCentralReminderModalOpen] = useState(false);
+  const [currentDueReminder, setCurrentDueReminder] = useState<Reminder | null>(null);
 
   // Reminders are now part of settings
   const reminders = settings.reminders || [];
@@ -41,18 +46,12 @@ const ReminderCalendar: React.FC = () => {
         const reminderDateTime = parseISO(reminder.dateTime);
         // Check if reminder is due within the next minute and hasn't been shown recently
         if (isFuture(reminderDateTime) && reminderDateTime.getTime() - now.getTime() < 60 * 1000 && reminderDateTime.getTime() - now.getTime() > -1000) {
-          // Use a simple flag in local storage to prevent repeated toasts for the same reminder
+          // Use a simple flag in local storage to prevent repeated modals for the same reminder
           const shownKey = `reminder_shown_${reminder.id}`;
           if (!localStorage.getItem(shownKey)) {
-            toast.info(t('reminder'), {
-              description: `${format(reminderDateTime, 'HH:mm')} - ${reminder.message}`,
-              duration: 10000, // Show for 10 seconds
-              action: {
-                label: t('dismiss'),
-                onClick: () => toast.dismiss(),
-              },
-              icon: <BellRing className="h-5 w-5" />,
-            });
+            // Show the central modal instead of a toast
+            setCurrentDueReminder(reminder);
+            setIsCentralReminderModalOpen(true);
             localStorage.setItem(shownKey, 'true'); // Mark as shown
             // Remove the flag after a day to allow it to show again if the app is restarted later
             setTimeout(() => localStorage.removeItem(shownKey), 24 * 60 * 60 * 1000);
@@ -212,6 +211,14 @@ const ReminderCalendar: React.FC = () => {
           initialDate={selectedDate}
         />
       </FormModal>
+
+      {/* New: Central Reminder Modal */}
+      <ReminderModal
+        isOpen={isCentralReminderModalOpen}
+        onClose={() => setIsCentralReminderModalOpen(false)}
+        reminder={currentDueReminder}
+        t={t}
+      />
     </Card>
   );
 };
