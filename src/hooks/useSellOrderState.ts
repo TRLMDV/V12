@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { SellOrder, Product, Customer, Warehouse, Currency, PackingUnit } from '@/types';
-import { formatNumberInput } from '@/utils/formatters'; // Import the new formatter
+import { formatNumberInput, roundToPrecision } from '@/utils/formatters'; // Import the new formatter
 
 interface SellOrderItemState {
   productId: number | '';
@@ -52,12 +52,12 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) return (existingOrder.items || []).map(item => ({ // Added defensive || []
         productId: item.productId,
-        qty: formatNumberInput(item.qty), // Apply formatter
-        price: formatNumberInput(item.price), // Apply formatter
-        itemTotal: formatNumberInput(item.qty * item.price), // Apply formatter
+        qty: formatNumberInput(roundToPrecision(item.qty, 4)), // Apply formatter
+        price: formatNumberInput(roundToPrecision(item.price, 4)), // Apply formatter
+        itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)), // Apply formatter
         landedCost: productMap[item.productId]?.averageLandedCost,
         packingUnitId: item.packingUnitId, // Load existing packing unit
-        packingQuantity: formatNumberInput(item.packingQuantity || 0), // Apply formatter
+        packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)), // Apply formatter
       }));
     }
     return [{ productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined, packingUnitId: undefined, packingQuantity: '' }];
@@ -78,16 +78,16 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
         setOrder(existingOrder);
         setOrderItems((existingOrder.items || []).map(item => ({ // Added defensive || []
           productId: item.productId,
-          qty: formatNumberInput(item.qty),
-          price: formatNumberInput(item.price),
-          itemTotal: formatNumberInput(item.qty * item.price),
+          qty: formatNumberInput(roundToPrecision(item.qty, 4)),
+          price: formatNumberInput(roundToPrecision(item.price, 4)),
+          itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)),
           landedCost: productMap[item.productId]?.averageLandedCost,
           packingUnitId: item.packingUnitId,
-          packingQuantity: formatNumberInput(item.packingQuantity || 0),
+          packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)),
         })));
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);
-        setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? formatNumberInput(existingOrder.exchangeRate) : ''); // Apply formatter
+        setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? formatNumberInput(roundToPrecision(existingOrder.exchangeRate, 4)) : ''); // Apply formatter
         setIsWarehouseManuallySet(false); // Reset on edit, assume default unless user changes
         setIsFormInitialized(true);
       }

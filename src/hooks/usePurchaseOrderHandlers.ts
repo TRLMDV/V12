@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useData } from '@/context/DataContext';
 import { PurchaseOrder, Product, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
-import { formatNumberInput } from '@/utils/formatters'; // Import the new formatter
+import { formatNumberInput, roundToPrecision } from '@/utils/formatters'; // Import the new formatter
 
 interface UsePurchaseOrderHandlersProps {
   setOrder: React.Dispatch<React.SetStateAction<Partial<PurchaseOrder>>>;
@@ -54,7 +54,7 @@ export const usePurchaseOrderHandlers = ({
       } else {
         const defaultRate = currencyRates[value as Currency];
         setManualFeesExchangeRate(defaultRate);
-        setManualFeesExchangeRateInput(formatNumberInput(defaultRate)); // Apply formatter
+        setManualFeesExchangeRateInput(formatNumberInput(roundToPrecision(defaultRate, 4))); // Apply formatter
       }
     }
   }, [setOrder, setManualFeesExchangeRate, setManualFeesExchangeRateInput, currencyRates]);
@@ -68,7 +68,7 @@ export const usePurchaseOrderHandlers = ({
     } else {
       const defaultRate = currencyRates[value];
       setManualExchangeRate(defaultRate);
-      setManualExchangeRateInput(formatNumberInput(defaultRate)); // Apply formatter
+      setManualExchangeRateInput(formatNumberInput(roundToPrecision(defaultRate, 4))); // Apply formatter
     }
   }, [setSelectedCurrency, setOrder, setManualExchangeRate, setManualExchangeRateInput, currencyRates]);
 
@@ -125,16 +125,16 @@ export const usePurchaseOrderHandlers = ({
 
         if (selectedPackingUnit) {
           // If a new packing unit is selected, keep packingQuantity as is, recalculate base qty
-          item.qty = formatNumberInput(parseFloat((currentDisplayQty * selectedPackingUnit.conversionFactor).toFixed(4)));
+          item.qty = formatNumberInput(roundToPrecision(currentDisplayQty * selectedPackingUnit.conversionFactor, 4));
         } else {
           // If 'none-selected' is chosen, treat current input as base qty
-          item.qty = formatNumberInput(parseFloat(currentDisplayQty.toFixed(4)));
+          item.qty = formatNumberInput(roundToPrecision(currentDisplayQty, 4));
           item.packingQuantity = ''; // Clear packing quantity as no unit is selected
         }
         // After updating qty, recalculate itemTotal
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(parseFloat((finalQtyNum * finalPriceNum).toFixed(4)));
+        item.itemTotal = formatNumberInput(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'packingQuantity') {
         const inputValue = String(value);
         const parsedValue = parseFloat(inputValue) || 0;
@@ -143,7 +143,7 @@ export const usePurchaseOrderHandlers = ({
 
         if (selectedPackingUnit && item.packingUnitId !== undefined && item.packingUnitId !== null && item.packingUnitId !== 0) { // Check if a valid packing unit is selected
           item.packingQuantity = inputValue;
-          item.qty = formatNumberInput(parseFloat((parsedValue * selectedPackingUnit.conversionFactor).toFixed(4)));
+          item.qty = formatNumberInput(roundToPrecision(parsedValue * selectedPackingUnit.conversionFactor, 4));
         } else {
           // If no packing unit selected, treat input as base quantity
           item.qty = inputValue; // Store as string for consistency with other inputs
@@ -152,20 +152,20 @@ export const usePurchaseOrderHandlers = ({
         // After updating qty, recalculate itemTotal
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(parseFloat((finalQtyNum * finalPriceNum).toFixed(4)));
+        item.itemTotal = formatNumberInput(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'price') {
         item.price = value;
         // After updating price, recalculate itemTotal
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(parseFloat((finalQtyNum * finalPriceNum).toFixed(4)));
+        item.itemTotal = formatNumberInput(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'itemTotal') {
         const parsedValue = parseFloat(value) || 0;
-        item.itemTotal = formatNumberInput(parseFloat(parsedValue.toFixed(4))); // Format user input for itemTotal
+        item.itemTotal = formatNumberInput(roundToPrecision(parsedValue, 4)); // Format user input for itemTotal
         const qtyNum = parseFloat(String(item.qty)) || 0;
         const itemTotalNum = parseFloat(item.itemTotal) || 0; // Use the formatted itemTotal for price calculation
         if (qtyNum > 0) {
-          item.price = formatNumberInput(parseFloat((itemTotalNum / qtyNum).toFixed(4))); // Calculate price based on user's itemTotal
+          item.price = formatNumberInput(roundToPrecision(itemTotalNum / qtyNum, 4)); // Calculate price based on user's itemTotal
         } else {
           item.price = '0'; // Handle division by zero
         }

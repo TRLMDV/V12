@@ -3,7 +3,7 @@
 import { useCallback } from 'react';
 import { useData } from '@/context/DataContext';
 import { SellOrder, Product, Currency, PackingUnit } from '@/types';
-import { formatNumberInput } from '@/utils/formatters'; // Import the new formatter
+import { formatNumberInput, roundToPrecision } from '@/utils/formatters'; // Import the new formatter
 
 interface SellOrderItemState {
   productId: number | '';
@@ -67,7 +67,7 @@ export const useSellOrderHandlers = ({
     } else {
       const defaultRate = currencyRates[value];
       setManualExchangeRate(defaultRate);
-      setManualExchangeRateInput(formatNumberInput(defaultRate)); // Apply formatter
+      setManualExchangeRateInput(formatNumberInput(roundToPrecision(defaultRate, 4))); // Apply formatter
     }
   }, [setSelectedCurrency, setOrder, setManualExchangeRate, setManualExchangeRateInput, currencyRates]);
 
@@ -116,7 +116,7 @@ export const useSellOrderHandlers = ({
         const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = formatNumberInput(parseFloat((packingQtyNum * selectedPackingUnit.conversionFactor).toFixed(4)));
+          item.qty = formatNumberInput(roundToPrecision(packingQtyNum * selectedPackingUnit.conversionFactor, 4));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
@@ -125,7 +125,7 @@ export const useSellOrderHandlers = ({
         const packingQtyNum = parseFloat(value) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = formatNumberInput(parseFloat((packingQtyNum * selectedPackingUnit.conversionFactor).toFixed(4)));
+          item.qty = formatNumberInput(roundToPrecision(packingQtyNum * selectedPackingUnit.conversionFactor, 4));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
@@ -133,11 +133,11 @@ export const useSellOrderHandlers = ({
         item.price = value;
       } else if (field === 'itemTotal') {
         const parsedValue = parseFloat(value) || 0;
-        item.itemTotal = formatNumberInput(parseFloat(parsedValue.toFixed(4))); // Format user input for itemTotal
+        item.itemTotal = formatNumberInput(roundToPrecision(parsedValue, 4)); // Format user input for itemTotal
         const qtyNum = parseFloat(String(item.qty)) || 0;
         const itemTotalNum = parseFloat(item.itemTotal) || 0; // Use the formatted itemTotal for price calculation
         if (qtyNum > 0) {
-          item.price = formatNumberInput(parseFloat((itemTotalNum / qtyNum).toFixed(4)));
+          item.price = formatNumberInput(roundToPrecision(itemTotalNum / qtyNum, 4));
         } else {
           item.price = '0';
         }
@@ -148,7 +148,7 @@ export const useSellOrderHandlers = ({
       if (shouldRecalculateItemTotalAtEnd) {
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(parseFloat((finalQtyNum * finalPriceNum).toFixed(4)));
+        item.itemTotal = formatNumberInput(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       }
 
       newItems[index] = item;

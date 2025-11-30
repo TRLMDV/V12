@@ -1,3 +1,8 @@
+export const roundToPrecision = (num: number, precision: number): number => {
+  const factor = Math.pow(10, precision);
+  return Math.round(num * factor) / factor;
+};
+
 export const formatNumberInput = (value: number | string | undefined | null): string => {
   if (value === undefined || value === null || value === '') {
     return '';
