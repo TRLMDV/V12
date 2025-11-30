@@ -3,7 +3,6 @@
 import React from 'react';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -23,19 +22,14 @@ interface ReminderModalProps {
 }
 
 const ReminderModal: React.FC<ReminderModalProps> = ({ isOpen, onClose, reminder, t }) => {
-  if (!reminder) {
-    console.log("ReminderModal: No reminder object, returning null.");
-    return null;
-  }
+  if (!reminder) return null;
 
   const formattedTime = format(parseISO(reminder.dateTime), 'HH:mm');
   const displayMessage = reminder.message.trim() || t('noMessageProvided');
 
-  console.log("ReminderModal: Rendering. isOpen:", isOpen, "reminder:", reminder, "displayMessage:", displayMessage);
-
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="max-w-md p-6 text-center bg-yellow-100 dark:bg-yellow-900/50 border-yellow-500 border-2"> {/* TEMPORARY VISUAL CUE */}
+      <AlertDialogContent className="max-w-md p-6 text-center">
         <AlertDialogHeader className="flex flex-col items-center">
           <BellRing className="h-12 w-12 text-blue-500 mb-4" />
           <AlertDialogTitle className="text-3xl font-bold text-gray-800 dark:text-slate-200">

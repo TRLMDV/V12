@@ -55,37 +55,37 @@ const ReminderCalendar: React.FC = () => {
         console.log(`  Time difference (ms): ${timeDifference}`);
         console.log(`  Is due soon (-5s to +10s window): ${isDueSoon}`);
 
-        const shownKey = `reminder_shown_${reminder.id}`;
-        const isShownInLocalStorage = localStorage.getItem(shownKey);
-        const hasBeenShown = isShownInLocalStorage === 'true'; // Corrected: Compare to string 'true'
-        console.log(`  Shown key (${shownKey}): ${isShownInLocalStorage}`);
-        console.log(`  Has been shown (parsed): ${hasBeenShown}`);
+        // TEMPORARILY REMOVED LOCAL STORAGE CHECK FOR DEBUGGING
+        // const shownKey = `reminder_shown_${reminder.id}`;
+        // const isShownInLocalStorage = localStorage.getItem(shownKey);
+        // const hasBeenShown = isShownInLocalStorage === 'true';
+        // console.log(`  Shown key (${shownKey}): ${isShownInLocalStorage}`);
+        // console.log(`  Has been shown (parsed): ${hasBeenShown}`);
 
 
-        if (isDueSoon && !hasBeenShown) { // Use the parsed boolean
+        if (isDueSoon /* && !hasBeenShown */) { // Condition modified
           console.log(`*** TRIGGERING REMINDER: "${reminder.message}" ***`);
           setCurrentDueReminder(reminder);
           setIsCentralReminderModalOpen(true);
           console.log(`  setIsCentralReminderModalOpen(true) called.`); 
           
-          // Add a small delay before setting the flag to ensure the modal state update propagates
-          setTimeout(() => {
-            localStorage.setItem(shownKey, 'true');
-            console.log(`  Set shown key (${shownKey}) to localStorage after delay.`);
-          }, 100); // 100ms delay
+          // TEMPORARILY REMOVED LOCAL STORAGE SET/REMOVE FOR DEBUGGING
+          // setTimeout(() => {
+          //   localStorage.setItem(shownKey, 'true');
+          //   console.log(`  Set shown key (${shownKey}) to localStorage after delay.`);
+          // }, 100); // 100ms delay
+
+          // setTimeout(() => {
+          //   localStorage.removeItem(shownKey);
+          //   console.log(`  Removed shown key (${shownKey}) from localStorage.`);
+          // }, 60 * 1000); // 1 minute
 
           if (audioRef.current) {
             audioRef.current.play().catch(e => console.error("Error playing sound:", e));
           }
-
-          // Set timeout for removing the flag to 1 minute
-          setTimeout(() => {
-            localStorage.removeItem(shownKey);
-            console.log(`  Removed shown key (${shownKey}) from localStorage.`);
-          }, 60 * 1000); // 1 minute
-        } else if (isDueSoon && hasBeenShown) {
+        } /* else if (isDueSoon && hasBeenShown) {
           console.warn(`  Reminder "${reminder.message}" (ID: ${reminder.id}) is due but already shown (flag in localStorage).`);
-        }
+        } */ // Else if block commented out
       });
     };
 
