@@ -60,12 +60,12 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
       <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
-        <Label className="col-span-2">{t('product')}</Label>
-        <Label className="col-span-2">{t('packingUnit')}</Label>
+        <Label className="col-span-6">{t('product')}</Label>
+        <Label className="col-span-1">{t('packingUnit')}</Label>
         <Label className="col-span-1">{t('qty')}</Label>
-        <Label className="col-span-2">{t('price')}</Label>
-        <Label className="col-span-2">{t('itemTotal')}</Label>
-        <Label className="col-span-2">{t('landedCostPerUnit')}</Label>
+        <Label className="col-span-1">{t('price')}</Label>
+        <Label className="col-span-1">{t('itemTotal')}</Label>
+        <Label className="col-span-1">{t('landedCostPerUnit')}</Label>
         <Label className="col-span-1"></Label>
       </div>
       <div id="order-items">
@@ -87,7 +87,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-2 justify-between"
+                    className="col-span-6 justify-between"
                   >
                     {item.productId
                       ? `${selectedProduct?.name || t('selectProduct')} (${selectedProduct?.sku || 'N/A'})`
@@ -144,7 +144,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
               </Popover>
 
               <Select onValueChange={(value) => handleOrderItemChange(index, 'packingUnitId', value)} value={String(item.packingUnitId || 'none-selected')}>
-                <SelectTrigger className="col-span-2">
+                <SelectTrigger className="col-span-1">
                   <SelectValue placeholder={t('selectPackingUnit')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -169,7 +169,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 step="0.01"
                 value={item.price}
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
-                className="col-span-2"
+                className="col-span-1"
               />
               <Input
                 type="text"
@@ -177,13 +177,13 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 value={item.itemTotal}
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)} // Made editable
                 // Removed readOnly prop
-                className="col-span-2" // Removed bg-gray-50 dark:bg-slate-700 to indicate it's editable
+                className="col-span-1" // Removed bg-gray-50 dark:bg-slate-700 to indicate it's editable
               />
               <Input
                 type="text"
                 value={item.landedCostPerUnit !== undefined ? `${item.landedCostPerUnit.toFixed(2)} AZN` : 'N/A'}
                 readOnly
-                className="col-span-2 bg-gray-50 dark:bg-slate-700"
+                className="col-span-1 bg-gray-50 dark:bg-slate-700"
               />
               <Button
                 type="button"

@@ -69,11 +69,11 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
       <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
-        <Label className="col-span-3">{t('product')}</Label>
-        <Label className="col-span-2">{t('packingUnit')}</Label> {/* New column */}
+        <Label className="col-span-6">{t('product')}</Label>
+        <Label className="col-span-1">{t('packingUnit')}</Label> {/* New column */}
         <Label className="col-span-1">{t('qty')}</Label> {/* Now refers to packing quantity */}
-        <Label className="col-span-2">{t('price')}</Label>
-        <Label className="col-span-2">{t('itemTotal')}</Label>
+        <Label className="col-span-1">{t('price')}</Label>
+        <Label className="col-span-1">{t('itemTotal')}</Label>
         <Label className="col-span-1">{t('cleanProfit')}</Label>
         <Label className="col-span-1"></Label>
       </div>
@@ -96,7 +96,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-3 justify-between"
+                    className="col-span-6 justify-between"
                   >
                     {item.productId
                       ? selectedProduct?.name || t('selectProduct')
@@ -153,7 +153,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
               </Popover>
 
               <Select onValueChange={(value) => handleOrderItemChange(index, 'packingUnitId', value)} value={String(item.packingUnitId || 'none-selected')}>
-                <SelectTrigger className="col-span-2">
+                <SelectTrigger className="col-span-1">
                   <SelectValue placeholder={t('selectPackingUnit')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -178,14 +178,14 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                 step="0.01"
                 value={item.price}
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
-                className="col-span-2"
+                className="col-span-1"
               />
               <Input
                 type="text"
                 step="0.01"
                 value={item.itemTotal}
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
-                className="col-span-2"
+                className="col-span-1"
               />
               <Input
                 type="text"
