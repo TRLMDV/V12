@@ -16,15 +16,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command'; // Added Command components
 import { cn } from '@/lib/utils'; // Added cn utility
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
-import type { ProductMovement, Product } from '@/types'; // Import types from types file
+import type { ProductMovement, Product, SellOrder, Customer } from '@/types'; // Import SellOrder and Customer types
 
 type SortConfig = {
-  key: keyof ProductMovement | 'sourceWarehouseName' | 'destWarehouseName' | 'totalItems';
+  key: keyof ProductMovement | 'sourceWarehouseName' | 'destWarehouseName' | 'totalItems' | 'linkedSellOrderCustomerDisplay';
   direction: 'ascending' | 'descending';
 };
 
 const ProductMovement: React.FC = () => {
-  const { productMovements, warehouses, products, deleteItem, showAlertModal } = useData();
+  const { productMovements, warehouses, products, sellOrders, customers, deleteItem, showAlertModal } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMovementId, setEditingMovementId] = useState<number | undefined>(undefined);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -56,6 +56,14 @@ const ProductMovement: React.FC = () => {
     return products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product });
   }, [products]);
 
+  const sellOrderMap = useMemo(() => {
+    return sellOrders.reduce((acc, so) => ({ ...acc, [so.productMovementId as number]: so }), {} as { [key: number]: SellOrder });
+  }, [sellOrders]);
+
+  const customerMap = useMemo(() => {
+    return customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
+  }, [customers]);
+
   const filteredAndSortedMovements = useMemo(() => {
     let filteredMovements = productMovements;
 
@@ -79,11 +87,15 @@ const ProductMovement: React.FC = () => {
 
     const sortableItems = filteredMovements.map(m => {
       const totalItems = m.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+      const linkedSellOrder = sellOrderMap[m.id];
+      const linkedSellOrderCustomerDisplay = linkedSellOrder ? `${t('orderId')} #${linkedSellOrder.id} (${customerMap[linkedSellOrder.contactId] || 'N/A'})` : undefined;
+
       return {
         ...m,
         sourceWarehouseName: warehouseMap[m.sourceWarehouseId] || 'N/A',
         destWarehouseName: warehouseMap[m.destWarehouseId] || 'N/A',
         totalItems,
+        linkedSellOrderCustomerDisplay, // Add the new display property
       };
     });
 
@@ -104,7 +116,7 @@ const ProductMovement: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [productMovements, warehouseMap, sortConfig, filterSourceWarehouseId, filterDestWarehouseId, startDateFilter, endDateFilter, productFilterId]);
+  }, [productMovements, warehouseMap, sortConfig, filterSourceWarehouseId, filterDestWarehouseId, startDateFilter, endDateFilter, productFilterId, sellOrderMap, customerMap, t]);
 
   // Apply pagination to the filtered and sorted movements
   const paginatedMovements = useMemo(() => {
@@ -308,8 +320,8 @@ const ProductMovement: React.FC = () => {
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
               <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
-              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('id')}>
-                {t('orderId')} {getSortIndicator('id')}
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('linkedSellOrderCustomerDisplay')}>
+                {t('orderId')} / {t('customer')} {getSortIndicator('linkedSellOrderCustomerDisplay')}
               </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('sourceWarehouseName')}>
                 {t('from')} {getSortIndicator('sourceWarehouseName')}
@@ -328,10 +340,12 @@ const ProductMovement: React.FC = () => {
           </TableHeader>
           <TableBody>
             {paginatedMovements.length > 0 ? (
-              paginatedMovements.map((m, index) => (
+              paginatedMoveents.map((m, index) => (
                 <TableRow key={m.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
-                  <TableCell className="p-3 font-semibold">#{m.id}</TableCell>
+                  <TableCell className="p-3 font-semibold">
+                    {m.linkedSellOrderCustomerDisplay || `#${m.id}`}
+                  </TableCell>
                   <TableCell className="p-3">{m.sourceWarehouseName}</TableCell>
                   <TableCell className="p-3">{m.destWarehouseName}</TableCell>
                   <TableCell className="p-3">{m.date}</TableCell>
