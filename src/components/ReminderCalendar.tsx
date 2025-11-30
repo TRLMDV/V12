@@ -57,7 +57,7 @@ const ReminderCalendar: React.FC = () => {
 
         const shownKey = `reminder_shown_${reminder.id}`;
         const isShownInLocalStorage = localStorage.getItem(shownKey);
-        const hasBeenShown = isShownInLocalStorage === 'true'; // Explicitly check for the string 'true'
+        const hasBeenShown = isShownInLocalStorage === 'true'; // Corrected: Compare to string 'true'
         console.log(`  Shown key (${shownKey}): ${isShownInLocalStorage}`);
         console.log(`  Has been shown (parsed): ${hasBeenShown}`);
 
