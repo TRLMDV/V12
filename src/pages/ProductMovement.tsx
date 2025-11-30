@@ -340,7 +340,7 @@ const ProductMovement: React.FC = () => {
           </TableHeader>
           <TableBody>
             {paginatedMovements.length > 0 ? (
-              paginatedMoveents.map((m, index) => (
+              paginatedMovements.map((m, index) => (
                 <TableRow key={m.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                   <TableCell className="p-3 font-semibold">
