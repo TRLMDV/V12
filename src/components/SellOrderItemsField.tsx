@@ -98,7 +98,8 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-4 justify-between" {/* Changed from col-span-3 to col-span-4 */}
+                    // Changed from col-span-3 to col-span-4
+                    className="col-span-4 justify-between"
                   >
                     {item.productId
                       ? selectedProduct?.name || t('selectProduct')
@@ -156,7 +157,8 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                 type="text"
                 value={selectedProduct?.sku || ''}
                 readOnly
-                className="col-span-2 bg-gray-50 dark:bg-slate-700" {/* Changed from col-span-3 to col-span-2 */}
+                // Changed from col-span-3 to col-span-2
+                className="col-span-2 bg-gray-50 dark:bg-slate-700"
               />
 
               <Select onValueChange={(value) => handleOrderItemChange(index, 'packingUnitId', value)} value={String(item.packingUnitId || 'none-selected')}>
