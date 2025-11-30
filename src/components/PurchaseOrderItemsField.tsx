@@ -11,6 +11,7 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { Product, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
+import { formatNumberInput } from '@/utils/formatters'; // Import the new formatter
 
 interface PurchaseOrderItemsFieldProps {
   orderItems: PurchaseOrderItemState[];
@@ -181,7 +182,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
               />
               <Input
                 type="text"
-                value={item.landedCostPerUnit !== undefined ? `${item.landedCostPerUnit.toFixed(2)} AZN` : 'N/A'}
+                value={item.landedCostPerUnit !== undefined ? formatNumberInput(item.landedCostPerUnit) + ' AZN' : 'N/A'}
                 readOnly
                 className="col-span-1 bg-gray-50 dark:bg-slate-700"
               />

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
+import { formatNumberInput } from '@/utils/formatters'; // Import the new formatter
 
 interface UsePurchaseOrderStateProps {
   orderId?: number;
@@ -25,7 +26,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
       if (existingOrder) return {
         ...existingOrder,
-        fees: parseFloat((existingOrder.fees || 0).toFixed(4)), // Format fees here
+        fees: parseFloat(formatNumberInput(existingOrder.fees || 0)), // Format fees here
       };
     }
     const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined;
@@ -47,13 +48,13 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
       if (existingOrder) return existingOrder.items.map(item => ({
         productId: item.productId,
-        qty: String(item.qty.toFixed(4)), // Apply toFixed here
-        price: String(item.price.toFixed(4)), // Apply toFixed here
-        itemTotal: String((item.qty * item.price).toFixed(4)), // Apply toFixed here
+        qty: formatNumberInput(item.qty), // Apply formatter
+        price: formatNumberInput(item.price), // Apply formatter
+        itemTotal: formatNumberInput(item.qty * item.price), // Apply formatter
         currency: item.currency || existingOrder.currency,
         landedCostPerUnit: item.landedCostPerUnit,
         packingUnitId: item.packingUnitId,
-        packingQuantity: String((item.packingQuantity || 0).toFixed(4)), // Apply toFixed here
+        packingQuantity: formatNumberInput(item.packingQuantity || 0), // Apply formatter
       }));
     }
     return [{ productId: '', qty: '', price: '', itemTotal: '', packingUnitId: undefined, packingQuantity: '' }];
@@ -74,23 +75,23 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       if (existingOrder) {
         setOrder({
           ...existingOrder,
-          fees: parseFloat((existingOrder.fees || 0).toFixed(4)), // Format fees here
+          fees: parseFloat(formatNumberInput(existingOrder.fees || 0)), // Format fees here
         });
         setOrderItems(existingOrder.items.map(item => ({
           productId: item.productId,
-          qty: String(item.qty.toFixed(4)), // Apply toFixed here
-          price: String(item.price.toFixed(4)), // Apply toFixed here
-          itemTotal: String((item.qty * item.price).toFixed(4)), // Apply toFixed here
+          qty: formatNumberInput(item.qty), // Apply formatter
+          price: formatNumberInput(item.price), // Apply formatter
+          itemTotal: formatNumberInput(item.qty * item.price), // Apply formatter
           currency: item.currency || existingOrder.currency,
           landedCostPerUnit: item.landedCostPerUnit,
           packingUnitId: item.packingUnitId,
-          packingQuantity: String((item.packingQuantity || 0).toFixed(4)), // Apply toFixed here
+          packingQuantity: formatNumberInput(item.packingQuantity || 0), // Apply formatter
         })));
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);
-        setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? String(existingOrder.exchangeRate) : '');
+        setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? formatNumberInput(existingOrder.exchangeRate) : ''); // Apply formatter
         setManualFeesExchangeRate(existingOrder.feesExchangeRate); // Load existing fees exchange rate
-        setManualFeesExchangeRateInput(existingOrder.feesExchangeRate !== undefined ? String(existingOrder.feesExchangeRate) : ''); // Load existing fees exchange rate input
+        setManualFeesExchangeRateInput(existingOrder.feesExchangeRate !== undefined ? formatNumberInput(existingOrder.feesExchangeRate) : ''); // Load existing fees exchange rate input
         setIsFormInitialized(true);
       }
     } else if (!isEdit && !isFormInitialized) {
@@ -122,7 +123,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     if (order.feesCurrency && order.feesCurrency !== 'AZN') {
       const defaultRate = settings.currencyRates[order.feesCurrency];
       setManualFeesExchangeRate(defaultRate);
-      setManualFeesExchangeRateInput(String(defaultRate));
+      setManualFeesExchangeRateInput(formatNumberInput(defaultRate)); // Apply formatter
     } else {
       setManualFeesExchangeRate(undefined);
       setManualFeesExchangeRateInput('');

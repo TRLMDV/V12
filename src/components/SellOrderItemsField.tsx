@@ -11,6 +11,7 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { Product, PackingUnit } from '@/types'; // Import PackingUnit
+import { formatNumberInput } from '@/utils/formatters'; // Import the new formatter
 
 interface SellOrderItemState {
   productId: number | '';
@@ -189,7 +190,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
               />
               <Input
                 type="text"
-                value={item.cleanProfit !== undefined ? item.cleanProfit.toFixed(2) : '0.00'}
+                value={item.cleanProfit !== undefined ? formatNumberInput(item.cleanProfit) : '0.00'}
                 readOnly
                 className="col-span-1 bg-gray-50 dark:bg-slate-700"
               />
