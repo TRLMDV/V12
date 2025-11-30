@@ -61,7 +61,8 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
       <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
-        <Label className="col-span-6">{t('product')}</Label>
+        <Label className="col-span-3">{t('product')}</Label>
+        <Label className="col-span-3">{t('sku')}</Label> {/* New SKU Label */}
         <Label className="col-span-1">{t('packingUnit')}</Label>
         <Label className="col-span-1">{t('qty')}</Label>
         <Label className="col-span-1">{t('price')}</Label>
@@ -88,10 +89,10 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-6 justify-between"
+                    className="col-span-3 justify-between" {/* Changed from col-span-6 to col-span-3 */}
                   >
                     {item.productId
-                      ? `${selectedProduct?.name || t('selectProduct')} (${selectedProduct?.sku || 'N/A'})`
+                      ? selectedProduct?.name || t('selectProduct')
                       : t('selectProduct')}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -143,6 +144,14 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                   </Command>
                 </PopoverContent>
               </Popover>
+
+              {/* New SKU Input Field */}
+              <Input
+                type="text"
+                value={selectedProduct?.sku || ''}
+                readOnly
+                className="col-span-3 bg-gray-50 dark:bg-slate-700"
+              />
 
               <Select onValueChange={(value) => handleOrderItemChange(index, 'packingUnitId', value)} value={String(item.packingUnitId || 'none-selected')}>
                 <SelectTrigger className="col-span-1">
