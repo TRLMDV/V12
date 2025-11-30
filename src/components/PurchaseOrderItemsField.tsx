@@ -89,7 +89,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-3 justify-between" {/* Changed from col-span-6 to col-span-3 */}
+                    className="col-span-3 justify-between"
                   >
                     {item.productId
                       ? selectedProduct?.name || t('selectProduct')
@@ -98,18 +98,15 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command shouldFilter={false}> {/* Explicitly disable cmdk's internal filter */}
-                    {/* Replaced CommandInput with a regular Input */}
-                    <div className="p-1">
-                      <Input
-                        placeholder={t('searchProductBySku')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full"
-                      />
-                    </div>
+                  <Command shouldFilter={false}>
+                    <CommandInput
+                      placeholder={t('searchProductBySku')}
+                      value={searchQuery}
+                      onValueChange={(currentValue) => setSearchQuery(currentValue)}
+                      className="w-full"
+                    />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
-                    <CommandGroup key={searchQuery}> {/* Force re-render of CommandGroup */}
+                    <CommandGroup key={searchQuery}>
                       {filteredProducts.map((product) => {
                         return (
                           <CommandItem
@@ -134,7 +131,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                               </span>
                             ) : (
                               <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
-                                ({t('selectWarehouseToSeeStock')}) {/* New translation key */}
+                                ({t('selectWarehouseToSeeStock')})
                               </span>
                             )}
                           </CommandItem>
