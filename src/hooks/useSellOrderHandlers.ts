@@ -116,7 +116,7 @@ export const useSellOrderHandlers = ({
         const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = formatNumberInput(packingQtyNum * selectedPackingUnit.conversionFactor);
+          item.qty = formatNumberInput(parseFloat((packingQtyNum * selectedPackingUnit.conversionFactor).toFixed(4)));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
@@ -125,7 +125,7 @@ export const useSellOrderHandlers = ({
         const packingQtyNum = parseFloat(value) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = formatNumberInput(packingQtyNum * selectedPackingUnit.conversionFactor);
+          item.qty = formatNumberInput(parseFloat((packingQtyNum * selectedPackingUnit.conversionFactor).toFixed(4)));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
@@ -133,11 +133,11 @@ export const useSellOrderHandlers = ({
         item.price = value;
       } else if (field === 'itemTotal') {
         const parsedValue = parseFloat(value) || 0;
-        item.itemTotal = formatNumberInput(parsedValue); // Format user input for itemTotal
+        item.itemTotal = formatNumberInput(parseFloat(parsedValue.toFixed(4))); // Format user input for itemTotal
         const qtyNum = parseFloat(String(item.qty)) || 0;
         const itemTotalNum = parseFloat(item.itemTotal) || 0; // Use the formatted itemTotal for price calculation
         if (qtyNum > 0) {
-          item.price = formatNumberInput(itemTotalNum / qtyNum);
+          item.price = formatNumberInput(parseFloat((itemTotalNum / qtyNum).toFixed(4)));
         } else {
           item.price = '0';
         }
@@ -148,7 +148,7 @@ export const useSellOrderHandlers = ({
       if (shouldRecalculateItemTotalAtEnd) {
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(finalQtyNum * finalPriceNum);
+        item.itemTotal = formatNumberInput(parseFloat((finalQtyNum * finalPriceNum).toFixed(4)));
       }
 
       newItems[index] = item;
