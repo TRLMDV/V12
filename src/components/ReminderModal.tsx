@@ -26,6 +26,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({ isOpen, onClose, reminder
   if (!reminder) return null;
 
   const formattedTime = format(parseISO(reminder.dateTime), 'HH:mm');
+  const displayMessage = reminder.message.trim() || t('noMessageProvided'); // Fallback for empty message
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -36,7 +37,7 @@ const ReminderModal: React.FC<ReminderModalProps> = ({ isOpen, onClose, reminder
             {t('reminder')}!
           </AlertDialogTitle>
           <AlertDialogDescription className="text-lg text-gray-700 dark:text-slate-300 mt-2">
-            {formattedTime} - {reminder.message}
+            {formattedTime} - <span className="font-bold">{displayMessage}</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex justify-center mt-6">

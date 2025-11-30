@@ -188,6 +188,7 @@ const i18n = {
     invalidTimeFormat: 'Invalid time format. Please use HH:mm (e.g., 14:30).', // New translation key (now unused, but kept for reference)
     selectHour: 'Select Hour', // New translation key
     selectMinute: 'Select Minute', // New translation key
+    noMessageProvided: 'No message provided', // New translation key
   }
 };
 
