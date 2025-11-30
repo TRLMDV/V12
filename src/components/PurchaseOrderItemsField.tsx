@@ -61,8 +61,8 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
     <>
       <h3 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('orderItems')}</h3>
       <div className="grid grid-cols-12 gap-2 mb-2 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
-        <Label className="col-span-3">{t('product')}</Label>
-        <Label className="col-span-3">{t('sku')}</Label> {/* New SKU Label */}
+        <Label className="col-span-4">{t('product')}</Label> {/* Changed from col-span-3 to col-span-4 */}
+        <Label className="col-span-2">{t('sku')}</Label> {/* Changed from col-span-3 to col-span-2 */}
         <Label className="col-span-1">{t('packingUnit')}</Label>
         <Label className="col-span-1">{t('qty')}</Label>
         <Label className="col-span-1">{t('price')}</Label>
@@ -89,7 +89,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openComboboxIndex === index}
-                    className="col-span-3 justify-between"
+                    className="col-span-4 justify-between" {/* Changed from col-span-3 to col-span-4 */}
                   >
                     {item.productId
                       ? selectedProduct?.name || t('selectProduct')
@@ -147,7 +147,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                 type="text"
                 value={selectedProduct?.sku || ''}
                 readOnly
-                className="col-span-3 bg-gray-50 dark:bg-slate-700"
+                className="col-span-2 bg-gray-50 dark:bg-slate-700" {/* Changed from col-span-3 to col-span-2 */}
               />
 
               <Select onValueChange={(value) => handleOrderItemChange(index, 'packingUnitId', value)} value={String(item.packingUnitId || 'none-selected')}>
