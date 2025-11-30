@@ -189,6 +189,9 @@ const i18n = {
     selectHour: 'Select Hour', // New translation key
     selectMinute: 'Select Minute', // New translation key
     noMessageProvided: 'No message provided', // New translation key
+    hours: 'Hours', // New
+    minutes: 'Minutes', // New
+    seconds: 'Seconds', // New
   }
 };
 

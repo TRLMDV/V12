@@ -8,7 +8,7 @@ import { AlertCircle } from 'lucide-react';
 import { Product, SellOrder, Payment, CurrencyRates, Currency } from '@/types'; // Import types from types file
 import QuickButtonsGrid from '@/components/QuickButtonsGrid';
 import SalesChart from '@/components/SalesChart'; // New import
-import Clock from '@/components/Clock'; // New: Import Clock component
+import FlipClock from '@/components/FlipClock'; // New: Import FlipClock component
 import ReminderCalendar from '@/components/ReminderCalendar'; // New: Import ReminderCalendar component
 
 const Dashboard: React.FC = () => {
@@ -70,7 +70,7 @@ const Dashboard: React.FC = () => {
       
       {shouldShowClockOrCalendar && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {showClockOnDashboard && <Clock />}
+          {showClockOnDashboard && <FlipClock />} {/* Replaced Clock with FlipClock */}
           {showCalendarOnDashboard && <ReminderCalendar />}
         </div>
       )}
