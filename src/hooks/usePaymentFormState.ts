@@ -5,6 +5,7 @@ import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { Payment, Currency, BankAccount } from '@/types';
 import { t } from '@/utils/i18n'; // Import the t function
+import { format, parseISO, getHours, getMinutes } from 'date-fns'; // Import date-fns utilities
 
 interface UsePaymentFormStateProps {
   paymentId?: number;
@@ -26,6 +27,11 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
   const [selectedOrderIdentifier, setSelectedOrderIdentifier] = useState<string>('0'); // '0' for manual, 'orderId-category' for linked
   const [selectedManualCategory, setSelectedManualCategory] = useState<string>('none-selected');
   const [selectedBankAccountId, setSelectedBankAccountId] = useState<number | undefined>(undefined);
+
+  // New states for date and time components
+  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
 
   useEffect(() => {
     if (isEdit) {
@@ -50,6 +56,12 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
           setSelectedManualCategory('none-selected');
         }
         setSelectedBankAccountId(existingPayment.bankAccountId);
+
+        // Set date and time components from existing payment date
+        const existingDate = parseISO(existingPayment.date);
+        setDate(format(existingDate, 'yyyy-MM-dd'));
+        setSelectedHour(String(getHours(existingDate)).padStart(2, '0'));
+        setSelectedMinute(String(getMinutes(existingDate)).padStart(2, '0'));
       }
     } else {
       // For new payments, apply initialManualCategory if provided
@@ -57,7 +69,7 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
       const defaultDescription = defaultCategory === 'initialCapital' ? t('initialCapital') : ''; // Pre-fill for initialCapital
 
       setPayment({
-        date: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+        date: MOCK_CURRENT_DATE.toISOString(), // Store as ISO string
         amount: 0,
         method: '',
         orderId: 0, // Default to manual
@@ -72,8 +84,21 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
       setSelectedOrderIdentifier('0'); // Always '0' for manual payments
       setSelectedManualCategory(defaultCategory);
       setSelectedBankAccountId(bankAccounts.length > 0 ? bankAccounts[0].id : undefined);
+
+      // Reset date and time components for new payments
+      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
     }
   }, [paymentId, isEdit, allPayments, currencyRates, initialManualCategory, bankAccounts, isIncoming, t]);
+
+  // Effect to update the payment.date when date, selectedHour, or selectedMinute changes
+  useEffect(() => {
+    if (date && selectedHour && selectedMinute) {
+      const combinedDateTime = `${date}T${selectedHour}:${selectedMinute}:00.000Z`;
+      setPayment(prev => ({ ...prev, date: combinedDateTime }));
+    }
+  }, [date, selectedHour, selectedMinute, setPayment]);
 
   return {
     payment,
@@ -95,5 +120,11 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
     allPayments, // Pass for calculations
     bankAccounts, // Pass for dropdown
     settings, // Pass for categories and active currencies
+    date, // New: Return date state
+    setDate, // New: Return setDate
+    selectedHour, // New: Return selectedHour state
+    setSelectedHour, // New: Return setSelectedHour
+    selectedMinute, // New: Return selectedMinute state
+    setSelectedMinute, // New: Return setSelectedMinute
   };
 };

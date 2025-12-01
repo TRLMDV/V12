@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import { Payment, PurchaseOrder, Currency, BankAccount } from '@/types'; // Import types from types file
+import { format, parseISO } from 'date-fns'; // Import format from date-fns
 
 type SortConfig = {
   key: keyof Payment | 'linkedOrderDisplay' | 'categoryDisplay' | 'bankAccountBalance'; // Added bankAccountBalance
@@ -68,10 +69,10 @@ const OutgoingPayments: React.FC = () => {
 
     // 1. Apply date filters
     if (startDateFilter) {
-      currentPayments = currentPayments.filter(p => p.date >= startDateFilter);
+      currentPayments = currentPayments.filter(p => parseISO(p.date) >= parseISO(startDateFilter));
     }
     if (endDateFilter) {
-      currentPayments = currentPayments.filter(p => p.date <= endDateFilter);
+      currentPayments = currentPayments.filter(p => parseISO(p.date) <= parseISO(endDateFilter));
     }
 
     // 2. Add derived properties like categoryDisplay and remainingAmountText
@@ -155,6 +156,8 @@ const OutgoingPayments: React.FC = () => {
         let comparison = 0;
         if (typeof valA === 'string' || typeof valB === 'string') {
           comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
+        } else if (key === 'date') { // Handle date sorting specifically
+          comparison = parseISO(String(valA)).getTime() - parseISO(String(valB)).getTime();
         } else {
           if (valA < valB) comparison = -1;
           if (valA > valB) comparison = 1;
@@ -317,7 +320,7 @@ const OutgoingPayments: React.FC = () => {
                     {/* Removed Payment ID cell */}
                     <TableCell className="p-3">{p.linkedOrderDisplay}</TableCell>
                     <TableCell className="p-3">{p.categoryDisplay}</TableCell> {/* New Category Cell */}
-                    <TableCell className="p-3">{p.date}</TableCell>
+                    <TableCell className="p-3">{format(parseISO(p.date), 'yyyy-MM-dd HH:mm')}</TableCell>
                     <TableCell className="p-3 font-bold">
                       {p.amount.toFixed(2)} {p.paymentCurrency} <span dangerouslySetInnerHTML={{ __html: p.remainingAmountText }} />
                     </TableCell>

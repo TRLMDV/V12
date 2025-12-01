@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { t } from '@/utils/i18n';
-import { Payment, Currency } from '@/types';
-
 import { usePaymentFormState } from '@/hooks/usePaymentFormState';
 import { usePaymentFormCalculations } from '@/hooks/usePaymentFormCalculations';
 import { usePaymentFormHandlers } from '@/hooks/usePaymentFormHandlers';
@@ -52,6 +50,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
     allPayments,
     bankAccounts,
     settings,
+    date, // New: date state from hook
+    setDate, // New: setDate from hook
+    selectedHour, // New: selectedHour state from hook
+    setSelectedHour, // New: setSelectedHour from hook
+    selectedMinute, // New: selectedMinute state from hook
+    setSelectedMinute, // New: setSelectedMinute from hook
   } = usePaymentFormState({ paymentId, type, initialManualCategory });
 
   // 2. Calculations
@@ -127,6 +131,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
 
   // Determine if manual description should be disabled
   const isManualDescriptionDisabled = selectedManualCategory === 'initialCapital';
+
+  const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   return (
     <form onSubmit={handleSubmit}>
@@ -220,14 +227,36 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
           <Label htmlFor="date" className="text-right">
             {t('paymentDate')}
           </Label>
-          <Input
-            id="date"
-            type="date"
-            value={payment.date || ''}
-            onChange={handleChange}
-            className="col-span-3"
-            required
-          />
+          <div className="col-span-3 flex gap-2">
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="flex-grow"
+              required
+            />
+            <Select onValueChange={setSelectedHour} value={selectedHour}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('hours')} />
+              </SelectTrigger>
+              <SelectContent>
+                {hoursArray.map(h => (
+                  <SelectItem key={h} value={h}>{h}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={setSelectedMinute} value={selectedMinute}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('minutes')} />
+              </SelectTrigger>
+              <SelectContent>
+                {minutesArray.map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4">
