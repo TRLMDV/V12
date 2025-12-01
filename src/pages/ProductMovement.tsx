@@ -75,10 +75,10 @@ const ProductMovement: React.FC = () => {
       filteredMovements = filteredMovements.filter(m => m.destWarehouseId === filterDestWarehouseId);
     }
     if (startDateFilter) {
-      filteredMovements = filteredMovements.filter(m => parseISO(m.date) >= parseISO(startDateFilter)); // Parse ISO string
+      filteredMovements = filteredMovements.filter(m => parseISO(m.date) >= parseISO(startDateFilter));
     }
     if (endDateFilter) {
-      filteredMovements = filteredMovements.filter(m => parseISO(m.date) <= parseISO(endDateFilter)); // Parse ISO string
+      filteredMovements = filteredMovements.filter(m => parseISO(m.date) <= parseISO(endDateFilter));
     }
     if (productFilterId !== 'all') {
       filteredMovements = filteredMovements.filter(m =>

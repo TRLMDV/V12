@@ -11,7 +11,7 @@ import { ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
 import PaginationControls from '@/components/PaginationControls';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { parseISO } from 'date-fns'; // Import parseISO
+import { parseISO, format } from 'date-fns'; // Import format
 
 interface ProductTransactionsModalProps {
   isOpen: boolean;

@@ -46,6 +46,12 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     products,
     customers,
     warehouses,
+    date, // New: Destructure date state
+    setDate, // New: Destructure setDate
+    selectedHour, // New: Destructure selectedHour state
+    setSelectedHour, // New: Destructure setSelectedHour
+    selectedMinute, // New: Destructure selectedMinute state
+    setSelectedMinute, // New: Destructure setSelectedMinute
   } = useSellOrderState({ orderId });
 
   // 2. Calculations
@@ -157,5 +163,11 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     warehouses,
     openComboboxIndex, // Return openComboboxIndex
     setOpenComboboxIndex, // Return setOpenComboboxIndex
+    date, // New: Return date state
+    setDate, // New: Return setDate
+    selectedHour, // New: Return selectedHour state
+    setSelectedHour, // New: Return setSelectedHour
+    selectedMinute, // New: Return selectedMinute state
+    setSelectedMinute, // New: Return setSelectedMinute
   };
 };

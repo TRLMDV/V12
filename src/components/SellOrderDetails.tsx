@@ -6,6 +6,7 @@ import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportB
 import { t } from '@/utils/i18n';
 import { SellOrder, Product, Customer, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
 import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
+import { format, parseISO } from 'date-fns'; // Import format and parseISO
 
 interface SellOrderDetailsProps {
   order: SellOrder;
@@ -28,7 +29,7 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
     <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
       <p><strong>{t('customer')}:</strong> {customerMap[order.contactId]?.name || 'N/A'}</p>
       <p><strong>{t('warehouse')}:</strong> {warehouseMap[order.warehouseId]?.name || 'N/A'}</p>
-      <p><strong>{t('orderDate')}:</strong> {order.orderDate}</p>
+      <p><strong>{t('orderDate')}:</strong> {format(parseISO(order.orderDate), 'yyyy-MM-dd HH:mm')}</p>
       <p><strong>{t('orderStatus')}:</strong> {t(order.status.toLowerCase() as keyof typeof t)}</p>
       <p><strong>{t('vatPercent')}:</strong> {order.vatPercent}%</p>
       <h3 className="font-semibold mt-4 mb-2">{t('orderItems')}</h3>

@@ -10,7 +10,7 @@ import QuickButtonsGrid from '@/components/QuickButtonsGrid';
 import SalesChart from '@/components/SalesChart';
 import FlipClock from '@/components/FlipClock';
 import ReminderCalendar from '@/components/ReminderCalendar';
-import { parseISO } from 'date-fns'; // Import parseISO
+import { parseISO, format } from 'date-fns'; // Import format
 
 const Dashboard: React.FC = () => {
   const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
@@ -123,7 +123,7 @@ const Dashboard: React.FC = () => {
                     <tr key={o.id} className="border-b dark:border-slate-700">
                       <td className="p-3 font-semibold">#{o.id}</td>
                       <td className="p-3">{o.customerName}</td>
-                      <td className="p-3">{o.orderDate}</td>
+                      <td className="p-3">{format(parseISO(o.orderDate), 'yyyy-MM-dd HH:mm')}</td>
                       <td className="p-3 text-red-600 font-bold">{o.daysOverdue}</td>
                       <td className="p-3 font-semibold">{o.amountDue.toFixed(2)} {mainCurrency}</td>
                     </tr>

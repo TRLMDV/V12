@@ -49,7 +49,16 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     activeCurrencies,
     openComboboxIndex, // Destructure openComboboxIndex
     setOpenComboboxIndex, // Destructure setOpenComboboxIndex
+    date, // New: date state from hook
+    setDate, // New: setDate from hook
+    selectedHour, // New: selectedHour state from hook
+    setSelectedHour, // New: setSelectedHour from hook
+    selectedMinute, // New: selectedMinute state from hook
+    setSelectedMinute, // New: setSelectedMinute from hook
   } = useSellOrderForm({ orderId, onSuccess });
+
+  const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   return (
     <form onSubmit={handleSubmit}>
@@ -83,15 +92,39 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="orderDate" className="text-right">{t('orderDate')}</Label>
-          <Input
-            id="orderDate"
-            type="date"
-            value={order.orderDate || ''}
-            onChange={handleChange}
-            className="col-span-3"
-            required
-          />
+          <Label htmlFor="orderDate" className="text-right">
+            {t('orderDate')}
+          </Label>
+          <div className="col-span-3 flex gap-2">
+            <Input
+              id="orderDate"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="flex-grow"
+              required
+            />
+            <Select onValueChange={setSelectedHour} value={selectedHour}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('hours')} />
+              </SelectTrigger>
+              <SelectContent>
+                {hoursArray.map(h => (
+                  <SelectItem key={h} value={h}>{h}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={setSelectedMinute} value={selectedMinute}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('minutes')} />
+              </SelectTrigger>
+              <SelectContent>
+                {minutesArray.map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4">

@@ -5,6 +5,7 @@ import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { SellOrder, Product, Customer, Warehouse, Currency, PackingUnit } from '@/types';
 import { formatNumberInput, roundToPrecision } from '@/utils/formatters'; // Import the new formatter
+import { format, parseISO, getHours, getMinutes } from 'date-fns'; // Import date-fns utilities
 
 interface SellOrderItemState {
   productId: number | '';
@@ -39,7 +40,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
     }
     return {
       id: getNextId('sellOrders'),
-      orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      orderDate: MOCK_CURRENT_DATE.toISOString(), // Store as ISO string
       status: 'Draft',
       vatPercent: settings.defaultVat,
       total: 0,
@@ -69,6 +70,11 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
   const [isWarehouseManuallySet, setIsWarehouseManuallySet] = useState(false); // New state to track manual warehouse selection
 
+  // New states for date and time components
+  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
   useEffect(() => {
@@ -89,12 +95,19 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
         setManualExchangeRate(existingOrder.exchangeRate);
         setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? formatNumberInput(roundToPrecision(existingOrder.exchangeRate, 4)) : ''); // Apply formatter
         setIsWarehouseManuallySet(false); // Reset on edit, assume default unless user changes
+        
+        // Set date and time components from existing orderDate
+        const existingDate = parseISO(existingOrder.orderDate);
+        setDate(format(existingDate, 'yyyy-MM-dd'));
+        setSelectedHour(String(getHours(existingDate)).padStart(2, '0'));
+        setSelectedMinute(String(getMinutes(existingDate)).padStart(2, '0'));
+
         setIsFormInitialized(true);
       }
     } else if (!isEdit && !isFormInitialized) {
       setOrder({
         id: getNextId('sellOrders'),
-        orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+        orderDate: MOCK_CURRENT_DATE.toISOString(), // Reset to ISO string
         status: 'Draft',
         vatPercent: settings.defaultVat,
         total: 0,
@@ -106,6 +119,12 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       setManualExchangeRateInput('');
       setOpenComboboxIndex(null); // Reset for new order
       setIsWarehouseManuallySet(false); // Reset for new order
+
+      // Reset date and time components
+      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+
       setIsFormInitialized(true);
     }
   }, [orderId, isEdit, sellOrders, settings.defaultVat, getNextId, isFormInitialized, productMap, mainCurrency, packingUnits]);
@@ -125,6 +144,14 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       }
     }
   }, [order.contactId, customerMap, order.warehouseId, isWarehouseManuallySet, setOrder, warehouses]);
+
+  // Effect to update the order.orderDate when date, selectedHour, or selectedMinute changes
+  useEffect(() => {
+    if (date && selectedHour && selectedMinute) {
+      const combinedDateTime = `${date}T${selectedHour}:${selectedMinute}:00.000Z`;
+      setOrder(prev => ({ ...prev, orderDate: combinedDateTime }));
+    }
+  }, [date, selectedHour, selectedMinute, setOrder]);
 
   return {
     order,
@@ -153,5 +180,11 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
     customers, // Pass customers array for dropdown
     warehouses, // Pass warehouses array for dropdown
     packingUnits, // Pass packingUnits array for dropdown
+    date, // New: Return date state
+    setDate, // New: Return setDate
+    selectedHour, // New: Return selectedHour state
+    setSelectedHour, // New: Return setSelectedHour
+    selectedMinute, // New: Return selectedMinute state
+    setSelectedMinute, // New: Return setSelectedMinute
   };
 };

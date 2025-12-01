@@ -58,10 +58,10 @@ const Utilization: React.FC = () => {
       filteredOrders = filteredOrders.filter(order => order.warehouseId === filterWarehouseId);
     }
     if (startDateFilter) {
-      filteredOrders = filteredOrders.filter(order => parseISO(order.date) >= parseISO(startDateFilter)); // Parse ISO string
+      filteredOrders = filteredOrders.filter(order => parseISO(order.date) >= parseISO(startDateFilter));
     }
     if (endDateFilter) {
-      filteredOrders = filteredOrders.filter(order => parseISO(order.date) <= parseISO(endDateFilter)); // Parse ISO string
+      filteredOrders = filteredOrders.filter(order => parseISO(order.date) <= parseISO(endDateFilter));
     }
     if (productFilterId !== 'all') {
       filteredOrders = filteredOrders.filter(order =>
