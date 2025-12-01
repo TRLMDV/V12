@@ -238,7 +238,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
                       {item.productId
                         ? product?.name || t('selectProduct')
                         : t('selectProduct')}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      {/* Removed ChevronsUpDown icon */}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">

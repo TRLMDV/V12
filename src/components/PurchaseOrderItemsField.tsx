@@ -95,7 +95,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                     {item.productId
                       ? selectedProduct?.name || t('selectProduct')
                       : t('selectProduct')}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    {/* Removed ChevronsUpDown icon */}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
@@ -104,7 +104,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                       placeholder={t('searchProductBySku')}
                       value={searchQuery}
                       onValueChange={(currentValue) => setSearchQuery(currentValue)}
-                      className="w-full no-spin-buttons" // Apply the class here
+                      className="w-full" // Removed no-spin-buttons as it's not a number input
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup key={searchQuery}>

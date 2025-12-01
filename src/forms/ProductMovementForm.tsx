@@ -308,7 +308,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                     {item.productId
                       ? products.find(p => p.id === item.productId)?.name || t('selectProduct')
                       : t('selectProduct')}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    {/* Removed ChevronsUpDown icon */}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
@@ -318,7 +318,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                         placeholder={t('searchProductBySku')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full no-spin-buttons" // Apply the class here
+                        className="w-full" // Removed no-spin-buttons as it's not a number input
                       />
                     </div>
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
