@@ -73,7 +73,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
       id: product.id || 0, // Will be overwritten by saveItem if new
       name: product.name,
       sku: product.sku,
-      category: product.category || '', // Keep category as empty string if not provided
+      // category: product.category || '', // Removed Category Input Field
       description: product.description || '',
       minStock: product.minStock || 0,
       imageUrl: imageUrl || '',

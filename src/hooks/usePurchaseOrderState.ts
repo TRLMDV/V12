@@ -57,7 +57,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)), // Apply formatter
       }));
     }
-    return [{ productId: '', qty: '', price: '', itemTotal: '', packingUnitId: undefined, packingQuantity: '' }];
+    return [{ productId: '', qty: '', price: '', itemTotal: '', currency: 'AZN', packingUnitId: undefined, packingQuantity: '' }];
   });
 
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(mainCurrency);
@@ -119,7 +119,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         comment: '', // Reset comment
         total: 0,
       });
-      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '', packingUnitId: undefined, packingQuantity: '' }]);
+      setOrderItems([{ productId: '', qty: '', price: '', itemTotal: '', currency: 'AZN', packingUnitId: undefined, packingQuantity: '' }]);
       setSelectedCurrency('AZN');
       setManualExchangeRate(undefined);
       setManualExchangeRateInput('');

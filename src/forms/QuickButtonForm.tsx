@@ -35,6 +35,7 @@ const QuickButtonForm: React.FC<QuickButtonFormProps> = ({ button, onSuccess, on
     }
     onSuccess({
       id: button?.id || 0, // ID will be handled by parent logic for new items
+      name: label.trim(), // Added name property
       label: label.trim(),
       action,
       size,

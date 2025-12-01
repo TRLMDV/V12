@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { t } from '@/utils/i18n';
-import { PackingUnit, BaseUnit } from '@/types';
+import { PackingUnit } from '@/types';
 
 interface PackingUnitFormProps {
   packingUnit?: PackingUnit;
@@ -16,7 +16,7 @@ interface PackingUnitFormProps {
 
 const PackingUnitForm: React.FC<PackingUnitFormProps> = ({ packingUnit, onSuccess, onCancel }) => {
   const [name, setName] = useState(packingUnit?.name || '');
-  const [baseUnit, setBaseUnit] = useState<BaseUnit>(packingUnit?.baseUnit || 'piece');
+  const [baseUnit, setBaseUnit] = useState<string>(packingUnit?.baseUnit || 'piece');
   const [conversionFactor, setConversionFactor] = useState(String(packingUnit?.conversionFactor || 1));
 
   useEffect(() => {
@@ -73,7 +73,7 @@ const PackingUnitForm: React.FC<PackingUnitFormProps> = ({ packingUnit, onSucces
           <Label htmlFor="baseUnit" className="text-right">
             {t('baseUnit')}
           </Label>
-          <Select onValueChange={(value: BaseUnit) => setBaseUnit(value)} value={baseUnit}>
+          <Select onValueChange={(value: string) => setBaseUnit(value)} value={baseUnit}>
             <SelectTrigger id="baseUnit" className="col-span-3">
               <SelectValue placeholder={t('selectBaseUnit')} />
             </SelectTrigger>
