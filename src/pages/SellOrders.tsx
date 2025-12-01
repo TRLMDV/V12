@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
+import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { t } from '@/utils/i18n';
 import { Button } from '@/components/ui/button';
 import FormModal from '@/components/FormModal';
@@ -13,12 +13,13 @@ import { PlusCircle } from 'lucide-react';
 import SellOrderFilters from '@/components/SellOrderFilters';
 import SellOrdersTable from '@/components/SellOrdersTable';
 import SellOrderDetails from '@/components/SellOrderDetails';
-import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
+import PaginationControls from '@/components/PaginationControls';
 
-import { SellOrder, Product, Customer, Warehouse } from '@/types'; // Import types from types file
+import { SellOrder, Product, Customer, Warehouse } from '@/types';
+import { format, parseISO } from 'date-fns'; // Import format and parseISO
 
 type SortConfig = {
-  key: keyof SellOrder | 'warehouseName' | 'totalItems' | 'totalValueAZN' | 'paymentStatus' | 'totalInclVat' | 'totalExclVat'; // Removed 'customerName'
+  key: keyof SellOrder | 'warehouseName' | 'totalItems' | 'totalValueAZN' | 'paymentStatus' | 'totalInclVat' | 'totalExclVat';
   direction: 'ascending' | 'descending';
 };
 
@@ -37,14 +38,14 @@ const SellOrders: React.FC = () => {
     startDateFilter: '',
     endDateFilter: '',
     productFilterId: 'all' as number | 'all',
-    paymentStatusFilter: 'all' as 'all' | 'Paid' | 'Partially Paid' | 'Unpaid', // New filter state
+    paymentStatusFilter: 'all' as 'all' | 'Paid' | 'Partially Paid' | 'Unpaid',
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'orderDate', direction: 'descending' });
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 100; // User requested 100 items per page
+  const itemsPerPage = 100;
 
   const requestSort = useCallback((key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
@@ -87,7 +88,7 @@ const SellOrders: React.FC = () => {
 
   const getPaymentStatus = useCallback((order: SellOrder): 'Paid' | 'Partially Paid' | 'Unpaid' => {
     const totalPaid = paymentsByOrder[order.id] || 0;
-    if (totalPaid >= order.total - 0.001) return 'Paid'; // Use tolerance for float comparison
+    if (totalPaid >= order.total - 0.001) return 'Paid';
     if (totalPaid > 0) return 'Partially Paid';
     return 'Unpaid';
   }, [paymentsByOrder]);
@@ -103,8 +104,6 @@ const SellOrders: React.FC = () => {
   };
 
   const handleDeleteOrder = (id: number) => {
-    // The deleteItem function in useCrudOperations now handles the confirmation modal
-    // and cascading deletion logic for sell orders.
     deleteItem('sellOrders', id);
   };
 
@@ -142,10 +141,10 @@ const SellOrders: React.FC = () => {
     }
 
     if (filters.startDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.orderDate >= filters.startDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.orderDate) >= parseISO(filters.startDateFilter));
     }
     if (filters.endDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.orderDate <= filters.endDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.orderDate) <= parseISO(filters.endDateFilter));
     }
 
     if (filters.productFilterId !== 'all') {
@@ -158,7 +157,7 @@ const SellOrders: React.FC = () => {
       const totalItems = order.items?.reduce((sum, item) => sum + (item.qty || 0), 0) || 0;
       const totalValueAZN = order.total || 0;
       const paymentStatus = getPaymentStatus(order);
-      const totalExclVat = order.total / (1 + order.vatPercent / 100); // Calculate Total (Excl. VAT)
+      const totalExclVat = order.total / (1 + order.vatPercent / 100);
 
       return {
         ...order,
@@ -167,12 +166,11 @@ const SellOrders: React.FC = () => {
         totalItems,
         totalValueAZN,
         paymentStatus,
-        totalInclVat: order.total, // Total (Incl. VAT) is simply order.total
-        totalExclVat: totalExclVat, // Corrected property name from totalExclVclVat to totalExclVat
+        totalInclVat: order.total,
+        totalExclVat: totalExclVat,
       };
     });
 
-    // Apply payment status filter
     if (filters.paymentStatusFilter !== 'all') {
       return sortableItems.filter(order => order.paymentStatus === filters.paymentStatusFilter);
     }
@@ -197,9 +195,9 @@ const SellOrders: React.FC = () => {
             comparison = (valA as number) - (valB as number);
             break;
           case 'orderDate':
-            comparison = new Date(valA).getTime() - new Date(valB).getTime();
+            comparison = parseISO(String(valA)).getTime() - parseISO(String(valB)).getTime();
             break;
-          case 'warehouseName': // Removed 'customerName'
+          case 'warehouseName':
           case 'status':
           case 'paymentStatus':
             comparison = String(valA).localeCompare(String(valB));
@@ -240,19 +238,19 @@ const SellOrders: React.FC = () => {
 
       <SellOrderFilters onFiltersChange={(newFilters) => {
         setFilters(newFilters);
-        setCurrentPage(1); // Reset to first page on filter change
+        setCurrentPage(1);
       }} />
 
       <SellOrdersTable
-        orders={paginatedOrders} // Pass paginated orders
+        orders={paginatedOrders}
         handleEditOrder={handleEditOrder}
         handleDeleteOrder={handleDeleteOrder}
         viewOrderDetails={viewOrderDetails}
         sortConfig={sortConfig}
         handleSortClick={handleSortClick}
         getSortIndicator={getSortIndicator}
-        currentPage={currentPage} // Pass currentPage
-        itemsPerPage={itemsPerPage} // Pass itemsPerPage
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
       />
       <PaginationControls
         totalItems={filteredAndSortedOrders.length}

@@ -2,24 +2,25 @@
 
 import React from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
+import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { t } from '@/utils/i18n';
 import { AlertCircle } from 'lucide-react';
-import { Product, SellOrder, Payment, CurrencyRates, Currency } from '@/types'; // Import types from types file
+import { Product, SellOrder, Payment, CurrencyRates, Currency } from '@/types';
 import QuickButtonsGrid from '@/components/QuickButtonsGrid';
-import SalesChart from '@/components/SalesChart'; // New import
-import FlipClock from '@/components/FlipClock'; // New: Import FlipClock component
-import ReminderCalendar from '@/components/ReminderCalendar'; // New: Import ReminderCalendar component
+import SalesChart from '@/components/SalesChart';
+import FlipClock from '@/components/FlipClock';
+import ReminderCalendar from '@/components/ReminderCalendar';
+import { parseISO } from 'date-fns'; // Import parseISO
 
 const Dashboard: React.FC = () => {
   const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
-  const activeCurrencies = settings.activeCurrencies || []; // Ensure it's an array
+  const activeCurrencies = settings.activeCurrencies || [];
   const showDashboardCurrencyRates = settings.showDashboardCurrencyRates;
-  const showSalesChartOnDashboard = settings.showSalesChartOnDashboard; // New setting
-  const showClockOnDashboard = settings.showClockOnDashboard; // New setting
-  const showCalendarOnDashboard = settings.showCalendarOnDashboard; // New setting
-  const quickButtons = settings.quickButtons || []; // Get quick buttons from settings
+  const showSalesChartOnDashboard = settings.showSalesChartOnDashboard;
+  const showClockOnDashboard = settings.showClockOnDashboard;
+  const showCalendarOnDashboard = settings.showCalendarOnDashboard;
+  const quickButtons = settings.quickButtons || [];
 
   const getOverdueSellOrders = () => {
     const customers = useData().customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
@@ -27,7 +28,6 @@ const Dashboard: React.FC = () => {
     const now = MOCK_CURRENT_DATE.getTime();
 
     const paymentsByOrder = incomingPayments.reduce((acc, payment) => {
-      // Convert payment amount to AZN for consistent calculation against order total (which is in AZN)
       const paymentAmountInAZN = convertCurrency(payment.amount, payment.paymentCurrency, 'AZN');
       acc[payment.orderId] = (acc[payment.orderId] || 0) + paymentAmountInAZN;
       return acc;
@@ -35,16 +35,14 @@ const Dashboard: React.FC = () => {
 
     const overdueOrders: any[] = [];
     sellOrders.forEach(order => {
-      // Order total is now in mainCurrency, convert to AZN for comparison with paymentsByOrder (which is in AZN)
       const orderTotalInAZN = convertCurrency(order.total, mainCurrency, 'AZN');
       const totalPaidInAZN = paymentsByOrder[order.id] || 0;
       const amountDueInAZN = orderTotalInAZN - totalPaidInAZN;
 
       if (amountDueInAZN > 0.001) {
-        const orderDate = new Date(order.orderDate).getTime();
+        const orderDate = parseISO(order.orderDate).getTime(); // Parse ISO string
         const timeDiff = now - orderDate;
         if (timeDiff > thirtyDaysInMs) {
-          // Convert amountDue back to mainCurrency for display
           const amountDueInMainCurrency = convertCurrency(amountDueInAZN, 'AZN', mainCurrency);
           overdueOrders.push({
             ...order,
@@ -55,7 +53,7 @@ const Dashboard: React.FC = () => {
         }
       }
     });
-    overdueOrders.sort((a, b) => b.daysOverdue - a.daysDue);
+    overdueOrders.sort((a, b) => b.daysOverdue - a.daysOverdue); // Corrected sort key
     return overdueOrders;
   };
 
@@ -70,7 +68,7 @@ const Dashboard: React.FC = () => {
       
       {shouldShowClockOrCalendar && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {showClockOnDashboard && <FlipClock />} {/* Replaced Clock with FlipClock */}
+          {showClockOnDashboard && <FlipClock />}
           {showCalendarOnDashboard && <ReminderCalendar />}
         </div>
       )}
@@ -83,18 +81,18 @@ const Dashboard: React.FC = () => {
         <SalesChart />
       )}
 
-      {showDashboardCurrencyRates && ( // Conditionally render based on new setting
+      {showDashboardCurrencyRates && (
         <div className="mt-8 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-300 mb-4">{t('liveCurrencyRates', { mainCurrency })}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             {Object.entries(currencyRates)
-              .filter(([currency]) => activeCurrencies.includes(currency as Currency) && currency !== mainCurrency) // Filter by activeCurrencies and exclude mainCurrency
+              .filter(([currency]) => activeCurrencies.includes(currency as Currency) && currency !== mainCurrency)
               .map(([currency, rateToAZN]) => {
-                const rateToMainCurrency = convertCurrency(1, 'AZN', mainCurrency) / rateToAZN; // Convert 1 AZN to mainCurrency, then divide by rate of foreign to AZN
+                const rateToMainCurrency = convertCurrency(1, 'AZN', mainCurrency) / rateToAZN;
                 return (
                   <div key={currency} className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
                     <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{currency} to {mainCurrency}</p>
-                    <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(1 / rateToMainCurrency).toFixed(4)}</p> {/* Display 1 {mainCurrency} = X {foreignCurrency} */}
+                    <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(1 / rateToMainCurrency).toFixed(4)}</p>
                   </div>
                 );
               })}

@@ -7,10 +7,11 @@ import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Product, PurchaseOrder, SellOrder, Supplier, Customer, Currency } from '@/types';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react'; // Import ArrowUpDown for sort indicator
-import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
-import { Input } from '@/components/ui/input'; // Import Input for date filters
-import { Label } from '@/components/ui/label'; // Import Label for date filters
+import { ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
+import PaginationControls from '@/components/PaginationControls';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { parseISO } from 'date-fns'; // Import parseISO
 
 interface ProductTransactionsModalProps {
   isOpen: boolean;
@@ -19,11 +20,11 @@ interface ProductTransactionsModalProps {
 }
 
 type SortConfig = {
-  key: 'orderDate' | 'orderId' | 'supplierName' | 'customerName' | 'quantity' | 'priceInOrderCurrency' | 'priceExclVat' | 'priceInclVat' | 'landedCostPerUnit'; // Added landedCostPerUnit
+  key: 'orderDate' | 'orderId' | 'supplierName' | 'customerName' | 'quantity' | 'priceInOrderCurrency' | 'priceExclVat' | 'priceInclVat' | 'landedCostPerUnit';
   direction: 'ascending' | 'descending';
 };
 
-const ITEMS_PER_PAGE = 100; // Define items per page
+const ITEMS_PER_PAGE = 100;
 
 const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isOpen, onClose, productId }) => {
   const { products, purchaseOrders, sellOrders, suppliers, customers, currencyRates, settings } = useData();
@@ -62,8 +63,8 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
       let valB: any = b[key];
 
       if (key === 'orderDate') {
-        valA = new Date(valA).getTime();
-        valB = new Date(valB).getTime();
+        valA = parseISO(String(valA)).getTime(); // Parse ISO string
+        valB = parseISO(String(valB)).getTime(); // Parse ISO string
       }
 
       let comparison = 0;
@@ -94,7 +95,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
       direction = 'descending';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1); // Reset to first page on sort change
+    setCurrentPage(1);
   };
 
   const relevantPurchaseOrders = useMemo(() => {
@@ -105,10 +106,10 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
 
     // Apply date filters
     if (poStartDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.orderDate >= poStartDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.orderDate) >= parseISO(poStartDateFilter)); // Parse ISO string
     }
     if (poEndDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.orderDate <= poEndDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.orderDate) <= parseISO(poEndDateFilter)); // Parse ISO string
     }
 
     const rawOrders = filteredOrders.map(order => {
@@ -118,7 +119,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
         const orderCurrency = order.currency;
         const priceInOrderCurrency = orderItem?.price || 0;
         const quantity = orderItem?.qty || 0;
-        const landedCostPerUnit = orderItem?.landedCostPerUnit || 0; // Get landed cost per unit
+        const landedCostPerUnit = orderItem?.landedCostPerUnit || 0;
 
         const rateToMainCurrency = orderCurrency === mainCurrency
           ? 1
@@ -132,7 +133,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
           priceInOrderCurrency: priceInOrderCurrency,
           orderCurrency: orderCurrency,
           rateToMainCurrency: rateToMainCurrency,
-          landedCostPerUnit: landedCostPerUnit, // Include landed cost per unit
+          landedCostPerUnit: landedCostPerUnit,
         };
       });
 
@@ -146,10 +147,10 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     if (!product) return 0;
     let filtered = purchaseOrders.filter(order => order.items.some(item => item.productId === productId));
     if (poStartDateFilter) {
-      filtered = filtered.filter(order => order.orderDate >= poStartDateFilter);
+      filtered = filtered.filter(order => parseISO(order.orderDate) >= parseISO(poStartDateFilter)); // Parse ISO string
     }
     if (poEndDateFilter) {
-      filtered = filtered.filter(order => order.orderDate <= poEndDateFilter);
+      filtered = filtered.filter(order => parseISO(order.orderDate) <= parseISO(poEndDateFilter)); // Parse ISO string
     }
     return filtered.length;
   }, [product, purchaseOrders, productId, poStartDateFilter, poEndDateFilter]);
@@ -162,10 +163,10 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
 
     // Apply date filters
     if (soStartDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.orderDate >= soStartDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.orderDate) >= parseISO(soStartDateFilter)); // Parse ISO string
     }
     if (soEndDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.orderDate <= soEndDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.orderDate) <= parseISO(soEndDateFilter)); // Parse ISO string
     }
 
     const rawOrders = filteredOrders.map(order => {
@@ -198,10 +199,10 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     if (!product) return 0;
     let filtered = sellOrders.filter(order => order.items.some(item => item.productId === productId));
     if (soStartDateFilter) {
-      filtered = filtered.filter(order => order.orderDate >= soStartDateFilter);
+      filtered = filtered.filter(order => parseISO(order.orderDate) >= parseISO(soStartDateFilter)); // Parse ISO string
     }
     if (soEndDateFilter) {
-      filtered = filtered.filter(order => order.orderDate <= soEndDateFilter);
+      filtered = filtered.filter(order => parseISO(order.orderDate) <= parseISO(soEndDateFilter)); // Parse ISO string
     }
     return filtered.length;
   }, [product, sellOrders, productId, soStartDateFilter, soEndDateFilter]);
@@ -241,7 +242,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                     value={poStartDateFilter}
                     onChange={(e) => {
                       setPoStartDateFilter(e.target.value);
-                      setPurchaseOrderCurrentPage(1); // Reset to first page on filter change
+                      setPurchaseOrderCurrentPage(1);
                     }}
                     className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   />
@@ -254,7 +255,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                     value={poEndDateFilter}
                     onChange={(e) => {
                       setPoEndDateFilter(e.target.value);
-                      setPurchaseOrderCurrentPage(1); // Reset to first page on filter change
+                      setPurchaseOrderCurrentPage(1);
                     }}
                     className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   />
@@ -292,7 +293,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                       {relevantPurchaseOrders.map((po) => (
                         <TableRow key={po.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                           <TableCell className="p-3 font-semibold">#{po.orderId}</TableCell>
-                          <TableCell className="p-3">{po.orderDate}</TableCell>
+                          <TableCell className="p-3">{format(parseISO(po.orderDate), 'yyyy-MM-dd HH:mm')}</TableCell> {/* Format with time */}
                           <TableCell className="p-3">{po.supplierName}</TableCell>
                           <TableCell className="p-3">{po.quantity}</TableCell>
                           <TableCell className="p-3">{po.priceInOrderCurrency.toFixed(2)} {po.orderCurrency}</TableCell>
@@ -337,7 +338,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                     value={soStartDateFilter}
                     onChange={(e) => {
                       setSoStartDateFilter(e.target.value);
-                      setSalesOrderCurrentPage(1); // Reset to first page on filter change
+                      setSalesOrderCurrentPage(1);
                     }}
                     className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   />
@@ -350,7 +351,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                     value={soEndDateFilter}
                     onChange={(e) => {
                       setSoEndDateFilter(e.target.value);
-                      setSalesOrderCurrentPage(1); // Reset to first page on filter change
+                      setSalesOrderCurrentPage(1);
                     }}
                     className="mt-1 w-full p-2 border rounded-md shadow-sm bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                   />
@@ -388,7 +389,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                         <TableRow key={so.orderId} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                           <TableCell className="p-3 font-semibold">#{so.orderId}</TableCell>
                           <TableCell className="p-3">{so.customerName}</TableCell>
-                          <TableCell className="p-3">{so.orderDate}</TableCell>
+                          <TableCell className="p-3">{format(parseISO(so.orderDate), 'yyyy-MM-dd HH:mm')}</TableCell> {/* Format with time */}
                           <TableCell className="p-3">{so.quantity}</TableCell>
                           <TableCell className="p-3">{so.priceExclVat.toFixed(2)} {mainCurrency}</TableCell>
                           <TableCell className="p-3">{so.priceInclVat.toFixed(2)} {mainCurrency}</TableCell>

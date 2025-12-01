@@ -4,7 +4,7 @@ import {
 } from '@/types';
 
 // --- MOCK CURRENT DATE (for consistency with original code) ---
-export const MOCK_CURRENT_DATE = new Date(); // Changed to new Date()
+export const MOCK_CURRENT_DATE = new Date('2024-07-20T10:00:00Z'); // Changed to a fixed date for consistent behavior
 
 // --- Initial Data & Defaults ---
 export const initialData = {
@@ -18,7 +18,7 @@ export const initialData = {
   outgoingPayments: [] as Payment[],
   productMovements: [] as ProductMovement[],
   bankAccounts: [] as BankAccount[],
-  utilizationOrders: [] as UtilizationOrder[], // New: Utilization Orders
+  utilizationOrders: [] as UtilizationOrder[],
 };
 
 export const defaultCurrencyRates: CurrencyRates = {
@@ -64,14 +64,14 @@ export const initialSettings: Settings = {
     { id: 7, name: 'Maintenance' },
     { id: 8, name: 'Software Subscriptions' },
     { id: 9, name: 'initialCapital' },
-    { id: 10, name: 'Withdrawal' }, // New: Withdrawal category
+    { id: 10, name: 'Withdrawal' },
   ],
   mainCurrency: 'AZN',
   activeCurrencies: ['AZN', 'USD', 'EUR', 'RUB', 'GBP', 'CAD', 'CNY', 'INR', 'MXN', 'SEK', 'THB', 'AED', 'BHD', 'JOD', 'KWD', 'OMR', 'SGD', 'AFN', 'ALL', 'DZD', 'AOA', 'XCD', 'ARS', 'AMD', 'AWG', 'SHP', 'BSD', 'BDT', 'BBD', 'BYN', 'BZD', 'XOF', 'BMD', 'BTN', 'BOB', 'BAM', 'BRL', 'BND', 'BGN', 'BIF', 'KHR', 'XAF', 'CVE', 'CDF', 'KMF', 'NZD', 'CRC', 'CUP', 'XCG', 'CZK', 'DKK', 'DJF', 'DOP', 'EGP', 'ERN', 'SZL', 'ZAR', 'ETB', 'FKP', 'FJD', 'XPF', 'GMD', 'GEL', 'GHS', 'GTQ', 'GNF', 'GYD', 'HTG', 'HNL', 'HKD', 'HUF', 'ISK', 'IDR', 'IRR', 'IQD', 'ILS', 'JMD', 'KZT', 'KES', 'KPW', 'KGS', 'LAK', 'LBP', 'LSL', 'LRD', 'LYD', 'MDL', 'MOP', 'MGA', 'MWK', 'MYR', 'MVR', 'MRU', 'MZN', 'MMK', 'NAD', 'NPR', 'NIO', 'NGN', 'NOK', 'PKR', 'PGK', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RSD', 'SCR', 'SLE', 'SBD', 'SOS', 'SSP', 'STN', 'SRD', 'SYP', 'TWD', 'TJS', 'TZS', 'TTD', 'TND', 'TRY', 'TMT', 'UGX', 'UAH', 'UYU', 'UZS', 'VUV', 'VES', 'VED', 'VND', 'YER', 'ZMW', 'ZWG'],
   showDashboardCurrencyRates: false,
-  showSalesChartOnDashboard: true, // New: Default to true
-  showClockOnDashboard: true, // New: Default to true
-  showCalendarOnDashboard: true, // New: Default to true
+  showSalesChartOnDashboard: true,
+  showClockOnDashboard: true,
+  showCalendarOnDashboard: true,
   packingUnits: [
     { id: 1, name: 'Piece', baseUnit: 'piece', conversionFactor: 1 },
     { id: 2, name: 'Pack', baseUnit: 'piece', conversionFactor: 10 },
@@ -80,6 +80,6 @@ export const initialSettings: Settings = {
     { id: 5, name: 'Bottle (liter)', baseUnit: 'liter', conversionFactor: 1 },
     { id: 6, name: 'Barrel (liter)', baseUnit: 'liter', conversionFactor: 200 },
   ],
-  quickButtons: [], // Changed to an empty array
-  reminders: [], // New: Empty array for reminders
+  quickButtons: [],
+  reminders: [],
 };

@@ -10,14 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, isSameDay, isPast, isToday, parseISO, setHours, setMinutes, setSeconds, isFuture, getHours, getMinutes } from 'date-fns';
 import { PlusCircle, BellRing, Trash2, Edit } from 'lucide-react';
-import { toast }
- from 'sonner';
+import { toast } from 'sonner';
 import FormModal from '@/components/FormModal';
 import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Reminder } from '@/types';
 import ReminderModal from './ReminderModal';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Import Select components
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ReminderCalendar: React.FC = () => {
   const { settings, saveItem, deleteItem, getNextId, setNextIdForCollection, showAlertModal, showConfirmationModal, setSettings } = useData();
@@ -46,7 +45,6 @@ const ReminderCalendar: React.FC = () => {
         
         const timeDifference = reminderDateTime.getTime() - now.getTime(); 
         
-        // Reminder is "due soon" if it's within 5 seconds in the past or 10 seconds in the future
         const isDueSoon = timeDifference >= -5 * 1000 && timeDifference < 10 * 1000; 
 
         console.log(`--- Checking reminder: "${reminder.message}" (ID: ${reminder.id}) ---`);
@@ -55,37 +53,16 @@ const ReminderCalendar: React.FC = () => {
         console.log(`  Time difference (ms): ${timeDifference}`);
         console.log(`  Is due soon (-5s to +10s window): ${isDueSoon}`);
 
-        // TEMPORARILY REMOVED LOCAL STORAGE CHECK FOR DEBUGGING
-        // const shownKey = `reminder_shown_${reminder.id}`;
-        // const isShownInLocalStorage = localStorage.getItem(shownKey);
-        // const hasBeenShown = isShownInLocalStorage === 'true';
-        // console.log(`  Shown key (${shownKey}): ${isShownInLocalStorage}`);
-        // console.log(`  Has been shown (parsed): ${hasBeenShown}`);
-
-
-        if (isDueSoon /* && !hasBeenShown */) { // Condition modified
+        if (isDueSoon) {
           console.log(`*** TRIGGERING REMINDER: "${reminder.message}" ***`);
           setCurrentDueReminder(reminder);
           setIsCentralReminderModalOpen(true);
           console.log(`  setIsCentralReminderModalOpen(true) called.`); 
           
-          // TEMPORARILY REMOVED LOCAL STORAGE SET/REMOVE FOR DEBUGGING
-          // setTimeout(() => {
-          //   localStorage.setItem(shownKey, 'true');
-          //   console.log(`  Set shown key (${shownKey}) to localStorage after delay.`);
-          // }, 100); // 100ms delay
-
-          // setTimeout(() => {
-          //   localStorage.removeItem(shownKey);
-          //   console.log(`  Removed shown key (${shownKey}) from localStorage.`);
-          // }, 60 * 1000); // 1 minute
-
           if (audioRef.current) {
             audioRef.current.play().catch(e => console.error("Error playing sound:", e));
           }
-        } /* else if (isDueSoon && hasBeenShown) {
-          console.warn(`  Reminder "${reminder.message}" (ID: ${reminder.id}) is due but already shown (flag in localStorage).`);
-        } */ // Else if block commented out
+        }
       });
     };
 
@@ -155,7 +132,7 @@ const ReminderCalendar: React.FC = () => {
     };
   }, [reminders]);
 
-  const modifiersStyles: Record<string, React.CSSProperties> = { // Explicitly type as Record<string, React.CSSProperties>
+  const modifiersStyles: Record<string, React.CSSProperties> = {
     hasReminders: {
       position: 'relative',
     },
@@ -173,7 +150,7 @@ const ReminderCalendar: React.FC = () => {
     );
   };
 
-  console.log("ReminderCalendar rendering. isCentralReminderModalOpen:", isCentralReminderModalOpen, "currentDueReminder:", currentDueReminder); // Added log
+  console.log("ReminderCalendar rendering. isCentralReminderModalOpen:", isCentralReminderModalOpen, "currentDueReminder:", currentDueReminder);
 
   return (
     <Card className="dark:bg-slate-800 dark:border-slate-700">

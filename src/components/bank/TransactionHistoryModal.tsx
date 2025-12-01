@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import FormModal from '@/components/FormModal';
 import PaginationControls from '@/components/PaginationControls';
 import ExcelExportButton from '@/components/ExcelExportButton';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { t } from '@/utils/i18n';
 import { BankAccount, Currency } from '@/types';
 
@@ -21,7 +21,7 @@ interface Transaction {
   originalPaymentCurrency: Currency;
   originalPaymentAmount: number;
   runningBalance?: number;
-  linkedOrderDisplay?: string; // New: Descriptive string for the transaction ID
+  linkedOrderDisplay?: string;
 }
 
 interface TransactionHistoryModalProps {
@@ -103,7 +103,7 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
           fileName={`${selectedAccountName || 'Bank Transactions'}_transactions`}
           sheetName="Transactions"
           columns={[
-            { header: t('transactionId'), accessor: 'Transaction ID' }, // Added Transaction ID
+            { header: t('transactionId'), accessor: 'Transaction ID' },
             { header: t('date'), accessor: 'Date' },
             { header: t('description'), accessor: 'Description' },
             { header: 'Incoming', accessor: 'Incoming' },
@@ -118,7 +118,7 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
               <TableHead className="p-3">No.</TableHead>
-              <TableHead className="p-3">{t('transactionId')}</TableHead> {/* Added Transaction ID */}
+              <TableHead className="p-3">{t('transactionId')}</TableHead>
               <TableHead className="p-3">{t('date')}</TableHead>
               <TableHead className="p-3">{t('description')}</TableHead>
               <TableHead className="p-3 text-right">{t('incoming')}</TableHead>
@@ -131,8 +131,8 @@ const TransactionHistoryModal: React.FC<TransactionHistoryModalProps> = ({
               paginatedTransactions.map((t, index) => (
                 <TableRow key={t.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{(transactionsCurrentPage - 1) * transactionsItemsPerPage + index + 1}.</TableCell>
-                  <TableCell className="p-3">{t.linkedOrderDisplay || 'N/A'}</TableCell> {/* Display descriptive ID */}
-                  <TableCell className="p-3">{format(new Date(t.date), 'yyyy-MM-dd')}</TableCell>
+                  <TableCell className="p-3">{t.linkedOrderDisplay || 'N/A'}</TableCell>
+                  <TableCell className="p-3">{format(parseISO(t.date), 'yyyy-MM-dd HH:mm')}</TableCell> {/* Format with time */}
                   <TableCell className="p-3">{t.description}</TableCell>
                   <TableCell className="p-3 text-right text-green-600">
                     {(t.type === 'incoming' || t.type === 'initial') ? t.amount.toFixed(2) : '-'} {((t.type === 'incoming' || t.type === 'initial') && t.amount > 0) ? selectedAccountCurrency : ''}
