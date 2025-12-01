@@ -1,359 +1,264 @@
-"use client";
+import { LucideIcon } from 'lucide-react';
 
-// --- Data Types ---
-export interface Product {
-  id: number;
+// --- Core Types ---
+export type Id = number;
+
+export interface BaseItem {
+  id: Id;
   name: string;
+}
+
+// --- Product & Inventory ---
+export type ProductStatus = 'Active' | 'Discontinued' | 'Low Stock';
+
+export interface Product extends BaseItem {
   sku: string;
-  category?: string; // Made optional
-  description: string;
-  stock: { [warehouseId: number]: number }; // Stock is always in base units (pieces or ml/liter)
-  minStock: number;
-  averageLandedCost: number; // Stored in Main Currency
-  imageUrl: string;
-  defaultPackingUnitId?: number; // New: Default packing unit for this product
-  totalStock?: number; // Added for easier export/display
+  description?: string;
+  imageUrl?: string;
+  category: string;
+  averageLandedCost: number; // Average cost including purchase price, fees, etc.
+  stock: { [warehouseId: number]: number }; // Stock quantity per warehouse
+  minStockLevel: number;
+  status: ProductStatus;
+  packingUnits?: PackingUnit[]; // Optional: List of packing units for this product
 }
 
-export interface Supplier {
-  id: number;
-  name: string;
-  contact: string;
-  email: string;
-  phone: string;
-  address: string;
+export interface PackingUnit extends BaseItem {
+  baseUnit: string; // e.g., 'piece', 'liter', 'kg'
+  conversionFactor: number; // How many base units in this packing unit (e.g., 10 for 'Pack' if base is 'piece')
 }
 
-export interface Customer {
-  id: number;
-  name: string;
-  contact: string;
-  email: string;
-  phone: string;
-  address: string;
-  defaultWarehouseId?: number; // New field for default warehouse
-}
-
-export interface Warehouse {
-  id: number;
-  name: string;
+export interface Warehouse extends BaseItem {
   location: string;
-  type: 'Main' | 'Secondary'; // Added type field
+  type: 'Main' | 'Storage' | 'Retail';
 }
 
-export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF' | 'DOP' | 'EGP' | 'ERN' | 'SZL' | 'ZAR' | 'ETB' | 'FKP' | 'FJD' | 'XPF' | 'GMD', 'GEL', 'GHS', 'GTQ', 'GNF', 'GYD', 'HTG', 'HNL', 'HKD', 'HUF', 'ISK', 'IDR', 'IRR', 'IQD', 'ILS', 'JMD', 'KZT', 'KES', 'KPW', 'KGS', 'LAK', 'LBP', 'LSL', 'LRD', 'LYD', 'MDL', 'MOP', 'MGA', 'MWK', 'MYR', 'MVR', 'MRU', 'MZN', 'MMK', 'NAD', 'NPR', 'NIO', 'NGN', 'NOK', 'PKR', 'PGK', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RSD', 'SCR', 'SLE', 'SBD', 'SOS', 'SSP', 'STN', 'SRD', 'SYP', 'TWD', 'TJS', 'TZS', 'TTD', 'TND', 'TRY', 'TMT', 'UGX', 'UAH', 'AED', 'UYU', 'UZS', 'VUV', 'VES', 'VED', 'VND', 'YER', 'ZMW', 'ZWG';
-
-export interface BankAccount {
-  id: number;
-  name: string;
-  currency: Currency;
-  initialBalance: number; // The starting balance when the account is created
-  creationDate: string; // Changed to required string (ISO string including time)
+// --- Contacts ---
+export interface Supplier extends BaseItem {
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  defaultCurrency?: Currency;
 }
 
-export interface Payment {
-  id: number;
-  orderId: number; // Linked order ID, 0 for manual expense
-  bankAccountId: number; // New: Link to a specific bank account
-  paymentCategory?: 'products' | 'fees' | 'manual' | string; // Updated to allow custom string categories, simplified fees
-  manualDescription?: string; // For manual expenses
-  date: string;
-  amount: number; // Amount in paymentCurrency
-  paymentCurrency: Currency; // New: Currency of the payment
-  paymentExchangeRate?: number; // New: Exchange rate to AZN if not AZN
-  method: string;
+export interface Customer extends BaseItem {
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  defaultWarehouseId?: Id; // New: Default warehouse for sales
 }
 
-export interface ProductMovement {
-  id: number;
-  sourceWarehouseId: number;
-  destWarehouseId: number;
-  items: { productId: number; quantity: number }[];
-  date: string;
-}
-
-// New: Utilization Order
-export interface UtilizationOrder {
-  id: number;
-  date: string;
-  warehouseId: number; // Warehouse from which products are utilized
-  items: { productId: number; quantity: number }[]; // Products and quantities utilized (in base units)
-  comment?: string; // New: Optional comment for the utilization order
-}
-
-// New interfaces/types added
-export interface PaymentCategorySetting {
-  id: number;
-  name: string;
-}
-
-export type BaseUnit = 'piece' | 'ml' | 'liter';
-
-export interface PackingUnit {
-  id: number;
-  name: string;
-  baseUnit: BaseUnit;
-  conversionFactor: number; // e.g., 1 pack = 10 pieces
-}
+// --- Orders ---
+export type OrderStatus = 'Draft' | 'Ordered' | 'Received'; // For Purchase Orders
+export type SellOrderStatus = 'Draft' | 'Confirmed' | 'Shipped'; // For Sell Orders
 
 export interface OrderItem {
-  productId: number;
-  qty: number; // Always in base units
+  productId: Id;
+  qty: number; // Quantity in base units
   price: number; // Price per base unit
-  currency: Currency; // Currency of the item price (for purchase orders)
-  landedCostPerUnit?: number; // Landed cost per base unit in Main Currency (for purchase orders)
-  packingUnitId?: number; // Optional: ID of the packing unit used for this item
-  packingQuantity?: number; // Optional: Quantity in terms of the packing unit
+  currency: Currency;
+  landedCostPerUnit?: number; // For sell orders, to calculate profit
+  packingUnitId?: Id; // Optional: ID of the packing unit used for this item
+  packingQuantity?: number; // Optional: Quantity in packing units
 }
 
 export interface PurchaseOrder {
-  id: number;
-  contactId: number; // Supplier ID
-  warehouseId: number;
-  orderDate: string;
-  status: 'Draft' | 'Ordered' | 'Received';
+  id: Id;
+  contactId: Id; // Supplier ID
+  warehouseId: Id; // Destination warehouse ID
+  orderDate: string; // ISO date string
+  status: OrderStatus;
   items: OrderItem[];
-  currency: Currency; // Currency of the order (for product prices)
-  exchangeRate?: number; // Exchange rate to AZN if currency is not AZN
-  fees: number; // Renamed from additionalFees
-  feesCurrency: Currency; // Renamed from additionalFeesCurrency
-  feesExchangeRate?: number; // New: Exchange rate for fees to AZN
-  comment?: string; // New: Optional comment for the purchase order
-  total: number; // Total landed cost in Main Currency
+  currency: Currency; // Currency of the order items
+  exchangeRate?: number; // Rate to main currency if not main currency
+  fees: number; // Total fees for the order
+  feesCurrency: Currency; // Currency of the fees
+  feesExchangeRate?: number; // Rate for fees currency to main currency
+  comment?: string; // New: Optional comment field
+  total: number; // Total in main currency
 }
 
 export interface SellOrder {
-  id: number;
-  contactId: number; // Customer ID
-  warehouseId: number;
-  orderDate: string;
-  status: 'Draft' | 'Confirmed' | 'Shipped';
+  id: Id;
+  contactId: Id; // Customer ID
+  warehouseId: Id; // Source warehouse ID
+  orderDate: string; // ISO date string
+  status: SellOrderStatus;
   items: OrderItem[];
   vatPercent: number;
-  total: number; // Total selling price in Main Currency (including VAT)
-  currency: Currency; // Currency of the order (for product prices)
-  exchangeRate?: number; // Exchange rate to AZN if currency is not AZN
-  productMovementId?: number; // Link to generated product movement
-  incomingPaymentId?: number; // Link to generated incoming payment
+  total: number; // Total in main currency
+  currency: Currency; // Currency of the order items
+  exchangeRate?: number; // Rate to main currency if not main currency
+  productMovementId?: Id; // Link to generated product movement
+  incomingPaymentId?: Id; // Link to generated incoming payment
+  comment?: string; // New: Optional comment field
 }
+
+export interface PurchaseOrderItemState {
+  productId: number | '';
+  qty: number | string;
+  price: number | string;
+  itemTotal: number | string;
+  currency: Currency;
+  landedCostPerUnit?: number;
+  packingUnitId?: number;
+  packingQuantity?: number | string;
+}
+
+// --- Payments ---
+export type PaymentType = 'Incoming' | 'Outgoing';
+export type PaymentStatus = 'Paid' | 'Partially Paid' | 'Unpaid';
+export type PaymentCategory = 'products' | 'Rent' | 'Utilities' | 'Salaries' | 'Office Supplies' | 'Marketing' | 'Travel' | 'Maintenance' | 'Software Subscriptions' | 'initialCapital' | 'Withdrawal' | 'Manual Expense'; // Added 'Manual Expense'
+
+export interface Payment {
+  id: Id;
+  orderId?: Id; // Linked PurchaseOrder or SellOrder ID
+  paymentCategory: PaymentCategory;
+  date: string; // ISO date string
+  amount: number;
+  paymentCurrency: Currency;
+  paymentExchangeRate?: number; // Rate to main currency if not main currency
+  method: string; // e.g., "Bank Transfer", "Cash", "Credit Card"
+  bankAccountId?: Id; // New: Link to bank account
+  description?: string; // New: Optional description for manual payments
+}
+
+export interface PaymentCategorySetting {
+  id: Id;
+  name: string;
+}
+
+// --- Product Movement ---
+export interface ProductMovement {
+  id: Id;
+  sourceWarehouseId: Id;
+  destWarehouseId: Id;
+  items: { productId: Id; quantity: number }[];
+  date: string; // ISO date string
+}
+
+// --- Utilization Order ---
+export interface UtilizationOrder {
+  id: Id;
+  warehouseId: Id;
+  orderDate: string; // ISO date string
+  items: { productId: Id; qty: number; packingUnitId?: Id; packingQuantity?: number }[];
+  comment?: string; // Optional comment field
+}
+
+// --- Finance ---
+export type Currency = 'AZN' | 'USD' | 'EUR' | 'RUB' | 'JPY' | 'GBP' | 'AUD' | 'CAD' | 'CHF' | 'CNY' | 'KWD' | 'BHD' | 'OMR' | 'JOD' | 'GIP' | 'KYD' | 'KRW' | 'SGD' | 'INR' | 'MXN' | 'SEK' | 'THB' | 'AFN' | 'ALL' | 'DZD' | 'AOA' | 'XCD' | 'ARS' | 'AMD' | 'AWG' | 'SHP' | 'BSD' | 'BDT' | 'BBD' | 'BYN' | 'BZD' | 'XOF' | 'BMD' | 'BTN' | 'BOB' | 'BAM' | 'BWP' | 'BRL' | 'BND' | 'BGN' | 'BIF' | 'KHR' | 'XAF' | 'CVE' | 'CDF' | 'KMF' | 'NZD' | 'CRC' | 'CUP' | 'XCG' | 'CZK' | 'DKK' | 'DJF' | 'DOP' | 'EGP' | 'ERN' | 'SZL' | 'ZAR' | 'ETB' | 'FKP' | 'FJD' | 'XPF' | 'GMD' | 'GEL' | 'GHS' | 'GTQ' | 'GNF' | 'GYD' | 'HTG' | 'HNL' | 'HKD' | 'HUF' | 'ISK' | 'IDR' | 'IRR' | 'IQD' | 'ILS' | 'JMD' | 'KZT' | 'KES' | 'KPW' | 'KGS' | 'LAK' | 'LBP' | 'LSL' | 'LRD' | 'LYD' | 'MDL' | 'MOP' | 'MGA' | 'MWK' | 'MYR' | 'MVR' | 'MRU' | 'MZN' | 'MMK' | 'NAD' | 'NPR' | 'NIO' | 'NGN' | 'NOK' | 'PKR' | 'PGK' | 'PYG' | 'PEN' | 'PHP' | 'PLN' | 'QAR' | 'RON' | 'RSD' | 'SCR' | 'SLE' | 'SBD' | 'SOS' | 'SSP' | 'STN' | 'SRD' | 'SYP' | 'TWD' | 'TJS' | 'TZS' | 'TTD' | 'TND' | 'TRY' | 'TMT' | 'UGX' | 'UAH' | 'AED' | 'UYU' | 'UZS' | 'VUV' | 'VES' | 'VED' | 'VND' | 'YER' | 'ZMW' | 'ZWG';
 
 export interface CurrencyRates {
-  [key: string]: number; // Added index signature
-  USD: number;
-  EUR: number;
-  RUB: number;
-  JPY: number;
-  GBP: number;
-  AUD: number;
-  CAD: number;
-  CHF: number;
-  CNY: number;
-  KWD: number;
-  BHD: number;
-  OMR: number;
-  JOD: number;
-  GIP: number;
-  KYD: number;
-  KRW: number;
-  SGD: number;
-  INR: number;
-  MXN: number;
-  SEK: number;
-  THB: number;
-  AZN: number; // AZN is always 1.00, but included for consistency
-  AFN: number;
-  ALL: number;
-  DZD: number;
-  AOA: number;
-  XCD: number;
-  ARS: number;
-  AMD: number;
-  AWG: number;
-  SHP: number;
-  BSD: number;
-  BDT: number;
-  BBD: number;
-  BYN: number;
-  BZD: number;
-  XOF: number;
-  BMD: number;
-  BTN: number;
-  BOB: number;
-  BAM: number;
-  BWP: number;
-  BRL: number;
-  BND: number;
-  BGN: number;
-  BIF: number;
-  KHR: number;
-  XAF: number;
-  CVE: number;
-  CDF: number; // Fixed: Added ': number'
-  KMF: number;
-  NZD: number;
-  CRC: number;
-  CUP: number;
-  XCG: number;
-  CZK: number;
-  DKK: number;
-  DJF: number;
-  DOP: number;
-  EGP: number;
-  ERN: number;
-  SZL: number;
-  ZAR: number;
-  ETB: number;
-  FKP: number;
-  FJD: number;
-  XPF: number;
-  GMD: number;
-  GEL: number;
-  GHS: number;
-  GTQ: number;
-  GNF: number;
-  GYD: number;
-  HTG: number;
-  HNL: number;
-  HKD: number;
-  HUF: number;
-  ISK: number;
-  IDR: number;
-  IRR: number;
-  IQD: number;
-  ILS: number;
-  JMD: number;
-  KZT: number;
-  KES: number;
-  KPW: number;
-  KGS: number;
-  LAK: number;
-  LBP: number;
-  LSL: number;
-  LRD: number;
-  LYD: number;
-  MDL: number;
-  MOP: number;
-  MGA: number;
-  MWK: number;
-  MYR: number;
-  MVR: number;
-  MRU: number;
-  MZN: number;
-  MMK: number;
-  NAD: number;
-  NPR: number;
-  NIO: number;
-  NGN: number;
-  NOK: number;
-  PKR: number;
-  PGK: number;
-  PYG: number;
-  PEN: number;
-  PHP: number;
-  PLN: number;
-  QAR: number;
-  RON: number;
-  RSD: number;
-  SCR: number;
-  SLE: number;
-  SBD: number;
-  SOS: number;
-  SSP: number;
-  STN: number;
-  SRD: number;
-  SYP: number;
-  TWD: number;
-  TJS: number;
-  TZS: number;
-  TTD: number;
-  TND: number;
-  TRY: number;
-  TMT: number;
-  UGX: number;
-  UAH: number;
-  AED: number;
-  UYU: number;
-  UZS: number;
-  VUV: number;
-  VES: number;
-  VED: number;
-  VND: number;
-  YER: number;
-  ZMW: number;
-  ZWG: number;
+  [key: string]: number; // e.g., { "USD": 1.70, "EUR": 2.00 }
 }
 
+export interface BankAccount extends BaseItem {
+  currency: Currency;
+  initialBalance: number;
+  currentBalance: number;
+  creationDate: string; // ISO date string
+}
+
+export interface BankTransaction {
+  id: Id;
+  date: string; // ISO date string
+  description: string;
+  incoming: number; // Amount in account's currency
+  outgoing: number; // Amount in account's currency
+  balance: number; // Current balance after this transaction
+  paymentId?: Id; // Link to a payment if applicable
+}
+
+// --- Settings ---
+export type AppTheme = 'light' | 'dark';
+
+export interface Settings {
+  companyName: string;
+  companyLogo?: string; // URL or base64
+  theme: AppTheme;
+  defaultVat: number; // Default VAT percentage
+  defaultMarkup: number; // Default markup percentage for sales
+  currencyRates: CurrencyRates;
+  displayScale: number; // e.g., 100, 125, 150
+  paymentCategories: PaymentCategorySetting[];
+  mainCurrency: Currency;
+  activeCurrencies: Currency[];
+  showDashboardCurrencyRates: boolean;
+  showSalesChartOnDashboard: boolean; // New: Setting for sales chart visibility
+  showClockOnDashboard: boolean; // New: Setting for clock visibility
+  showCalendarOnDashboard: boolean; // New: Setting for calendar visibility
+  packingUnits: PackingUnit[];
+  quickButtons: QuickButton[]; // New: Quick buttons for dashboard
+  reminders: Reminder[]; // New: Reminders for calendar
+}
+
+// --- Quick Buttons ---
 export type QuickButtonAction =
-  | 'addPurchaseOrder'
-  | 'addSellOrder'
-  | 'addProductMovement'
-  | 'addProduct'
-  | 'addSupplier'
-  | 'addCustomer'
-  | 'addIncomingPayment'
-  | 'addOutgoingPayment'
-  | 'addWarehouse'
-  | 'addUtilizationOrder'
-  | 'bankDeposit'
-  | 'bankWithdrawal';
+  'quickPurchaseOrderAdd' | 'quickSellOrderAdd' | 'quickProductMovement' |
+  'quickProductAdd' | 'quickSupplierAdd' | 'quickCustomerAdd' |
+  'quickIncomingPaymentsAdd' | 'quickOutgoingPaymentsAdd' | 'quickWarehouseAdd' |
+  'quickUtilization' | 'quickBankDeposit' | 'quickBankWithdrawal';
 
 export type QuickButtonSize = 'sm' | 'md' | 'lg';
-export type QuickButtonColor = string; // Tailwind class like 'bg-blue-500'
+export type QuickButtonColor =
+  'blue' | 'green' | 'red' | 'purple' | 'orange' | 'yellow' |
+  'emerald' | 'indigo' | 'pink' | 'teal';
 
-export interface QuickButton {
-  id: number;
+export interface QuickButton extends BaseItem {
   label: string;
   action: QuickButtonAction;
   size: QuickButtonSize;
   color: QuickButtonColor;
+  icon?: keyof typeof import('lucide-react'); // Optional Lucide icon name
 }
 
-// New: Reminder interface
+// --- Reminders ---
 export interface Reminder {
-  id: number;
+  id: Id;
+  date: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
   message: string;
-  dateTime: string; // ISO string
 }
 
-export interface Settings {
-  companyName: string;
-  companyLogo: string;
-  theme: 'light' | 'dark';
-  defaultVat: number;
-  defaultMarkup: number;
+// --- Data Context State ---
+export interface DataState {
+  warehouses: Warehouse[];
+  products: Product[];
+  suppliers: Supplier[];
+  customers: Customer[];
+  purchaseOrders: PurchaseOrder[];
+  sellOrders: SellOrder[];
+  incomingPayments: Payment[];
+  outgoingPayments: Payment[];
+  productMovements: ProductMovement[];
+  bankAccounts: BankAccount[];
+  utilizationOrders: UtilizationOrder[]; // New: Utilization Orders
+  settings: Settings;
+}
+
+// --- Data Context Actions ---
+export interface DataActions {
+  saveItem: <T extends keyof DataState>(key: T, item: DataState[T][number]) => void;
+  deleteItem: <T extends keyof DataState>(key: T, id: Id) => void;
+  getNewId: () => Id;
+  getNextId: (key: keyof DataState) => Id;
+  updateStockFromOrder: (order: PurchaseOrder | SellOrder, oldOrder?: PurchaseOrder | SellOrder | null) => void;
+  updateAverageCosts: (order: PurchaseOrder) => void;
+  setSettings: (newSettings: Settings) => void;
+  setProducts: (products: Product[]) => void; // New: Setter for products array
+  setBankAccounts: (bankAccounts: BankAccount[]) => void; // New: Setter for bank accounts array
+  addBankTransaction: (bankAccountId: Id, transaction: Omit<BankTransaction, 'id' | 'balance'>) => void;
+  showAlertModal: (title: string, message: string) => void;
+  showConfirmModal: (title: string, message: string, onConfirm: () => void) => void;
   currencyRates: CurrencyRates;
-  displayScale: number; // New: Program display scaling percentage
-  paymentCategories: PaymentCategorySetting[]; // New: Custom payment categories
-  mainCurrency: Currency; // New: Main currency for the application
-  activeCurrencies: Currency[]; // New: Currencies the user wants to actively use
-  showDashboardCurrencyRates: boolean; // New: Toggle for dashboard currency rates visibility
-  showSalesChartOnDashboard: boolean; // New: Toggle for sales chart visibility
-  showClockOnDashboard: boolean; // New: Toggle for clock visibility
-  showCalendarOnDashboard: boolean; // New: Toggle for calendar visibility
-  packingUnits: PackingUnit[]; // New: Custom packing units
-  quickButtons: QuickButton[]; // New: Quick buttons for the dashboard
-  reminders: Reminder[]; // New: Reminders for the calendar
+  packingUnitMap: { [id: number]: PackingUnit };
+  convertCurrency: (amount: number, fromCurrency: Currency, toCurrency: Currency, customRate?: number) => number;
+  getCurrencyRate: (fromCurrency: Currency, toCurrency: Currency) => number;
+  getCurrencySymbol: (currencyCode: Currency) => string;
+  getCurrencyName: (currencyCode: Currency) => string;
 }
 
-// --- Recycle Bin Types ---
-export type CollectionKey = 'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' | 'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'packingUnits' | 'paymentCategories' | 'bankAccounts' | 'utilizationOrders' | 'quickButtons' | 'reminders'; // Added 'utilizationOrders', 'quickButtons', 'reminders'
-
-export interface RecycleBinItem {
-  id: string; // Unique ID for the recycle bin entry
-  originalId: number; // The ID of the deleted item
-  collectionKey: CollectionKey; // The original collection key (e.g., 'products')
-  data: any; // The actual deleted item object
-  deletedAt: string; // ISO string timestamp of deletion
-}
-
-// Internal type for purchase order form items, exported because usePurchaseOrderForm returns it.
-export interface PurchaseOrderItemState {
-  productId: number | '';
-  qty: number | string; // This will be the quantity in base units
-  price: number | string;
-  itemTotal: number | string;
-  currency?: Currency;
-  landedCostPerUnit?: number;
-  packingUnitId?: number; // New: ID of the selected packing unit
-  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
-}
+// --- Combined Context Type ---
+export interface AppContextType extends DataState, DataActions { }
