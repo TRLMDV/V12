@@ -5,6 +5,7 @@ import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
 import { formatNumberInput, roundToPrecision } from '@/utils/formatters'; // Import the new formatter
+import { format, parseISO, getHours, getMinutes } from 'date-fns'; // Import date-fns utilities
 
 interface UsePurchaseOrderStateProps {
   orderId?: number;
@@ -31,7 +32,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     }
     const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined;
     return {
-      orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      orderDate: MOCK_CURRENT_DATE.toISOString(), // Store as ISO string
       status: 'Draft',
       currency: 'AZN',
       warehouseId: defaultWarehouse, // Set default warehouseId
@@ -67,6 +68,11 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
   const [manualFeesExchangeRateInput, setManualFeesExchangeRateInput] = useState<string>(''); // New state for fees exchange rate input
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
 
+  // New states for date and time components
+  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
   useEffect(() => {
@@ -92,12 +98,19 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         setManualExchangeRateInput(existingOrder.exchangeRate !== undefined ? formatNumberInput(roundToPrecision(existingOrder.exchangeRate, 4)) : ''); // Apply formatter
         setManualFeesExchangeRate(existingOrder.feesExchangeRate); // Load existing fees exchange rate
         setManualFeesExchangeRateInput(existingOrder.feesExchangeRate !== undefined ? formatNumberInput(roundToPrecision(existingOrder.feesExchangeRate, 4)) : ''); // Load existing fees exchange rate input
+        
+        // Set date and time components from existing orderDate
+        const existingDate = parseISO(existingOrder.orderDate);
+        setDate(format(existingDate, 'yyyy-MM-dd'));
+        setSelectedHour(String(getHours(existingDate)).padStart(2, '0'));
+        setSelectedMinute(String(getMinutes(existingDate)).padStart(2, '0'));
+
         setIsFormInitialized(true);
       }
     } else if (!isEdit && !isFormInitialized) {
       const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined; // Also set here for re-initialization
       setOrder({
-        orderDate: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+        orderDate: MOCK_CURRENT_DATE.toISOString(), // Reset to ISO string
         status: 'Draft',
         currency: 'AZN',
         warehouseId: defaultWarehouse, // Set default warehouseId
@@ -114,6 +127,12 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       setManualFeesExchangeRate(undefined); // Reset fees exchange rate
       setManualFeesExchangeRateInput(''); // Reset fees exchange rate input
       setOpenComboboxIndex(null);
+
+      // Reset date and time components
+      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+
       setIsFormInitialized(true);
     }
   }, [orderId, isEdit, purchaseOrders, products, getNextId, isFormInitialized, mainCurrency, packingUnits, warehouses]);
@@ -129,6 +148,14 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       setManualFeesExchangeRateInput('');
     }
   }, [order.feesCurrency, settings.currencyRates]);
+
+  // Effect to update the order.orderDate when date, selectedHour, or selectedMinute changes
+  useEffect(() => {
+    if (date && selectedHour && selectedMinute) {
+      const combinedDateTime = `${date}T${selectedHour}:${selectedMinute}:00.000Z`;
+      setOrder(prev => ({ ...prev, orderDate: combinedDateTime }));
+    }
+  }, [date, selectedHour, selectedMinute, setOrder]);
 
 
   return {
@@ -159,5 +186,11 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     suppliers, // Pass suppliers array for dropdown
     warehouses, // Pass warehouses array for dropdown
     packingUnits, // Pass packingUnits array for dropdown
+    date, // New: Return date state
+    setDate, // New: Return setDate
+    selectedHour, // New: Return selectedHour state
+    setSelectedHour, // New: Return setSelectedHour
+    selectedMinute, // New: Return selectedMinute state
+    setSelectedMinute, // New: Return setSelectedMinute
   };
 };
