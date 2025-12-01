@@ -61,7 +61,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
 
   // Barcode scanner integration
   const handleBarcodeScanned = (barcode: string) => {
-    const product = products.find(p => p.sku === barcode);
+    const product = products.find(p => p.barcode === barcode); // Changed to search by barcode
     if (product) {
       setOrderItems(prevItems => {
         const newItems = [...prevItems];
@@ -84,13 +84,14 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
           return newItems; // Return original array as handleOrderItemChange will trigger state update
         } else {
           // Add new item
+          const piecePackingUnitId = packingUnits.find(pu => pu.name === 'Piece')?.id;
           newItems.push({
             productId: product.id,
             qty: '1', // Default to 1 base unit
             price: '', // Price is user-inputted for PO
             itemTotal: '',
             currency: selectedCurrency,
-            packingUnitId: product.defaultPackingUnitId || packingUnits.find(pu => pu.name === 'Piece')?.id,
+            packingUnitId: product.defaultPackingUnitId || piecePackingUnitId, // Use product's default or 'Piece'
             packingQuantity: '1', // Default to 1 packing unit if a default is set
           });
           toast.success(t('barcodeScanned'), { description: `${product.name} ${t('addedToOrder')}.` });

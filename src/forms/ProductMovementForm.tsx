@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { ProductMovement, Product, Warehouse } from '@/types'; // Import types from types file
 import { format, parseISO } from 'date-fns'; // Import format and parseISO
+import { useBarcodeScanner } from '@/hooks/useBarcodeScanner'; // Import useBarcodeScanner
+import { toast } from 'sonner'; // Import toast
 
 interface ProductMovementFormProps {
   movementId?: number;
@@ -25,7 +27,7 @@ interface MovementItemState {
 }
 
 const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, onSuccess }) => {
-  const { productMovements, products, warehouses, saveItem, showAlertModal, setProducts } = useData();
+  const { productMovements, products, warehouses, saveItem, showAlertModal, setProducts, packingUnits } = useData();
   const isEdit = movementId !== undefined;
 
   const [sourceWarehouseId, setSourceWarehouseId] = useState<number | ''>('');
@@ -177,6 +179,37 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
 
   const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+  // Barcode scanner integration for ProductMovementForm
+  const handleBarcodeScanned = (barcode: string) => {
+    const product = products.find(p => p.barcode === barcode); // Search by barcode
+    if (product) {
+      setMovementItems(prevItems => {
+        const newItems = [...prevItems];
+        const existingItemIndex = newItems.findIndex(item => item.productId === product.id);
+
+        if (existingItemIndex !== -1) {
+          // If product already exists, increment quantity
+          const existingItem = newItems[existingItemIndex];
+          handleItemChange(existingItemIndex, 'quantity', existingItem.quantity + 1);
+          toast.success(t('barcodeScanned'), { description: `${product.name} ${t('quantityIncremented')}.` });
+          return newItems; // Return original array as handleItemChange will trigger state update
+        } else {
+          // Add new item
+          newItems.push({
+            productId: product.id,
+            quantity: 1,
+          });
+          toast.success(t('barcodeScanned'), { description: `${product.name} ${t('addedToOrder')}.` });
+          return newItems;
+        }
+      });
+    } else {
+      toast.error(t('productNotFound'), { description: t('productNotFoundDescription', { barcode }) });
+    }
+  };
+
+  useBarcodeScanner({ onBarcodeScanned: handleBarcodeScanned });
 
   return (
     <form onSubmit={handleSubmit}>

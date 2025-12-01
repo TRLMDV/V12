@@ -132,7 +132,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
 
   // Barcode scanner integration
   const handleBarcodeScanned = (barcode: string) => {
-    const product = products.find(p => p.sku === barcode);
+    const product = products.find(p => p.barcode === barcode); // Search by barcode
     if (product) {
       setUtilizationItems(prevItems => {
         const newItems = [...prevItems];

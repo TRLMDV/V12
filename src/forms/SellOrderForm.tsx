@@ -60,12 +60,15 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
     setSelectedMinute, // New: setSelectedMinute from hook
   } = useSellOrderForm({ orderId, onSuccess });
 
+  const { settings } = useData(); // Get settings for defaultMarkup
+  const defaultMarkup = settings.defaultMarkup / 100; // Get default markup
+
   const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   // Barcode scanner integration
   const handleBarcodeScanned = (barcode: string) => {
-    const product = products.find(p => p.sku === barcode);
+    const product = products.find(p => p.barcode === barcode); // Changed to search by barcode
     if (product) {
       setOrderItems(prevItems => {
         const newItems = [...prevItems];
@@ -88,8 +91,8 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           return newItems; // Return original array as handleOrderItemChange will trigger state update
         } else {
           // Add new item
-          const defaultMarkup = order.vatPercent !== undefined ? order.vatPercent / 100 : 0; // Use order's VAT for markup calculation
           const sellingPrice = (product.averageLandedCost || 0) * (1 + defaultMarkup);
+          const piecePackingUnitId = packingUnits.find(pu => pu.name === 'Piece')?.id;
 
           newItems.push({
             productId: product.id,
@@ -97,7 +100,7 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
             price: sellingPrice.toFixed(2),
             itemTotal: sellingPrice.toFixed(2),
             landedCost: product.averageLandedCost,
-            packingUnitId: product.defaultPackingUnitId || packingUnits.find(pu => pu.name === 'Piece')?.id,
+            packingUnitId: product.defaultPackingUnitId || piecePackingUnitId, // Use product's default or 'Piece'
             packingQuantity: '1', // Default to 1 packing unit if a default is set
           });
           toast.success(t('barcodeScanned'), { description: `${product.name} ${t('addedToOrder')}.` });
