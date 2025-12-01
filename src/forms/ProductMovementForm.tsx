@@ -318,7 +318,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                         placeholder={t('searchProductBySku')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full"
+                        className="w-full no-spin-buttons" // Apply the class here
                       />
                     </div>
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>

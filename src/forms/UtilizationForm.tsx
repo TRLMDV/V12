@@ -243,7 +243,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
                   </PopoverTrigger>
                   <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                     <Command>
-                      <CommandInput placeholder={t('searchProductBySku')} />
+                      <CommandInput placeholder={t('searchProductBySku')} className="no-spin-buttons" /> {/* Apply the class here */}
                       <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                       <CommandGroup>
                         {products.map((p) => (

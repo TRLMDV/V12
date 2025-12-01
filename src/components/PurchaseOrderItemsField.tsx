@@ -104,7 +104,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
                       placeholder={t('searchProductBySku')}
                       value={searchQuery}
                       onValueChange={(currentValue) => setSearchQuery(currentValue)}
-                      className="w-full"
+                      className="w-full no-spin-buttons" // Apply the class here
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup key={searchQuery}>

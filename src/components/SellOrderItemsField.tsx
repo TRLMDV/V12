@@ -109,44 +109,43 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                   <Command shouldFilter={false}>
-                    <CommandInput
-                      placeholder={t('searchProductBySku')}
+                    <CommandInput placeholder={t('searchProductBySku')}
                       value={searchQuery}
-                      onValueChange={(currentValue) => setSearchQuery(currentValue)}
-                      className="w-full"
+                      onValueChange={(currentValue) => {
+                        setSearchQuery(currentValue);
+                      }}
+                      className="no-spin-buttons" // Apply the class here
                     />
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                     <CommandGroup key={searchQuery}>
-                      {filteredProducts.map((product) => {
-                        return (
-                          <CommandItem
-                            key={product.id}
-                            value={product.id.toString()} // Use product ID as value
-                            onSelect={() => {
-                              handleOrderItemChange(index, 'productId', product.id);
-                              setOpenComboboxIndex(null);
-                              setSearchQuery(''); // Clear search query after selection
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                item.productId === product.id ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {product.name} ({product.sku})
-                            {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined ? (
-                              <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
-                                ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
-                              </span>
-                            ) : (
-                              <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
-                                ({t('selectWarehouseToSeeStock')})
-                              </span>
+                      {filteredProducts.map((product) => (
+                        <CommandItem
+                          key={product.id}
+                          value={`${product.name} ${product.sku}`}
+                          onSelect={() => {
+                            handleOrderItemChange(index, 'productId', product.id);
+                            setOpenComboboxIndex(null);
+                            setSearchQuery(''); // Clear search query after selection
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              item.productId === product.id ? "opacity-100" : "opacity-0"
                             )}
-                          </CommandItem>
-                        );
-                      })}
+                          />
+                          {product.name} ({product.sku})
+                          {warehouseId !== undefined && product.stock && product.stock[warehouseId] !== undefined ? (
+                            <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
+                              ({t('stockAvailable')}: {product.stock[warehouseId]} {t('piece')})
+                            </span>
+                          ) : (
+                            <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
+                              ({t('selectWarehouseToSeeStock')})
+                            </span>
+                          )}
+                        </CommandItem>
+                      ))}
                     </CommandGroup>
                   </Command>
                 </PopoverContent>
