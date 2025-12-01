@@ -399,6 +399,12 @@ const ProductMovement: React.FC = () => {
         onClose={() => setIsDetailsModalOpen(false)}
         title={t('detailsForMovement') + ` #${selectedMovementDetails?.id}`}
       >
+        <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
+          <p><strong>{t('fromWarehouse')}:</strong> {selectedMovementDetails?.sourceWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.sourceWarehouseId] : 'N/A'}</p>
+          <p><strong>{t('toWarehouse')}:</strong> {selectedMovementDetails?.destWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.destWarehouseId] : 'N/A'}</p>
+          <p><strong>{t('date')}:</strong> {selectedMovementDetails?.date ? format(parseISO(selectedMovementDetails.date), 'yyyy-MM-dd HH:mm') : 'N/A'}</p>
+        </div>
+        <h3 className="font-semibold mt-4 mb-2">{t('items')}</h3>
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">

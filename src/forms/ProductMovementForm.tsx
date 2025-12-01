@@ -13,6 +13,7 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { ProductMovement, Product, Warehouse } from '@/types'; // Import types from types file
+import { format, parseISO } from 'date-fns'; // Import format and parseISO
 
 interface ProductMovementFormProps {
   movementId?: number;
@@ -34,6 +35,29 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
   const [searchQuery, setSearchQuery] = useState(''); // New state for product search input
 
+  // New states for date and time components
+  const [date, setDate] = useState(() => {
+    if (isEdit && movementId !== undefined) {
+      const existingMovement = productMovements.find(m => m.id === movementId);
+      if (existingMovement) return format(parseISO(existingMovement.date), 'yyyy-MM-dd');
+    }
+    return format(MOCK_CURRENT_DATE, 'yyyy-MM-dd');
+  });
+  const [selectedHour, setSelectedHour] = useState<string>(() => {
+    if (isEdit && movementId !== undefined) {
+      const existingMovement = productMovements.find(m => m.id === movementId);
+      if (existingMovement) return String(new Date(existingMovement.date).getHours()).padStart(2, '0');
+    }
+    return String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0');
+  });
+  const [selectedMinute, setSelectedMinute] = useState<string>(() => {
+    if (isEdit && movementId !== undefined) {
+      const existingMovement = productMovements.find(m => m.id === movementId);
+      if (existingMovement) return String(new Date(existingMovement.date).getMinutes()).padStart(2, '0');
+    }
+    return String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0');
+  });
+
   useEffect(() => {
     if (isEdit) {
       const existingMovement = productMovements.find(m => m.id === movementId);
@@ -41,11 +65,17 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
         setSourceWarehouseId(existingMovement.sourceWarehouseId);
         setDestWarehouseId(existingMovement.destWarehouseId);
         setMovementItems(existingMovement.items.map(item => ({ productId: item.productId, quantity: item.quantity })));
+        setDate(format(parseISO(existingMovement.date), 'yyyy-MM-dd'));
+        setSelectedHour(String(new Date(existingMovement.date).getHours()).padStart(2, '0'));
+        setSelectedMinute(String(new Date(existingMovement.date).getMinutes()).padStart(2, '0'));
       }
     } else {
       setSourceWarehouseId('');
       setDestWarehouseId('');
       setMovementItems([{ productId: '', quantity: 1 }]);
+      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
     }
   }, [movementId, isEdit, productMovements]);
 
@@ -93,6 +123,9 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       return;
     }
 
+    // Combine date and time into a single ISO string
+    const movementDateTime = `${date}T${selectedHour}:${selectedMinute}:00.000Z`;
+
     // Deep copy products for validation and potential update
     const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
     const currentMovement = isEdit ? productMovements.find(m => m.id === movementId) : null;
@@ -136,16 +169,55 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       sourceWarehouseId: sourceWarehouseId as number,
       destWarehouseId: destWarehouseId as number,
       items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
-      date: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      date: movementDateTime, // Use the combined date and time
     };
 
     saveItem('productMovements', movementToSave);
     onSuccess();
   };
 
+  const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="date" className="text-right">
+            {t('date')}
+          </Label>
+          <div className="col-span-3 flex gap-2">
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="flex-grow"
+              required
+            />
+            <Select onValueChange={setSelectedHour} value={selectedHour}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('hours')} />
+              </SelectTrigger>
+              <SelectContent>
+                {hoursArray.map(h => (
+                  <SelectItem key={h} value={h}>{h}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={setSelectedMinute} value={selectedMinute}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('minutes')} />
+              </SelectTrigger>
+              <SelectContent>
+                {minutesArray.map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="sourceWarehouseId" className="text-right">
             {t('fromWarehouse')}
