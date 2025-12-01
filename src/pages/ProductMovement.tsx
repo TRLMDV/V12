@@ -17,6 +17,7 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '
 import { cn } from '@/lib/utils'; // Added cn utility
 import PaginationControls from '@/components/PaginationControls'; // Import PaginationControls
 import type { ProductMovement, Product, SellOrder, Customer } from '@/types'; // Import SellOrder and Customer types
+import { format, parseISO } from 'date-fns'; // Import format and parseISO
 
 type SortConfig = {
   key: keyof ProductMovement | 'sourceWarehouseName' | 'destWarehouseName' | 'totalItems' | 'linkedSellOrderCustomerDisplay';
@@ -74,10 +75,10 @@ const ProductMovement: React.FC = () => {
       filteredMovements = filteredMovements.filter(m => m.destWarehouseId === filterDestWarehouseId);
     }
     if (startDateFilter) {
-      filteredMovements = filteredMovements.filter(m => m.date >= startDateFilter);
+      filteredMovements = filteredMovements.filter(m => parseISO(m.date) >= parseISO(startDateFilter)); // Parse ISO string
     }
     if (endDateFilter) {
-      filteredMovements = filteredMovements.filter(m => m.date <= endDateFilter);
+      filteredMovements = filteredMovements.filter(m => parseISO(m.date) <= parseISO(endDateFilter)); // Parse ISO string
     }
     if (productFilterId !== 'all') {
       filteredMovements = filteredMovements.filter(m =>
@@ -102,8 +103,13 @@ const ProductMovement: React.FC = () => {
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
         const key = sortConfig.key;
-        const valA = a[key] === undefined ? '' : a[key];
-        const valB = b[key] === undefined ? '' : b[key];
+        let valA: any = a[key];
+        let valB: any = b[key];
+
+        if (key === 'date') {
+          valA = parseISO(String(valA)).getTime();
+          valB = parseISO(String(valB)).getTime();
+        }
 
         let comparison = 0;
         if (typeof valA === 'string' || typeof valB === 'string') {
@@ -348,7 +354,7 @@ const ProductMovement: React.FC = () => {
                   </TableCell>
                   <TableCell className="p-3">{m.sourceWarehouseName}</TableCell>
                   <TableCell className="p-3">{m.destWarehouseName}</TableCell>
-                  <TableCell className="p-3">{m.date}</TableCell>
+                  <TableCell className="p-3">{format(parseISO(m.date), 'yyyy-MM-dd HH:mm')}</TableCell>
                   <TableCell className="p-3 font-bold">{m.totalItems}</TableCell>
                   <TableCell className="p-3">
                     <Button variant="link" onClick={() => viewMovementDetails(m.id)} className="mr-2 p-0 h-auto">

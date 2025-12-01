@@ -17,6 +17,7 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '
 import { cn } from '@/lib/utils';
 import PaginationControls from '@/components/PaginationControls';
 import type { UtilizationOrder, Product, Warehouse } from '@/types';
+import { format, parseISO } from 'date-fns'; // Import format and parseISO
 
 type SortConfig = {
   key: keyof UtilizationOrder | 'warehouseName' | 'totalItems';
@@ -57,10 +58,10 @@ const Utilization: React.FC = () => {
       filteredOrders = filteredOrders.filter(order => order.warehouseId === filterWarehouseId);
     }
     if (startDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.date >= startDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.date) >= parseISO(startDateFilter)); // Parse ISO string
     }
     if (endDateFilter) {
-      filteredOrders = filteredOrders.filter(order => order.date <= endDateFilter);
+      filteredOrders = filteredOrders.filter(order => parseISO(order.date) <= parseISO(endDateFilter)); // Parse ISO string
     }
     if (productFilterId !== 'all') {
       filteredOrders = filteredOrders.filter(order =>
@@ -80,8 +81,13 @@ const Utilization: React.FC = () => {
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
         const key = sortConfig.key;
-        const valA = a[key] === undefined ? '' : a[key];
-        const valB = b[key] === undefined ? '' : b[key];
+        let valA: any = a[key];
+        let valB: any = b[key];
+
+        if (key === 'date') {
+          valA = parseISO(String(valA)).getTime();
+          valB = parseISO(String(valB)).getTime();
+        }
 
         let comparison = 0;
         if (typeof valA === 'string' || typeof valB === 'string') {
@@ -300,7 +306,7 @@ const Utilization: React.FC = () => {
                   <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
                   <TableCell className="p-3 font-semibold">#{order.id}</TableCell>
                   <TableCell className="p-3">{order.warehouseName}</TableCell>
-                  <TableCell className="p-3">{order.date}</TableCell>
+                  <TableCell className="p-3">{format(parseISO(order.date), 'yyyy-MM-dd HH:mm')}</TableCell>
                   <TableCell className="p-3 font-bold">{order.totalItems}</TableCell>
                   <TableCell className="p-3 text-sm italic">{order.comment || t('noComment')}</TableCell> {/* Display comment */}
                   <TableCell className="p-3">
@@ -348,7 +354,7 @@ const Utilization: React.FC = () => {
       >
         <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
           <p><strong>{t('warehouse')}:</strong> {selectedOrderDetails?.warehouseId !== undefined ? warehouseMap[selectedOrderDetails.warehouseId] : 'N/A'}</p>
-          <p><strong>{t('date')}:</strong> {selectedOrderDetails?.date}</p>
+          <p><strong>{t('date')}:</strong> {selectedOrderDetails?.date ? format(parseISO(selectedOrderDetails.date), 'yyyy-MM-dd HH:mm') : 'N/A'}</p>
           <p><strong>{t('comment')}:</strong> {selectedOrderDetails?.comment || t('noComment')}</p> {/* Display comment in details */}
         </div>
         <h3 className="font-semibold mt-4 mb-2">{t('items')}</h3>

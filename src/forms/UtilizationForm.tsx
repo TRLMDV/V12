@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { UtilizationOrder, Product, Warehouse } from '@/types';
 import { Textarea } from '@/components/ui/textarea'; // Import Textarea
+import { format, parseISO } from 'date-fns'; // Import format and parseISO
 
 interface UtilizationFormProps {
   orderId?: number;
@@ -29,26 +30,56 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
   const { utilizationOrders, products, warehouses, saveItem, showAlertModal } = useData();
   const isEdit = orderId !== undefined;
 
-  const [date, setDate] = useState(MOCK_CURRENT_DATE.toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => {
+    if (isEdit && orderId !== undefined) {
+      const existingOrder = utilizationOrders.find(o => o.id === orderId);
+      if (existingOrder) return format(parseISO(existingOrder.date), 'yyyy-MM-dd');
+    }
+    return format(MOCK_CURRENT_DATE, 'yyyy-MM-dd');
+  });
   const [warehouseId, setWarehouseId] = useState<number | ''>('');
   const [utilizationItems, setUtilizationItems] = useState<UtilizationItemState[]>([{ productId: '', quantity: 1 }]);
   const [comment, setComment] = useState(''); // New state for comment
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null);
 
+  // New states for hour and minute
+  const [selectedHour, setSelectedHour] = useState<string>(() => {
+    if (isEdit && orderId !== undefined) {
+      const existingOrder = utilizationOrders.find(o => o.id === orderId);
+      if (existingOrder && existingOrder.date) {
+        return String(new Date(existingOrder.date).getHours()).padStart(2, '0');
+      }
+    }
+    return String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0');
+  });
+  const [selectedMinute, setSelectedMinute] = useState<string>(() => {
+    if (isEdit && orderId !== undefined) {
+      const existingOrder = utilizationOrders.find(o => o.id === orderId);
+      if (existingOrder && existingOrder.date) {
+        return String(new Date(existingOrder.date).getMinutes()).padStart(2, '0');
+      }
+    }
+    return String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0');
+  });
+
   useEffect(() => {
     if (isEdit) {
       const existingOrder = utilizationOrders.find(o => o.id === orderId);
       if (existingOrder) {
-        setDate(existingOrder.date);
+        setDate(format(parseISO(existingOrder.date), 'yyyy-MM-dd'));
         setWarehouseId(existingOrder.warehouseId);
         setUtilizationItems(existingOrder.items.map(item => ({ productId: item.productId, quantity: item.quantity })));
         setComment(existingOrder.comment || ''); // Load existing comment
+        setSelectedHour(String(new Date(existingOrder.date).getHours()).padStart(2, '0'));
+        setSelectedMinute(String(new Date(existingOrder.date).getMinutes()).padStart(2, '0'));
       }
     } else {
-      setDate(MOCK_CURRENT_DATE.toISOString().slice(0, 10));
+      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
       setWarehouseId('');
       setUtilizationItems([{ productId: '', quantity: 1 }]);
       setComment(''); // Reset comment for new order
+      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
     }
   }, [orderId, isEdit, utilizationOrders]);
 
@@ -80,9 +111,12 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
       return;
     }
 
+    // Combine date and time into a single ISO string
+    const utilizationDateTime = `${date}T${selectedHour}:${selectedMinute}:00.000Z`;
+
     const orderToSave: UtilizationOrder = {
       id: orderId || 0,
-      date: date,
+      date: utilizationDateTime, // Use the combined date and time
       warehouseId: warehouseId as number,
       items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
       comment: comment.trim() || undefined, // Save comment, or undefined if empty
@@ -92,6 +126,9 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
     onSuccess();
   };
 
+  const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
@@ -99,14 +136,36 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
           <Label htmlFor="date" className="text-right">
             {t('date')}
           </Label>
-          <Input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="col-span-3"
-            required
-          />
+          <div className="col-span-3 flex gap-2">
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="flex-grow"
+              required
+            />
+            <Select onValueChange={setSelectedHour} value={selectedHour}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('hours')} />
+              </SelectTrigger>
+              <SelectContent>
+                {hoursArray.map(h => (
+                  <SelectItem key={h} value={h}>{h}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={setSelectedMinute} value={selectedMinute}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('minutes')} />
+              </SelectTrigger>
+              <SelectContent>
+                {minutesArray.map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4">
