@@ -1,3 +1,5 @@
+"use client";
+
 import { LucideIcon } from 'lucide-react';
 
 // --- Core Types ---
@@ -15,12 +17,12 @@ export interface Product extends BaseItem {
   sku: string;
   description?: string;
   imageUrl?: string;
-  category: string;
+  // category: string; // Removed as it's no longer used in the form
   averageLandedCost: number; // Average cost including purchase price, fees, etc.
   stock: { [warehouseId: number]: number }; // Stock quantity per warehouse
-  minStockLevel: number;
-  status: ProductStatus;
-  packingUnits?: PackingUnit[]; // Optional: List of packing units for this product
+  minStock: number; // Renamed from minStockLevel
+  status?: ProductStatus; // Made optional as it's not fully implemented
+  defaultPackingUnitId?: Id; // New: Default packing unit for this product
 }
 
 export interface PackingUnit extends BaseItem {
@@ -30,12 +32,12 @@ export interface PackingUnit extends BaseItem {
 
 export interface Warehouse extends BaseItem {
   location: string;
-  type: 'Main' | 'Storage' | 'Retail';
+  type: 'Main' | 'Secondary'; // Changed from 'Storage' | 'Retail' to 'Secondary' for consistency
 }
 
 // --- Contacts ---
 export interface Supplier extends BaseItem {
-  contactPerson?: string;
+  contact?: string; // Renamed from contactPerson
   email?: string;
   phone?: string;
   address?: string;
@@ -43,7 +45,7 @@ export interface Supplier extends BaseItem {
 }
 
 export interface Customer extends BaseItem {
-  contactPerson?: string;
+  contact?: string; // Renamed from contactPerson
   email?: string;
   phone?: string;
   address?: string;
@@ -68,7 +70,7 @@ export interface PurchaseOrder {
   id: Id;
   contactId: Id; // Supplier ID
   warehouseId: Id; // Destination warehouse ID
-  orderDate: string; // ISO date string
+  orderDate: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
   status: OrderStatus;
   items: OrderItem[];
   currency: Currency; // Currency of the order items
@@ -84,7 +86,7 @@ export interface SellOrder {
   id: Id;
   contactId: Id; // Customer ID
   warehouseId: Id; // Source warehouse ID
-  orderDate: string; // ISO date string
+  orderDate: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
   status: SellOrderStatus;
   items: OrderItem[];
   vatPercent: number;
@@ -93,7 +95,6 @@ export interface SellOrder {
   exchangeRate?: number; // Rate to main currency if not main currency
   productMovementId?: Id; // Link to generated product movement
   incomingPaymentId?: Id; // Link to generated incoming payment
-  comment?: string; // New: Optional comment field
 }
 
 export interface PurchaseOrderItemState {
@@ -110,19 +111,20 @@ export interface PurchaseOrderItemState {
 // --- Payments ---
 export type PaymentType = 'Incoming' | 'Outgoing';
 export type PaymentStatus = 'Paid' | 'Partially Paid' | 'Unpaid';
-export type PaymentCategory = 'products' | 'Rent' | 'Utilities' | 'Salaries' | 'Office Supplies' | 'Marketing' | 'Travel' | 'Maintenance' | 'Software Subscriptions' | 'initialCapital' | 'Withdrawal' | 'Manual Expense'; // Added 'Manual Expense'
+// Simplified PaymentCategory to reflect actual stored values or custom names
+export type PaymentCategory = 'products' | 'fees' | 'initialCapital' | 'Withdrawal' | string;
 
 export interface Payment {
   id: Id;
   orderId?: Id; // Linked PurchaseOrder or SellOrder ID
-  paymentCategory: PaymentCategory;
-  date: string; // ISO date string
+  paymentCategory?: PaymentCategory; // Made optional, can be a custom string from settings
+  manualDescription?: string; // Renamed from description for clarity
+  date: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
   amount: number;
   paymentCurrency: Currency;
   paymentExchangeRate?: number; // Rate to main currency if not main currency
   method: string; // e.g., "Bank Transfer", "Cash", "Credit Card"
   bankAccountId?: Id; // New: Link to bank account
-  description?: string; // New: Optional description for manual payments
 }
 
 export interface PaymentCategorySetting {
@@ -136,15 +138,15 @@ export interface ProductMovement {
   sourceWarehouseId: Id;
   destWarehouseId: Id;
   items: { productId: Id; quantity: number }[];
-  date: string; // ISO date string
+  date: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
 }
 
 // --- Utilization Order ---
 export interface UtilizationOrder {
   id: Id;
   warehouseId: Id;
-  orderDate: string; // ISO date string
-  items: { productId: Id; qty: number; packingUnitId?: Id; packingQuantity?: number }[];
+  date: string; // Renamed from orderDate (ISO date string YYYY-MM-DDTHH:mm:ss.sssZ)
+  items: { productId: Id; quantity: number }[]; // Simplified items structure
   comment?: string; // Optional comment field
 }
 
@@ -158,8 +160,8 @@ export interface CurrencyRates {
 export interface BankAccount extends BaseItem {
   currency: Currency;
   initialBalance: number;
-  currentBalance: number;
-  creationDate: string; // ISO date string
+  // currentBalance: number; // Removed as it's a derived value
+  creationDate: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
 }
 
 export interface BankTransaction {
@@ -197,15 +199,18 @@ export interface Settings {
 
 // --- Quick Buttons ---
 export type QuickButtonAction =
-  'quickPurchaseOrderAdd' | 'quickSellOrderAdd' | 'quickProductMovement' |
-  'quickProductAdd' | 'quickSupplierAdd' | 'quickCustomerAdd' |
-  'quickIncomingPaymentsAdd' | 'quickOutgoingPaymentsAdd' | 'quickWarehouseAdd' |
-  'quickUtilization' | 'quickBankDeposit' | 'quickBankWithdrawal';
+  'addPurchaseOrder' | 'addSellOrder' | 'addProductMovement' |
+  'addProduct' | 'addSupplier' | 'addCustomer' |
+  'addIncomingPayment' | 'addOutgoingPayment' | 'addWarehouse' |
+  'addUtilizationOrder' | 'bankDeposit' | 'bankWithdrawal';
+
+export type QuickButtonColor =
+  'bg-blue-500 hover:bg-blue-600' | 'bg-green-500 hover:bg-green-600' | 'bg-red-500 hover:bg-red-600' |
+  'bg-purple-500 hover:bg-purple-600' | 'bg-orange-500 hover:bg-orange-600' | 'bg-yellow-500 hover:bg-yellow-600' |
+  'bg-emerald-500 hover:bg-emerald-600' | 'bg-indigo-500 hover:bg-indigo-600' | 'bg-pink-500 hover:bg-pink-600' |
+  'bg-teal-500 hover:bg-teal-600';
 
 export type QuickButtonSize = 'sm' | 'md' | 'lg';
-export type QuickButtonColor =
-  'blue' | 'green' | 'red' | 'purple' | 'orange' | 'yellow' |
-  'emerald' | 'indigo' | 'pink' | 'teal';
 
 export interface QuickButton extends BaseItem {
   label: string;
@@ -218,8 +223,22 @@ export interface QuickButton extends BaseItem {
 // --- Reminders ---
 export interface Reminder {
   id: Id;
-  date: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
+  dateTime: string; // Renamed from date (ISO date string YYYY-MM-DDTHH:mm:ss.sssZ)
   message: string;
+}
+
+// --- Recycle Bin ---
+export type CollectionKey =
+  'products' | 'suppliers' | 'customers' | 'warehouses' | 'purchaseOrders' | 'sellOrders' |
+  'incomingPayments' | 'outgoingPayments' | 'productMovements' | 'utilizationOrders' |
+  'paymentCategories' | 'packingUnits' | 'bankAccounts' | 'quickButtons' | 'reminders';
+
+export interface RecycleBinItem {
+  id: string; // Unique ID for the recycle bin item (e.g., 'products-1-timestamp')
+  originalId: Id; // Original ID of the item
+  collectionKey: CollectionKey;
+  data: any; // The full item data
+  deletedAt: string; // ISO date string
 }
 
 // --- Data Context State ---
@@ -240,24 +259,32 @@ export interface DataState {
 
 // --- Data Context Actions ---
 export interface DataActions {
-  saveItem: <T extends keyof DataState>(key: T, item: DataState[T][number]) => void;
-  deleteItem: <T extends keyof DataState>(key: T, id: Id) => void;
-  getNewId: () => Id;
-  getNextId: (key: keyof DataState) => Id;
-  updateStockFromOrder: (order: PurchaseOrder | SellOrder, oldOrder?: PurchaseOrder | SellOrder | null) => void;
-  updateAverageCosts: (order: PurchaseOrder) => void;
-  setSettings: (newSettings: Settings) => void;
-  setProducts: (products: Product[]) => void; // New: Setter for products array
-  setBankAccounts: (bankAccounts: BankAccount[]) => void; // New: Setter for bank accounts array
-  addBankTransaction: (bankAccountId: Id, transaction: Omit<BankTransaction, 'id' | 'balance'>) => void;
+  saveItem: <T extends CollectionKey>(key: T, item: any) => void;
+  deleteItem: (key: CollectionKey, id: Id) => void;
+  getNextId: (key: CollectionKey) => Id;
+  setNextIdForCollection: (key: CollectionKey, nextId: Id) => void;
+  updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
+  updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
+  updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void;
+  setSettings: React.Dispatch<React.SetStateAction<Settings>>;
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>;
   showAlertModal: (title: string, message: string) => void;
-  showConfirmModal: (title: string, message: string, onConfirm: () => void) => void;
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void;
   currencyRates: CurrencyRates;
   packingUnitMap: { [id: number]: PackingUnit };
-  convertCurrency: (amount: number, fromCurrency: Currency, toCurrency: Currency, customRate?: number) => number;
-  getCurrencyRate: (fromCurrency: Currency, toCurrency: Currency) => number;
-  getCurrencySymbol: (currencyCode: Currency) => string;
-  getCurrencyName: (currencyCode: Currency) => string;
+  warehouseMap: { [id: number]: Warehouse };
+  convertCurrency: (amount: number, fromCurrency: Currency, toCurrency: Currency) => number;
+  runningBalancesMap: Map<number, Map<string, number>>;
+  nextIds: { [key: string]: number };
+  setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
+  recycleBin: RecycleBinItem[];
+  setRecycleBin: React.Dispatch<React.SetStateAction<RecycleBinItem[]>>;
+  addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
+  restoreFromRecycleBin: (recycleItemId: string) => void;
+  deletePermanentlyFromRecycleBin: (recycleItemId: string) => void;
+  cleanRecycleBin: () => void;
+  getItemSummary: (item: any, collectionKey: CollectionKey) => string;
 }
 
 // --- Combined Context Type ---
