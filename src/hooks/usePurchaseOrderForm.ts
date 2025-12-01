@@ -126,7 +126,9 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
 
   return {
     order,
+    setOrder,
     orderItems,
+    setOrderItems, // Expose setOrderItems
     supplierMap,
     productMap,
     warehouseMap,

@@ -131,6 +131,7 @@ export const useSellOrderForm = ({ orderId, onSuccess }: UseSellOrderFormProps) 
     order,
     setOrder, // Exposed for potential external updates if needed, though less likely with modularity
     orderItems,
+    setOrderItems, // Expose setOrderItems
     customerMap,
     productMap,
     warehouseMap,
