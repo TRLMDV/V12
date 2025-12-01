@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { t } from '@/utils/i18n';
 import { BankAccount, Currency } from '@/types';
+import { format, parseISO, getHours, getMinutes, setHours, setMinutes, setSeconds } from 'date-fns'; // Import date-fns utilities
 
 const ALL_CURRENCIES: Currency[] = [
   'AZN', 'USD', 'EUR', 'RUB', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'CNY', 'KWD', 'BHD', 'OMR', 'JOD', 'GIP', 'KYD', 'KRW', 'SGD', 'INR', 'MXN', 'SEK', 'THB', 'AFN', 'ALL', 'DZD', 'AOA', 'XCD', 'ARS', 'AMD', 'AWG', 'SHP', 'BSD', 'BDT', 'BBD', 'BYN', 'BZD', 'XOF', 'BMD', 'BTN', 'BOB', 'BAM', 'BWP', 'BRL', 'BND', 'BGN', 'BIF', 'KHR', 'XAF', 'CVE', 'CDF', 'KMF', 'NZD', 'CRC', 'CUP', 'XCG', 'CZK', 'DKK', 'DJF', 'DOP', 'EGP', 'ERN', 'SZL', 'ZAR', 'ETB', 'FKP', 'FJD', 'XPF', 'GMD', 'GEL', 'GHS', 'GTQ', 'GNF', 'GYD', 'HTG', 'HNL', 'HKD', 'HUF', 'ISK', 'IDR', 'IRR', 'IQD', 'ILS', 'JMD', 'KZT', 'KES', 'KPW', 'KGS', 'LAK', 'LBP', 'LSL', 'LRD', 'LYD', 'MDL', 'MOP', 'MGA', 'MWK', 'MYR', 'MVR', 'MRU', 'MZN', 'MMK', 'NAD', 'NPR', 'NIO', 'NGN', 'NOK', 'PKR', 'PGK', 'PYG', 'PEN', 'PHP', 'PLN', 'QAR', 'RON', 'RSD', 'SCR', 'SLE', 'SBD', 'SOS', 'SSP', 'STN', 'SRD', 'SYP', 'TWD', 'TJS', 'TZS', 'TTD', 'TND', 'TRY', 'TMT', 'UGX', 'UAH', 'AED', 'UYU', 'UZS', 'VUV', 'VES', 'VED', 'VND', 'YER', 'ZMW', 'ZWG'
@@ -27,7 +28,11 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
   const [name, setName] = useState('');
   const [currency, setCurrency] = useState<Currency>(settings.mainCurrency);
   const [initialBalance, setInitialBalance] = useState('0.00');
-  const [creationDate, setCreationDate] = useState(MOCK_CURRENT_DATE.toISOString().slice(0, 10)); // New state for creation date
+  
+  // New states for date and time components
+  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
 
   useEffect(() => {
     if (isEdit) {
@@ -36,13 +41,22 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
         setName(existingAccount.name);
         setCurrency(existingAccount.currency);
         setInitialBalance(String(existingAccount.initialBalance));
-        setCreationDate(existingAccount.creationDate || MOCK_CURRENT_DATE.toISOString().slice(0, 10)); // Load existing date or default
+        
+        // Load existing date and time
+        const existingDate = parseISO(existingAccount.creationDate);
+        setDate(format(existingDate, 'yyyy-MM-dd'));
+        setSelectedHour(String(getHours(existingDate)).padStart(2, '0'));
+        setSelectedMinute(String(getMinutes(existingDate)).padStart(2, '0'));
       }
     } else {
       setName('');
       setCurrency(settings.mainCurrency);
       setInitialBalance('0.00');
-      setCreationDate(MOCK_CURRENT_DATE.toISOString().slice(0, 10)); // Default to current date for new accounts
+      
+      // Default to current date and time for new accounts
+      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
+      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
     }
   }, [bankAccountId, isEdit, bankAccounts, settings.mainCurrency]);
 
@@ -66,17 +80,22 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
       showAlertModal(t('validationError'), t('invalidInitialBalance'));
       return;
     }
-    if (!creationDate) {
+    if (!date || !selectedHour || !selectedMinute) { // Validate all date/time components
       showAlertModal(t('validationError'), t('bankAccountCreationDateRequired'));
       return;
     }
+
+    // Combine date and time into a single ISO string
+    let creationDateTime = setHours(parseISO(date), parseInt(selectedHour));
+    creationDateTime = setMinutes(creationDateTime, parseInt(selectedMinute));
+    creationDateTime = setSeconds(creationDateTime, 0); // Set seconds to 0 for consistency
 
     const accountToSave: BankAccount = {
       id: bankAccountId || 0, // ID will be handled by saveItem if new
       name: name.trim(),
       currency: currency,
       initialBalance: parsedInitialBalance,
-      creationDate: creationDate, // Save the creation date
+      creationDate: creationDateTime.toISOString(), // Save the combined ISO string
     };
 
     console.log("BankAccountForm: Calling saveItem with:", accountToSave);
@@ -84,6 +103,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
     console.log("BankAccountForm: saveItem called, calling onSuccess.");
     onSuccess();
   };
+
+  const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   return (
     <form onSubmit={handleSubmit}>
@@ -119,14 +141,36 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
           <Label htmlFor="creationDate" className="text-right">
             {t('creationDate')}
           </Label>
-          <Input
-            id="creationDate"
-            type="date"
-            value={creationDate}
-            onChange={(e) => setCreationDate(e.target.value)}
-            className="col-span-3"
-            required
-          />
+          <div className="col-span-3 flex gap-2">
+            <Input
+              id="creationDate"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="flex-grow"
+              required
+            />
+            <Select onValueChange={setSelectedHour} value={selectedHour}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('hours')} />
+              </SelectTrigger>
+              <SelectContent>
+                {hoursArray.map(h => (
+                  <SelectItem key={h} value={h}>{h}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={setSelectedMinute} value={selectedMinute}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue placeholder={t('minutes')} />
+              </SelectTrigger>
+              <SelectContent>
+                {minutesArray.map(m => (
+                  <SelectItem key={m} value={m}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         {!isEdit && ( // Only show initial balance for new accounts
           <div className="grid grid-cols-4 items-center gap-4">

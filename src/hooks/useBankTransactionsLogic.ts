@@ -60,7 +60,7 @@ export function useBankTransactionsLogic(
     // Initial balance as a transaction (using epoch date to ensure it's sorted first)
     transactions.push({
       id: `initial-${selectedAccount.id}`,
-      date: selectedAccount.creationDate || '1970-01-01', // Use creationDate for initial balance
+      date: selectedAccount.creationDate, // Use creationDate for initial balance, which now includes time
       description: t('initialBalance'),
       amount: selectedAccount.initialBalance,
       type: 'initial',
@@ -202,7 +202,7 @@ export function useBankTransactionsLogic(
   const excelExportData = useMemo(() => {
     return filteredTransactions.map(t => ({
       'Transaction ID': t.linkedOrderDisplay || 'N/A', // Use the descriptive ID
-      Date: format(new Date(t.date), 'yyyy-MM-dd'),
+      Date: format(new Date(t.date), 'yyyy-MM-dd HH:mm'), // Format with time
       Description: t.description,
       Incoming: (t.type === 'incoming' || t.type === 'initial') ? `${t.amount.toFixed(2)} ${selectedAccountCurrency}` : '',
       Outgoing: t.type === 'outgoing' ? `${t.amount.toFixed(2)} ${selectedAccountCurrency}` : '',
