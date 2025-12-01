@@ -214,7 +214,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
       isOpen={isOpen}
       onClose={onClose}
       title={`${t('productTransactions')}: ${product.name} (${product.sku})`}
-      description={t('productTransactionsDescription')}
+      description={product.barcode ? `${t('barcode')}: ${product.barcode}` : t('productTransactionsDescription')}
     >
       <div className="space-y-8">
         <div className="mb-4 text-gray-700 dark:text-slate-300">

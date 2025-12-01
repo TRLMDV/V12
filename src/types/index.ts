@@ -15,6 +15,7 @@ export type ProductStatus = 'Active' | 'Discontinued' | 'Low Stock';
 
 export interface Product extends BaseItem {
   sku: string;
+  barcode?: string; // New: Optional barcode field
   description?: string;
   imageUrl?: string;
   // category: string; // Removed as it's no longer used in the form
@@ -103,9 +104,9 @@ export interface PurchaseOrderItemState {
   price: number | string;
   itemTotal: number | string;
   currency: Currency;
-  landedCostPerUnit?: number;
-  packingUnitId?: number;
-  packingQuantity?: number | string;
+  landedCostPerUnit?: number; // For sell orders, to calculate profit
+  packingUnitId?: number; // Optional: ID of the packing unit used for this item
+  packingQuantity?: number | string; // Optional: Quantity in packing units
 }
 
 // --- Payments ---

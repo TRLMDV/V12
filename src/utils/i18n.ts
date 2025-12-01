@@ -201,6 +201,11 @@ const i18n = {
     barcodeTooShortDescription: 'Scanned barcode "{length}" is too short. Minimum length is {minLength}.',
     barcodeScanned: 'Barcode Scanned',
     barcodeScannedDescription: 'Product "{productName}" added to order.',
+    barcode: 'Barcode', // New translation key
+    enterBarcode: 'Enter Barcode', // New translation key
+    quantityIncremented: 'quantity incremented', // New translation key
+    addedToOrder: 'added to order', // New translation key
+    found: 'found', // New translation key
   }
 };
 

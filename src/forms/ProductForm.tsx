@@ -23,6 +23,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
   const [product, setProduct] = useState<Partial<Product>>({});
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [defaultPackingUnitId, setDefaultPackingUnitId] = useState<number | undefined>(undefined);
+  const [barcode, setBarcode] = useState(''); // New state for barcode
 
   useEffect(() => {
     // Find the 'Piece' packing unit
@@ -34,17 +35,20 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
         setProduct(existingProduct);
         setImageUrl(existingProduct.imageUrl || null);
         setDefaultPackingUnitId(existingProduct.defaultPackingUnitId);
+        setBarcode(existingProduct.barcode || ''); // Load existing barcode
       } else {
         // Fallback to new product form if ID is not found in edit mode
         setProduct({});
         setImageUrl(null);
         setDefaultPackingUnitId(piecePackingUnit ? piecePackingUnit.id : undefined);
+        setBarcode(''); // Reset barcode
       }
     } else {
       setProduct({});
       setImageUrl(null);
       // Set default to 'Piece' packing unit for new products
       setDefaultPackingUnitId(piecePackingUnit ? piecePackingUnit.id : undefined);
+      setBarcode(''); // Reset barcode
     }
   }, [productId, isEdit, products, packingUnits]);
 
@@ -73,6 +77,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
       id: product.id || 0, // Will be overwritten by saveItem if new
       name: product.name,
       sku: product.sku,
+      barcode: barcode.trim() || undefined, // Save barcode, or undefined if empty
       // category: product.category || '', // Removed Category Input Field
       description: product.description || '',
       minStock: product.minStock || 0,
@@ -111,6 +116,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
             onChange={handleChange}
             className="col-span-3"
             required
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="barcode" className="text-right">
+            {t('barcode')}
+          </Label>
+          <Input
+            id="barcode"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            className="col-span-3"
+            placeholder={t('enterBarcode')}
           />
         </div>
         {/* Removed Category Input Field */}

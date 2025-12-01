@@ -57,7 +57,8 @@ const Products: React.FC = () => {
     if (searchSku) {
       const lowercasedSearchSku = searchSku.trim().toLowerCase();
       filteredItems = filteredItems.filter(p =>
-        String(p.sku).trim().toLowerCase().includes(lowercasedSearchSku)
+        String(p.sku).trim().toLowerCase().includes(lowercasedSearchSku) ||
+        String(p.barcode || '').trim().toLowerCase().includes(lowercasedSearchSku) // Search by barcode too
       );
     }
 
@@ -164,7 +165,7 @@ const Products: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
           <div>
             <Label htmlFor="search-sku" className="text-sm font-medium text-gray-700 dark:text-slate-300">
-              {t('searchBySku')}
+              {t('searchBySku')} / {t('barcode')}
             </Label>
             <Input
               id="search-sku"
@@ -192,6 +193,9 @@ const Products: React.FC = () => {
               </TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('sku')}>
                 {t('sku')} {sortConfig.key === 'sku' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+              </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('barcode')}>
+                {t('barcode')} {sortConfig.key === 'barcode' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
               {/* Removed Category TableHead */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('defaultPackingUnitName')}>
@@ -238,6 +242,7 @@ const Products: React.FC = () => {
                     </TableCell>
                     <TableCell className="p-3">{p.name}</TableCell>
                     <TableCell className="p-3">{p.sku}</TableCell>
+                    <TableCell className="p-3">{p.barcode || 'N/A'}</TableCell> {/* New: Display barcode */}
                     {/* Removed Category TableCell */}
                     <TableCell className="p-3">{p.defaultPackingUnitName}</TableCell>
                     <TableCell className={`p-3 font-semibold ${stockIsLow ? 'text-red-500' : ''}`}>
@@ -266,7 +271,7 @@ const Products: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="p-4 text-center text-gray-500 dark:text-slate-400">
+                <TableCell colSpan={11} className="p-4 text-center text-gray-500 dark:text-slate-400"> {/* Adjusted colSpan */}
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>
