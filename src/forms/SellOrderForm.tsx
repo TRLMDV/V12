@@ -82,13 +82,17 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
           // If a packing unit is selected, increment packing quantity
           if (existingItem.packingUnitId && packingUnitMap[existingItem.packingUnitId]) {
             const newPackingQty = currentPackingQty + 1;
+            // Directly update the item in the array and then call handleOrderItemChange
+            newItems[existingItemIndex] = { ...existingItem, packingQuantity: String(newPackingQty) };
             handleOrderItemChange(existingItemIndex, 'packingQuantity', String(newPackingQty));
           } else {
             // Otherwise, increment base quantity
+            // Directly update the item in the array and then call handleOrderItemChange
+            newItems[existingItemIndex] = { ...existingItem, qty: String(currentQty + 1) };
             handleOrderItemChange(existingItemIndex, 'qty', String(currentQty + 1));
           }
           toast.success(t('barcodeScanned'), { description: `${product.name} ${t('quantityIncremented')}.` });
-          return newItems; // Return original array as handleOrderItemChange will trigger state update
+          return newItems; // Return updated array
         } else {
           // Add new item
           const sellingPrice = (product.averageLandedCost || 0) * (1 + defaultMarkup);

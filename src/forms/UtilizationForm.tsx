@@ -140,9 +140,11 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
         const existingItemIndex = newItems.findIndex(item => item.productId === product.id);
         if (existingItemIndex !== -1) {
           const existingItem = newItems[existingItemIndex];
+          // Directly update the item in the array and then call handleItemChange
+          newItems[existingItemIndex] = { ...existingItem, quantity: existingItem.quantity + 1 };
           handleItemChange(existingItemIndex, 'quantity', existingItem.quantity + 1);
           toast.success(t('barcodeScanned'), { description: `${product.name} ${t('quantityIncremented')}.` });
-          return newItems; // Return original array as handleItemChange will trigger state update
+          return newItems; // Return updated array
         } else {
           // Add new item
           newItems.push({
