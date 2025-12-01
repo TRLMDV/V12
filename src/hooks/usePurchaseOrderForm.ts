@@ -44,6 +44,12 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     products,
     suppliers,
     warehouses,
+    date, // New: date state from hook
+    setDate, // New: setDate from hook
+    selectedHour, // New: selectedHour state from hook
+    setSelectedHour, // New: setSelectedHour from hook
+    selectedMinute, // New: selectedMinute state from hook
+    setSelectedMinute, // New: setSelectedMinute from hook
   } = usePurchaseOrderState({ orderId });
 
   // 2. Calculations
@@ -148,5 +154,11 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     manualFeesExchangeRateInput, // New: Return fees exchange rate input
     openComboboxIndex,
     setOpenComboboxIndex,
+    date, // New: Return date state
+    setDate, // New: Return setDate
+    selectedHour, // New: Return selectedHour state
+    setSelectedHour, // New: Return setSelectedHour
+    selectedMinute, // New: Return selectedMinute state
+    setSelectedMinute, // New: Return setSelectedMinute
   };
 };
