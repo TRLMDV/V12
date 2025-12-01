@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { SellOrder, Product, Customer, Warehouse, Currency, PackingUnit } from '@/types';
 import { formatNumberInput, roundToPrecision } from '@/utils/formatters'; // Import the new formatter
 import { format, parseISO, getHours, getMinutes } from 'date-fns'; // Import date-fns utilities
@@ -40,7 +39,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
     }
     return {
       id: getNextId('sellOrders'),
-      orderDate: MOCK_CURRENT_DATE.toISOString(), // Store as ISO string
+      orderDate: new Date().toISOString(), // Store as ISO string
       status: 'Draft',
       vatPercent: settings.defaultVat,
       total: 0,
@@ -71,9 +70,9 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
   const [isWarehouseManuallySet, setIsWarehouseManuallySet] = useState(false); // New state to track manual warehouse selection
 
   // New states for date and time components
-  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(new Date().getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(new Date().getMinutes()).padStart(2, '0'));
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
@@ -107,7 +106,7 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
     } else if (!isEdit && !isFormInitialized) {
       setOrder({
         id: getNextId('sellOrders'),
-        orderDate: MOCK_CURRENT_DATE.toISOString(), // Reset to ISO string
+        orderDate: new Date().toISOString(), // Reset to ISO string
         status: 'Draft',
         vatPercent: settings.defaultVat,
         total: 0,
@@ -121,9 +120,9 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       setIsWarehouseManuallySet(false); // Reset for new order
 
       // Reset date and time components
-      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+      setDate(format(new Date(), 'yyyy-MM-dd'));
+      setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
+      setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
 
       setIsFormInitialized(true);
     }

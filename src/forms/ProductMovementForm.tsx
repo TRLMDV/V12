@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -41,21 +40,21 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       const existingMovement = productMovements.find(m => m.id === movementId);
       if (existingMovement) return format(parseISO(existingMovement.date), 'yyyy-MM-dd');
     }
-    return format(MOCK_CURRENT_DATE, 'yyyy-MM-dd');
+    return format(new Date(), 'yyyy-MM-dd');
   });
   const [selectedHour, setSelectedHour] = useState<string>(() => {
     if (isEdit && movementId !== undefined) {
       const existingMovement = productMovements.find(m => m.id === movementId);
       if (existingMovement) return String(new Date(existingMovement.date).getHours()).padStart(2, '0');
     }
-    return String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0');
+    return String(new Date().getHours()).padStart(2, '0');
   });
   const [selectedMinute, setSelectedMinute] = useState<string>(() => {
     if (isEdit && movementId !== undefined) {
       const existingMovement = productMovements.find(m => m.id === movementId);
       if (existingMovement) return String(new Date(existingMovement.date).getMinutes()).padStart(2, '0');
     }
-    return String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0');
+    return String(new Date().getMinutes()).padStart(2, '0');
   });
 
   useEffect(() => {
@@ -73,9 +72,9 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       setSourceWarehouseId('');
       setDestWarehouseId('');
       setMovementItems([{ productId: '', quantity: 1 }]);
-      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+      setDate(format(new Date(), 'yyyy-MM-dd'));
+      setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
+      setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
     }
   }, [movementId, isEdit, productMovements]);
 

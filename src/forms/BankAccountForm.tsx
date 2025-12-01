@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -30,9 +29,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
   const [initialBalance, setInitialBalance] = useState('0.00');
   
   // New states for date and time components
-  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(new Date().getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(new Date().getMinutes()).padStart(2, '0'));
 
   useEffect(() => {
     if (isEdit) {
@@ -54,9 +53,9 @@ const BankAccountForm: React.FC<BankAccountFormProps> = ({ bankAccountId, onSucc
       setInitialBalance('0.00');
       
       // Default to current date and time for new accounts
-      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+      setDate(format(new Date(), 'yyyy-MM-dd'));
+      setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
+      setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
     }
   }, [bankAccountId, isEdit, bankAccounts, settings.mainCurrency]);
 

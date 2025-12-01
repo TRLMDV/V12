@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
       const existingOrder = utilizationOrders.find(o => o.id === orderId);
       if (existingOrder) return format(parseISO(existingOrder.date), 'yyyy-MM-dd');
     }
-    return format(MOCK_CURRENT_DATE, 'yyyy-MM-dd');
+    return format(new Date(), 'yyyy-MM-dd');
   });
   const [warehouseId, setWarehouseId] = useState<number | ''>('');
   const [utilizationItems, setUtilizationItems] = useState<UtilizationItemState[]>([{ productId: '', quantity: 1 }]);
@@ -50,7 +49,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
         return String(new Date(existingOrder.date).getHours()).padStart(2, '0');
       }
     }
-    return String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0');
+    return String(new Date().getHours()).padStart(2, '0');
   });
   const [selectedMinute, setSelectedMinute] = useState<string>(() => {
     if (isEdit && orderId !== undefined) {
@@ -59,7 +58,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
         return String(new Date(existingOrder.date).getMinutes()).padStart(2, '0');
       }
     }
-    return String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0');
+    return String(new Date().getMinutes()).padStart(2, '0');
   });
 
   useEffect(() => {
@@ -74,12 +73,12 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
         setSelectedMinute(String(new Date(existingOrder.date).getMinutes()).padStart(2, '0'));
       }
     } else {
-      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
+      setDate(format(new Date(), 'yyyy-MM-dd'));
       setWarehouseId('');
       setUtilizationItems([{ productId: '', quantity: 1 }]);
       setComment(''); // Reset comment for new order
-      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+      setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
+      setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
     }
   }, [orderId, isEdit, utilizationOrders]);
 

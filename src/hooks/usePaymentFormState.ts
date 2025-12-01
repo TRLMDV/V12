@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { Payment, Currency, BankAccount } from '@/types';
 import { t } from '@/utils/i18n'; // Import the t function
 import { format, parseISO, getHours, getMinutes } from 'date-fns'; // Import date-fns utilities
@@ -29,9 +28,9 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
   const [selectedBankAccountId, setSelectedBankAccountId] = useState<number | undefined>(undefined);
 
   // New states for date and time components
-  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(new Date().getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(new Date().getMinutes()).padStart(2, '0'));
 
   useEffect(() => {
     if (isEdit) {
@@ -69,7 +68,7 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
       const defaultDescription = defaultCategory === 'initialCapital' ? t('initialCapital') : ''; // Pre-fill for initialCapital
 
       setPayment({
-        date: MOCK_CURRENT_DATE.toISOString(), // Store as ISO string
+        date: new Date().toISOString(), // Store as ISO string
         amount: 0,
         method: '',
         orderId: 0, // Default to manual
@@ -86,9 +85,9 @@ export const usePaymentFormState = ({ paymentId, type, initialManualCategory }: 
       setSelectedBankAccountId(bankAccounts.length > 0 ? bankAccounts[0].id : undefined);
 
       // Reset date and time components for new payments
-      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+      setDate(format(new Date(), 'yyyy-MM-dd'));
+      setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
+      setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
     }
   }, [paymentId, isEdit, allPayments, currencyRates, initialManualCategory, bankAccounts, isIncoming, t]);
 

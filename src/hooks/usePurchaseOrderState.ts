@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { PurchaseOrder, Product, Supplier, Warehouse, Currency, PackingUnit, PurchaseOrderItemState } from '@/types';
 import { formatNumberInput, roundToPrecision } from '@/utils/formatters'; // Import the new formatter
 import { format, parseISO, getHours, getMinutes } from 'date-fns'; // Import date-fns utilities
@@ -32,7 +31,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     }
     const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined;
     return {
-      orderDate: MOCK_CURRENT_DATE.toISOString(), // Store as ISO string
+      orderDate: new Date().toISOString(), // Store as ISO string
       status: 'Draft',
       currency: 'AZN',
       warehouseId: defaultWarehouse, // Set default warehouseId
@@ -69,9 +68,9 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
 
   // New states for date and time components
-  const [date, setDate] = useState(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-  const [selectedHour, setSelectedHour] = useState(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-  const [selectedMinute, setSelectedMinute] = useState(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+  const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState(String(new Date().getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState(String(new Date().getMinutes()).padStart(2, '0'));
 
   const [isFormInitialized, setIsFormInitialized] = useState(false);
 
@@ -110,7 +109,7 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
     } else if (!isEdit && !isFormInitialized) {
       const defaultWarehouse = warehouses.length > 0 ? warehouses[0].id : undefined; // Also set here for re-initialization
       setOrder({
-        orderDate: MOCK_CURRENT_DATE.toISOString(), // Reset to ISO string
+        orderDate: new Date().toISOString(), // Reset to ISO string
         status: 'Draft',
         currency: 'AZN',
         warehouseId: defaultWarehouse, // Set default warehouseId
@@ -129,9 +128,9 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
       setOpenComboboxIndex(null);
 
       // Reset date and time components
-      setDate(format(MOCK_CURRENT_DATE, 'yyyy-MM-dd'));
-      setSelectedHour(String(MOCK_CURRENT_DATE.getHours()).padStart(2, '0'));
-      setSelectedMinute(String(MOCK_CURRENT_DATE.getMinutes()).padStart(2, '0'));
+      setDate(format(new Date(), 'yyyy-MM-dd'));
+      setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
+      setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
 
       setIsFormInitialized(true);
     }
