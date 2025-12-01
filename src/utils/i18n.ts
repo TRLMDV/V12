@@ -192,6 +192,15 @@ const i18n = {
     hours: 'Hours', // New
     minutes: 'Minutes', // New
     seconds: 'Seconds', // New
+    // Barcode scanner translations
+    barcodeScanner: 'Barcode Scanner',
+    scanBarcode: 'Scan Barcode',
+    productNotFound: 'Product Not Found',
+    productNotFoundDescription: 'No product found with SKU: {barcode}',
+    barcodeTooShort: 'Barcode Too Short',
+    barcodeTooShortDescription: 'Scanned barcode "{length}" is too short. Minimum length is {minLength}.',
+    barcodeScanned: 'Barcode Scanned',
+    barcodeScannedDescription: 'Product "{productName}" added to order.',
   }
 };
 

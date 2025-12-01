@@ -11,6 +11,8 @@ import { useSellOrderForm } from '@/hooks/useSellOrderForm';
 import SellOrderItemsField from '@/components/SellOrderItemsField';
 import { Product, Customer, Warehouse, Currency } from '@/types';
 import { useData } from '@/context/DataContext';
+import { useBarcodeScanner } from '@/hooks/useBarcodeScanner'; // Import useBarcodeScanner
+import { toast } from 'sonner'; // Import toast
 
 interface SellOrderFormProps {
   orderId?: number;
@@ -21,12 +23,13 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
   const {
     order,
     orderItems,
-    customers,
-    warehouses,
-    products,
+    setOrderItems, // Need setter for barcode integration
+    products, // Need products for barcode lookup
     productMap,
     packingUnits,
     packingUnitMap,
+    customers,
+    warehouses,
     isGenerateMovementDisabled,
     isGeneratePaymentDisabled,
     handleChange,
@@ -59,6 +62,54 @@ const SellOrderForm: React.FC<SellOrderFormProps> = ({ orderId, onSuccess }) => 
 
   const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+  // Barcode scanner integration
+  const handleBarcodeScanned = (barcode: string) => {
+    const product = products.find(p => p.sku === barcode);
+    if (product) {
+      setOrderItems(prevItems => {
+        const newItems = [...prevItems];
+        // Check if product already exists in items, if so, increment quantity
+        const existingItemIndex = newItems.findIndex(item => item.productId === product.id);
+        if (existingItemIndex !== -1) {
+          const existingItem = newItems[existingItemIndex];
+          const currentQty = parseFloat(String(existingItem.qty)) || 0;
+          const currentPackingQty = parseFloat(String(existingItem.packingQuantity)) || 0;
+          
+          // If a packing unit is selected, increment packing quantity
+          if (existingItem.packingUnitId && packingUnitMap[existingItem.packingUnitId]) {
+            const newPackingQty = currentPackingQty + 1;
+            handleOrderItemChange(existingItemIndex, 'packingQuantity', String(newPackingQty));
+          } else {
+            // Otherwise, increment base quantity
+            handleOrderItemChange(existingItemIndex, 'qty', String(currentQty + 1));
+          }
+          toast.success(t('barcodeScanned'), { description: `${product.name} ${t('quantityIncremented')}.` });
+          return newItems; // Return original array as handleOrderItemChange will trigger state update
+        } else {
+          // Add new item
+          const defaultMarkup = order.vatPercent !== undefined ? order.vatPercent / 100 : 0; // Use order's VAT for markup calculation
+          const sellingPrice = (product.averageLandedCost || 0) * (1 + defaultMarkup);
+
+          newItems.push({
+            productId: product.id,
+            qty: '1', // Default to 1 base unit
+            price: sellingPrice.toFixed(2),
+            itemTotal: sellingPrice.toFixed(2),
+            landedCost: product.averageLandedCost,
+            packingUnitId: product.defaultPackingUnitId || packingUnits.find(pu => pu.name === 'Piece')?.id,
+            packingQuantity: '1', // Default to 1 packing unit if a default is set
+          });
+          toast.success(t('barcodeScanned'), { description: `${product.name} ${t('addedToOrder')}.` });
+          return newItems;
+        }
+      });
+    } else {
+      toast.error(t('productNotFound'), { description: t('productNotFoundDescription', { barcode }) });
+    }
+  };
+
+  useBarcodeScanner({ onBarcodeScanned: handleBarcodeScanned });
 
   return (
     <form onSubmit={handleSubmit}>

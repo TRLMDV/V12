@@ -16,6 +16,7 @@ import PaginationControls from '@/components/PaginationControls'; // Import Pagi
 import ImageEnlargerModal from '@/components/ImageEnlargerModal'; // New import
 import ProductTransactionsModal from '@/components/ProductTransactionsModal'; // Updated import for product details modal
 import { Product } from '@/types'; // Import types from types file
+import { useBarcodeScanner } from '@/hooks/useBarcodeScanner'; // Import useBarcodeScanner
 
 type SortConfig = {
   key: keyof Product | 'totalStock' | 'priceWithMarkupCalc' | 'priceWithMarkupAndVatCalc' | 'defaultPackingUnitName';
@@ -139,6 +140,15 @@ const Products: React.FC = () => {
     setSelectedProductIdForDetails(productId);
     setIsProductTransactionsModalOpen(true);
   };
+
+  // Barcode scanner integration
+  const handleBarcodeScanned = (barcode: string) => {
+    setSearchSku(barcode); // Set the scanned barcode as the search SKU
+    setCurrentPage(1); // Reset to first page on search
+    toast.success(t('barcodeScanned'), { description: `${t('product')} ${t('found')}.` }); // Generic success, actual product found will be in the table
+  };
+
+  useBarcodeScanner({ onBarcodeScanned: handleBarcodeScanned });
 
   return (
     <div className="container mx-auto p-4">

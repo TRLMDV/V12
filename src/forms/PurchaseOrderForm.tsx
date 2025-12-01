@@ -10,6 +10,8 @@ import { t } from '@/utils/i18n';
 import { usePurchaseOrderForm } from '@/hooks/usePurchaseOrderForm';
 import PurchaseOrderItemsField from '@/components/PurchaseOrderItemsField'; // New component
 import { Currency } from '@/types'; // Import Currency type
+import { useBarcodeScanner } from '@/hooks/useBarcodeScanner'; // Import useBarcodeScanner
+import { toast } from 'sonner'; // Import toast
 
 interface PurchaseOrderFormProps {
   orderId?: number;
@@ -20,12 +22,13 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
   const {
     order,
     orderItems,
-    suppliers,
-    warehouses,
-    products,
+    setOrderItems, // Need setter for barcode integration
+    products, // Need products for barcode lookup
     productMap,
     packingUnits, // New: packingUnits
     packingUnitMap, // New: packingUnitMap
+    suppliers,
+    warehouses,
     activeCurrencies,
     mainCurrency,
     handleChange,
@@ -55,6 +58,51 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ orderId, onSucces
 
   const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+  // Barcode scanner integration
+  const handleBarcodeScanned = (barcode: string) => {
+    const product = products.find(p => p.sku === barcode);
+    if (product) {
+      setOrderItems(prevItems => {
+        const newItems = [...prevItems];
+        // Check if product already exists in items, if so, increment quantity
+        const existingItemIndex = newItems.findIndex(item => item.productId === product.id);
+        if (existingItemIndex !== -1) {
+          const existingItem = newItems[existingItemIndex];
+          const currentQty = parseFloat(String(existingItem.qty)) || 0;
+          const currentPackingQty = parseFloat(String(existingItem.packingQuantity)) || 0;
+          
+          // If a packing unit is selected, increment packing quantity
+          if (existingItem.packingUnitId && packingUnitMap[existingItem.packingUnitId]) {
+            const newPackingQty = currentPackingQty + 1;
+            handleOrderItemChange(existingItemIndex, 'packingQuantity', String(newPackingQty));
+          } else {
+            // Otherwise, increment base quantity
+            handleOrderItemChange(existingItemIndex, 'qty', String(currentQty + 1));
+          }
+          toast.success(t('barcodeScanned'), { description: `${product.name} ${t('quantityIncremented')}.` });
+          return newItems; // Return original array as handleOrderItemChange will trigger state update
+        } else {
+          // Add new item
+          newItems.push({
+            productId: product.id,
+            qty: '1', // Default to 1 base unit
+            price: '', // Price is user-inputted for PO
+            itemTotal: '',
+            currency: selectedCurrency,
+            packingUnitId: product.defaultPackingUnitId || packingUnits.find(pu => pu.name === 'Piece')?.id,
+            packingQuantity: '1', // Default to 1 packing unit if a default is set
+          });
+          toast.success(t('barcodeScanned'), { description: `${product.name} ${t('addedToOrder')}.` });
+          return newItems;
+        }
+      });
+    } else {
+      toast.error(t('productNotFound'), { description: t('productNotFoundDescription', { barcode }) });
+    }
+  };
+
+  useBarcodeScanner({ onBarcodeScanned: handleBarcodeScanned });
 
   return (
     <form onSubmit={handleSubmit}>
