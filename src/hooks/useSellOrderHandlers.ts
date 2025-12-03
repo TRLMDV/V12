@@ -124,23 +124,20 @@ export const useSellOrderHandlers = ({
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
       } else if (field === 'packingQuantity') {
+        item.packingQuantity = standardizedValue; // Store raw string
         const parsedValue = parseFloat(standardizedValue) || 0;
-        const roundedValue = roundToPrecision(parsedValue, 4); // Round immediately
-        item.packingQuantity = String(roundedValue); // Store raw string
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
-        if (selectedPackingUnit && roundedValue > 0) {
-          item.qty = String(roundToPrecision(roundedValue * selectedPackingUnit.conversionFactor, 4));
+        if (selectedPackingUnit && parsedValue > 0) {
+          item.qty = String(roundToPrecision(parsedValue * selectedPackingUnit.conversionFactor, 4));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
       } else if (field === 'price') {
-        const parsedValue = parseFloat(standardizedValue) || 0;
-        item.price = String(roundToPrecision(parsedValue, 4)); // Store raw string
+        item.price = standardizedValue; // Store raw string
       } else if (field === 'itemTotal') {
-        const parsedValue = parseFloat(standardizedValue) || 0;
-        item.itemTotal = String(roundToPrecision(parsedValue, 4)); // Store raw string
+        item.itemTotal = standardizedValue; // Store raw string
         const qtyNum = parseFloat(String(item.qty).replace(',', '.')) || 0; // Use standardized value
-        const itemTotalNum = parseFloat(String(item.itemTotal).replace(',', '.')) || 0; // Use the raw itemTotal from state
+        const itemTotalNum = parseFloat(standardizedValue) || 0; // Use the raw itemTotal from state
         if (qtyNum > 0) {
           item.price = String(roundToPrecision(itemTotalNum / qtyNum, 4));
         } else {
