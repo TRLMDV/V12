@@ -12,10 +12,11 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
 import { UtilizationOrder, Product, Warehouse } from '@/types';
-import { Textarea } from '@/components/ui/textarea'; // Import Textarea
-import { format, parseISO } from 'date-fns'; // Import format and parseISO
-import { useBarcodeScanner } from '@/hooks/useBarcodeScanner'; // Import useBarcodeScanner
-import { toast } from 'sonner'; // Import toast
+import { Textarea } from '@/components/ui/textarea';
+import { format, parseISO } from 'date-fns';
+import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
+import { toast } from 'sonner';
+import { formatNumberInput } from '@/utils/formatters'; // Import formatNumberInput
 
 interface UtilizationFormProps {
   orderId?: number;
@@ -40,10 +41,9 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
   });
   const [warehouseId, setWarehouseId] = useState<number | ''>('');
   const [utilizationItems, setUtilizationItems] = useState<UtilizationItemState[]>([{ productId: '', quantity: 1 }]);
-  const [comment, setComment] = useState(''); // New state for comment
+  const [comment, setComment] = useState('');
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null);
 
-  // New states for hour and minute
   const [selectedHour, setSelectedHour] = useState<string>(() => {
     if (isEdit && orderId !== undefined) {
       const existingOrder = utilizationOrders.find(o => o.id === orderId);
@@ -70,7 +70,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
         setDate(format(parseISO(existingOrder.date), 'yyyy-MM-dd'));
         setWarehouseId(existingOrder.warehouseId);
         setUtilizationItems(existingOrder.items.map(item => ({ productId: item.productId, quantity: item.quantity })));
-        setComment(existingOrder.comment || ''); // Load existing comment
+        setComment(existingOrder.comment || '');
         setSelectedHour(String(new Date(existingOrder.date).getHours()).padStart(2, '0'));
         setSelectedMinute(String(new Date(existingOrder.date).getMinutes()).padStart(2, '0'));
       }
@@ -78,7 +78,7 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
       setDate(format(new Date(), 'yyyy-MM-dd'));
       setWarehouseId('');
       setUtilizationItems([{ productId: '', quantity: 1 }]);
-      setComment(''); // Reset comment for new order
+      setComment('');
       setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
       setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
     }
@@ -94,7 +94,17 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
 
   const handleItemChange = useCallback((index: number, field: keyof UtilizationItemState, value: any) => {
     setUtilizationItems(prev =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+      prev.map((item, i) => {
+        if (i === index) {
+          if (field === 'quantity') {
+            // Standardize decimal separator to '.' before parsing
+            const standardizedValue = String(value).replace(',', '.');
+            return { ...item, [field]: parseFloat(standardizedValue) || 0 };
+          }
+          return { ...item, [field]: value };
+        }
+        return item;
+      })
     );
   }, []);
 
@@ -112,15 +122,14 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
       return;
     }
 
-    // Combine date and time into a single ISO string
     const utilizationDateTime = `${date}T${selectedHour}:${selectedMinute}:00.000Z`;
 
     const orderToSave: UtilizationOrder = {
       id: orderId || 0,
-      date: utilizationDateTime, // Use the combined date and time
+      date: utilizationDateTime,
       warehouseId: warehouseId as number,
       items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
-      comment: comment.trim() || undefined, // Save comment, or undefined if empty
+      comment: comment.trim() || undefined,
     };
 
     saveItem('utilizationOrders', orderToSave);
@@ -130,23 +139,19 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
   const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
-  // Barcode scanner integration
   const handleBarcodeScanned = (barcode: string) => {
-    const product = products.find(p => p.barcode === barcode); // Search by barcode
+    const product = products.find(p => p.barcode === barcode);
     if (product) {
       setUtilizationItems(prevItems => {
         const newItems = [...prevItems];
-        // Check if product already exists in items, if so, increment quantity
         const existingItemIndex = newItems.findIndex(item => item.productId === product.id);
         if (existingItemIndex !== -1) {
           const existingItem = newItems[existingItemIndex];
-          // Directly update the item in the array and then call handleItemChange
           newItems[existingItemIndex] = { ...existingItem, quantity: existingItem.quantity + 1 };
           handleItemChange(existingItemIndex, 'quantity', existingItem.quantity + 1);
           toast.success(t('barcodeScanned'), { description: `${product.name} ${t('quantityIncremented')}.` });
-          return newItems; // Return updated array
+          return newItems;
         } else {
-          // Add new item
           newItems.push({
             productId: product.id,
             quantity: 1,
@@ -238,12 +243,11 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
                       {item.productId
                         ? product?.name || t('selectProduct')
                         : t('selectProduct')}
-                      {/* Removed ChevronsUpDown icon */}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                     <Command>
-                      <CommandInput placeholder={t('searchProductBySku')} className="no-spin-buttons" /> {/* Apply the class here */}
+                      <CommandInput placeholder={t('searchProductBySku')} className="no-spin-buttons" />
                       <CommandEmpty>{t('noProductFound')}</CommandEmpty>
                       <CommandGroup>
                         {products.map((p) => (
@@ -274,11 +278,13 @@ const UtilizationForm: React.FC<UtilizationFormProps> = ({ orderId, onSuccess })
                   </PopoverContent>
                 </Popover>
                 <Input
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                  className="col-span-3"
+                  type="text" // Changed to text
+                  value={formatNumberInput(item.quantity)} // Use formatter
+                  onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                  className="col-span-3 no-spin-buttons"
                   min="1"
+                  inputMode="decimal" // Added
+                  pattern="^\d*\.?\d*$" // Added
                 />
                 <Button
                   type="button"

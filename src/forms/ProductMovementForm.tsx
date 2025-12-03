@@ -11,10 +11,11 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/utils/i18n';
-import { ProductMovement, Product, Warehouse } from '@/types'; // Import types from types file
-import { format, parseISO } from 'date-fns'; // Import format and parseISO
-import { useBarcodeScanner } from '@/hooks/useBarcodeScanner'; // Import useBarcodeScanner
-import { toast } from 'sonner'; // Import toast
+import { ProductMovement, Product, Warehouse } from '@/types';
+import { format, parseISO } from 'date-fns';
+import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
+import { toast } from 'sonner';
+import { formatNumberInput } from '@/utils/formatters'; // Import formatNumberInput
 
 interface ProductMovementFormProps {
   movementId?: number;
@@ -33,10 +34,9 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   const [sourceWarehouseId, setSourceWarehouseId] = useState<number | ''>('');
   const [destWarehouseId, setDestWarehouseId] = useState<number | ''>('');
   const [movementItems, setMovementItems] = useState<MovementItemState[]>([{ productId: '', quantity: 1 }]);
-  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // State for which product combobox is open
-  const [searchQuery, setSearchQuery] = useState(''); // New state for product search input
+  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // New states for date and time components
   const [date, setDate] = useState(() => {
     if (isEdit && movementId !== undefined) {
       const existingMovement = productMovements.find(m => m.id === movementId);
@@ -89,9 +89,20 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   }, []);
 
   const handleItemChange = useCallback((index: number, field: keyof MovementItemState, value: any) => {
-    setMovementItems(prev =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
-    );
+    setMovementItems(prev => {
+      const newItems = [...prev];
+      const item = { ...newItems[index] };
+
+      if (field === 'quantity') {
+        // Standardize decimal separator to '.' before parsing
+        const standardizedValue = String(value).replace(',', '.');
+        item.quantity = parseFloat(standardizedValue) || 0;
+      } else {
+        item[field] = value;
+      }
+      newItems[index] = item;
+      return newItems;
+    });
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -124,14 +135,11 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       return;
     }
 
-    // Combine date and time into a single ISO string
     const movementDateTime = `${date}T${selectedHour}:${selectedMinute}:00.000Z`;
 
-    // Deep copy products for validation and potential update
     const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
     const currentMovement = isEdit ? productMovements.find(m => m.id === movementId) : null;
 
-    // --- Revert stock change if editing an existing movement ---
     if (isEdit && currentMovement) {
       currentMovement.items.forEach(item => {
         const p = productsCopy.find(p => p.id === item.productId);
@@ -142,7 +150,6 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       });
     }
 
-    // --- Check stock and apply new movement (dry run) ---
     for (const item of newItems) {
       const p = productsCopy.find(p => p.id === item.productId);
       if (!p || !p.stock) {
@@ -157,12 +164,10 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
         showAlertModal('Stock Error', `${t('notEnoughStock')} ${safeProductName}. ${t('available')}: ${stockInSource}, ${t('requested')}: ${item.quantity}.`);
         return;
       }
-      // Apply tentative stock changes for subsequent checks in the same form submission
       p.stock[sourceWarehouseId as number] = stockInSource - item.quantity;
       p.stock[destWarehouseId as number] = (p.stock[destWarehouseId as number] || 0) + item.quantity;
     }
 
-    // If all checks pass, update the actual products state
     setProducts(productsCopy);
 
     const movementToSave: ProductMovement = {
@@ -170,7 +175,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       sourceWarehouseId: sourceWarehouseId as number,
       destWarehouseId: destWarehouseId as number,
       items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
-      date: movementDateTime, // Use the combined date and time
+      date: movementDateTime,
     };
 
     saveItem('productMovements', movementToSave);
@@ -180,24 +185,20 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
-  // Barcode scanner integration for ProductMovementForm
   const handleBarcodeScanned = (barcode: string) => {
-    const product = products.find(p => p.barcode === barcode); // Search by barcode
+    const product = products.find(p => p.barcode === barcode);
     if (product) {
       setMovementItems(prevItems => {
         const newItems = [...prevItems];
         const existingItemIndex = newItems.findIndex(item => item.productId === product.id);
 
         if (existingItemIndex !== -1) {
-          // If product already exists, increment quantity
           const existingItem = newItems[existingItemIndex];
-          // Directly update the item in the array and then call handleItemChange
           newItems[existingItemIndex] = { ...existingItem, quantity: existingItem.quantity + 1 };
           handleItemChange(existingItemIndex, 'quantity', existingItem.quantity + 1);
           toast.success(t('barcodeScanned'), { description: `${product.name} ${t('quantityIncremented')}.` });
-          return newItems; // Return updated array
+          return newItems;
         } else {
-          // Add new item
           newItems.push({
             productId: product.id,
             quantity: 1,
@@ -295,7 +296,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
               <Popover open={openComboboxIndex === index} onOpenChange={(open) => {
                 setOpenComboboxIndex(open ? index : null);
                 if (!open) {
-                  setSearchQuery(''); // Clear search query when popover closes
+                  setSearchQuery('');
                 }
               }}>
                 <PopoverTrigger asChild>
@@ -308,7 +309,6 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                     {item.productId
                       ? products.find(p => p.id === item.productId)?.name || t('selectProduct')
                       : t('selectProduct')}
-                    {/* Removed ChevronsUpDown icon */}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
@@ -318,7 +318,6 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                         placeholder={t('searchProductBySku')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full" // Removed no-spin-buttons as it's not a number input
                       />
                     </div>
                     <CommandEmpty>{t('noProductFound')}</CommandEmpty>
@@ -326,11 +325,11 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                       {filteredProducts.map((product) => (
                         <CommandItem
                           key={product.id}
-                          value={`${product.name} ${product.sku}`} // Searchable value
+                          value={product.id.toString()}
                           onSelect={() => {
                             handleItemChange(index, 'productId', product.id);
                             setOpenComboboxIndex(null);
-                            setSearchQuery(''); // Clear search query after selection
+                            setSearchQuery('');
                           }}
                         >
                           <Check
@@ -347,11 +346,13 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
                 </PopoverContent>
               </Popover>
               <Input
-                type="number"
-                value={item.quantity}
-                onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                className="col-span-3"
+                type="text" // Changed to text
+                className="col-span-3 no-spin-buttons"
+                value={formatNumberInput(item.quantity)} // Use formatter
+                onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                 min="1"
+                inputMode="decimal" // Added
+                pattern="^\d*\.?\d*$" // Added
               />
               <Button
                 type="button"
