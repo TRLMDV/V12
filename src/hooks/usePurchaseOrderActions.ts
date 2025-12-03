@@ -48,6 +48,7 @@ export const usePurchaseOrderActions = ({
     mainWarehouse, // ADDED: mainWarehouse for product movement
     warehouseMap, // ADDED: warehouseMap for product movement
     sellOrders, // ADDED: sellOrders for product movement
+    productMap, // ADDED: productMap
   } = useData();
 
   const mainCurrency = settings.mainCurrency;
@@ -252,7 +253,7 @@ export const usePurchaseOrderActions = ({
         qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
         price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
         currency: selectedCurrency,
-        landedCostPerUnit: item.landedCost,
+        landedCostPerUnit: item.landedCostPerUnit,
         packingUnitId: item.packingUnitId,
         packingQuantity: roundToPrecision(packingQtyNum, 4), // Ensure final packingQuantity is rounded
       };
@@ -378,7 +379,7 @@ export const usePurchaseOrderActions = ({
         qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
         price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
         currency: selectedCurrency,
-        landedCostPerUnit: item.landedCost,
+        landedCostPerUnit: item.landedCostPerUnit,
         packingUnitId: item.packingUnitId,
         packingQuantity: roundToPrecision(packingQtyNum, 4), // Ensure final packingQuantity is rounded
       };
