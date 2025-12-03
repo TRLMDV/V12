@@ -102,6 +102,9 @@ export const useSellOrderHandlers = ({
       const item = { ...newItems[index] };
       let shouldRecalculateItemTotalAtEnd = true; // Flag to control the final recalculation
 
+      // Standardize decimal separator to '.' before parsing for all numeric fields
+      const standardizedValue = String(value).replace(',', '.');
+
       if (field === 'productId') {
         item.productId = value;
         const selectedProduct = productMap[value as number];
@@ -113,7 +116,7 @@ export const useSellOrderHandlers = ({
       } else if (field === 'packingUnitId') {
         item.packingUnitId = value === 'none-selected' ? undefined : parseInt(value);
         // Recalculate base qty if packing quantity exists
-        const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
+        const packingQtyNum = parseFloat(String(item.packingQuantity).replace(',', '.')) || 0; // Use standardized value
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
         if (selectedPackingUnit && packingQtyNum > 0) {
           item.qty = String(roundToPrecision(packingQtyNum * selectedPackingUnit.conversionFactor, 4));
@@ -121,8 +124,7 @@ export const useSellOrderHandlers = ({
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
       } else if (field === 'packingQuantity') {
-        const inputValue = String(value);
-        const parsedValue = parseFloat(inputValue) || 0;
+        const parsedValue = parseFloat(standardizedValue) || 0;
         const roundedValue = roundToPrecision(parsedValue, 4); // Round immediately
         item.packingQuantity = String(roundedValue); // Store raw string
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
@@ -132,13 +134,13 @@ export const useSellOrderHandlers = ({
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
       } else if (field === 'price') {
-        const parsedValue = parseFloat(String(value)) || 0;
+        const parsedValue = parseFloat(standardizedValue) || 0;
         item.price = String(roundToPrecision(parsedValue, 4)); // Store raw string
       } else if (field === 'itemTotal') {
-        const parsedValue = parseFloat(String(value)) || 0;
+        const parsedValue = parseFloat(standardizedValue) || 0;
         item.itemTotal = String(roundToPrecision(parsedValue, 4)); // Store raw string
-        const qtyNum = parseFloat(String(item.qty)) || 0;
-        const itemTotalNum = parseFloat(String(item.itemTotal)) || 0; // Use the raw itemTotal from state
+        const qtyNum = parseFloat(String(item.qty).replace(',', '.')) || 0; // Use standardized value
+        const itemTotalNum = parseFloat(String(item.itemTotal).replace(',', '.')) || 0; // Use the raw itemTotal from state
         if (qtyNum > 0) {
           item.price = String(roundToPrecision(itemTotalNum / qtyNum, 4));
         } else {
@@ -149,8 +151,8 @@ export const useSellOrderHandlers = ({
       
       // Recalculate itemTotal based on base qty and price, but only if not explicitly set by user
       if (shouldRecalculateItemTotalAtEnd) {
-        const finalQtyNum = parseFloat(String(item.qty)) || 0;
-        const finalPriceNum = parseFloat(String(item.price)) || 0;
+        const finalQtyNum = parseFloat(String(item.qty).replace(',', '.')) || 0; // Use standardized value
+        const finalPriceNum = parseFloat(String(item.price).replace(',', '.')) || 0; // Use standardized value
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       }
 
