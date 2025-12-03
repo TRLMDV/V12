@@ -175,25 +175,29 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
               </Select>
 
               <Input
-                type="text"
-                value={formatNumberInput(item.packingQuantity)} // Apply formatter here
+                type="text" // Changed to text
+                inputMode="decimal" // Hint for mobile keyboards
+                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
+                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                value={item.packingQuantity} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)}
-                className="col-span-1"
                 disabled={!item.packingUnitId}
               />
               <Input
-                type="text"
-                step="0.01"
-                value={formatNumberInput(item.price)} // Apply formatter here
+                type="text" // Changed to text
+                inputMode="decimal" // Hint for mobile keyboards
+                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
+                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                value={item.price} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
-                className="col-span-1"
               />
               <Input
-                type="text"
-                step="0.01"
-                value={formatNumberInput(item.itemTotal)} // Apply formatter here
+                type="text" // Changed to text
+                inputMode="decimal" // Hint for mobile keyboards
+                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
+                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                value={item.itemTotal} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
-                className="col-span-1"
               />
               <Input
                 type="text"

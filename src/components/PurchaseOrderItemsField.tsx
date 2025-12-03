@@ -167,26 +167,29 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
               </Select>
 
               <Input
-                type="text"
-                value={formatNumberInput(item.packingUnitId ? item.packingQuantity : item.qty)} // Apply formatter here
+                type="text" // Changed to text
+                inputMode="decimal" // Hint for mobile keyboards
+                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
+                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                value={item.packingUnitId ? item.packingQuantity : item.qty} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)}
-                className="col-span-1"
-                // Removed disabled prop
+                disabled={!item.packingUnitId}
               />
               <Input
-                type="text"
-                step="0.01"
-                value={formatNumberInput(item.price)} // Apply formatter here
+                type="text" // Changed to text
+                inputMode="decimal" // Hint for mobile keyboards
+                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
+                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                value={item.price} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
-                className="col-span-1"
               />
               <Input
-                type="text"
-                step="0.01"
-                value={formatNumberInput(item.itemTotal)} // Apply formatter here
-                onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)} // Made editable
-                // Removed readOnly prop
-                className="col-span-1" // Removed bg-gray-50 dark:bg-slate-700 to indicate it's editable
+                type="text" // Changed to text
+                inputMode="decimal" // Hint for mobile keyboards
+                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
+                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                value={item.itemTotal} // Use raw string from state
+                onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
               />
               <Input
                 type="text"
