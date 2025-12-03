@@ -175,27 +175,21 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
               </Select>
 
               <Input
-                type="text" // Changed to text
-                inputMode="decimal" // Hint for mobile keyboards
-                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
-                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                type="text"
+                className="col-span-1 no-spin-buttons"
                 value={item.packingQuantity} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)}
                 disabled={!item.packingUnitId}
               />
               <Input
-                type="text" // Changed to text
-                inputMode="decimal" // Hint for mobile keyboards
-                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
-                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                type="text"
+                className="col-span-1 no-spin-buttons"
                 value={item.price} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
               />
               <Input
-                type="text" // Changed to text
-                inputMode="decimal" // Hint for mobile keyboards
-                pattern="[0-9]*[.,]?[0-9]*" // Pattern for decimal numbers
-                className="col-span-1 no-spin-buttons" // Added no-spin-buttons
+                type="text"
+                className="col-span-1 no-spin-buttons"
                 value={item.itemTotal} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
               />
