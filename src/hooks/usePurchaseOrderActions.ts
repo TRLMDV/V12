@@ -20,7 +20,7 @@ interface UsePurchaseOrderActionsProps {
 
 export const usePurchaseOrderActions = ({
   order,
-  orderItems,
+  orderItems, // This is OrderItem[] (already converted to numbers)
   selectedCurrency,
   manualExchangeRate,
   manualFeesExchangeRate, // Destructure new prop
@@ -87,6 +87,11 @@ export const usePurchaseOrderActions = ({
       comment: order.comment || undefined, // New: Save comment
       total: order.total || 0,
     };
+
+    console.log("[usePurchaseOrderActions] Order object before saving:", orderToSave);
+    orderToSave.items.forEach((item, index) => {
+      console.log(`[usePurchaseOrderActions] Item ${index} price before saving: ${item.price}`);
+    });
 
     const oldOrder = isEdit ? purchaseOrders.find(o => o.id === orderToSave.id) : null;
 

@@ -150,6 +150,7 @@ export const usePurchaseOrderHandlers = ({
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'price') {
         item.price = value; // Store raw string
+        console.log(`[usePurchaseOrderHandlers] Item ${index} price changed to: ${value}`);
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));

@@ -62,9 +62,10 @@ export const usePurchaseOrderCalculations = ({
     }
 
     // Calculate landed cost per unit for each item
-    const updatedOrderItemsWithLandedCost: OrderItem[] = orderItems.map(item => {
+    const updatedOrderItemsWithLandedCost: OrderItem[] = orderItems.map((item, index) => {
       const qtyNum = parseFloat(String(item.qty)) || 0;
       const priceNum = parseFloat(String(item.price)) || 0;
+      console.log(`[usePurchaseOrderCalculations] Item ${index}: raw price string: "${item.price}", parsed price number: ${priceNum}`);
 
       if (!item.productId || qtyNum <= 0 || priceNum <= 0) {
         return { productId: item.productId as number, qty: qtyNum, price: priceNum, currency: item.currency || selectedCurrency };

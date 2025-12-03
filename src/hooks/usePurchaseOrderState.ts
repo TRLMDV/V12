@@ -46,16 +46,19 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
   const [orderItems, setOrderItems] = useState<PurchaseOrderItemState[]>(() => {
     if (isEdit && orderId !== undefined) {
       const existingOrder = purchaseOrders.find(o => o.id === orderId);
-      if (existingOrder) return existingOrder.items.map(item => ({
-        productId: item.productId,
-        qty: formatNumberInput(roundToPrecision(item.qty, 4)), // Apply formatter
-        price: formatNumberInput(roundToPrecision(item.price, 4)), // Apply formatter
-        itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)), // Apply formatter
-        currency: item.currency || existingOrder.currency,
-        landedCostPerUnit: item.landedCostPerUnit,
-        packingUnitId: item.packingUnitId,
-        packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)), // Apply formatter
-      }));
+      if (existingOrder) {
+        console.log("[usePurchaseOrderState] Initializing orderItems from existing order:", existingOrder.items);
+        return existingOrder.items.map(item => ({
+          productId: item.productId,
+          qty: formatNumberInput(roundToPrecision(item.qty, 4)), // Apply formatter
+          price: formatNumberInput(roundToPrecision(item.price, 4)), // Apply formatter
+          itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)), // Apply formatter
+          currency: item.currency || existingOrder.currency,
+          landedCostPerUnit: item.landedCostPerUnit,
+          packingUnitId: item.packingUnitId,
+          packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)), // Apply formatter
+        }));
+      }
     }
     return [{ productId: '', qty: '', price: '', itemTotal: '', currency: 'AZN', packingUnitId: undefined, packingQuantity: '' }];
   });
