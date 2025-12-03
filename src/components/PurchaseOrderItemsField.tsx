@@ -169,21 +169,27 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
               <Input
                 type="text"
                 className="col-span-1 no-spin-buttons"
-                value={item.packingUnitId ? item.packingQuantity : item.qty} // Use raw string from state
+                value={formatNumberInput(item.packingQuantity)} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)}
                 disabled={!item.packingUnitId}
+                inputMode="decimal"
+                pattern="^\d*\.?\d*$"
               />
               <Input
                 type="text"
                 className="col-span-1 no-spin-buttons"
-                value={item.price} // Use raw string from state
+                value={formatNumberInput(item.price)} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
+                inputMode="decimal"
+                pattern="^\d*\.?\d*$"
               />
               <Input
                 type="text"
                 className="col-span-1 no-spin-buttons"
-                value={item.itemTotal} // Use raw string from state
+                value={formatNumberInput(item.itemTotal)} // Use raw string from state
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
+                inputMode="decimal"
+                pattern="^\d*\.?\d*$"
               />
               <Input
                 type="text"
