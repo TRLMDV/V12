@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { toast } from 'sonner';
 import { SellOrder, Product, OrderItem, ProductMovement, Payment, Currency, PackingUnit, Warehouse } from '@/types';
 import { t } from '@/utils/i18n';
+import { roundToPrecision } from '@/utils/formatters'; // Import roundToPrecision
 
 interface SellOrderItemState {
   productId: number | '';
-  qty: number | string;
+  qty: number | string; // This will be the quantity in base units
   price: number | string;
   itemTotal: number | string;
   cleanProfit?: number;
@@ -92,16 +93,16 @@ export const useSellOrderActions = ({
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
       // Calculate base quantity based on packing unit
-      const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * selectedPackingUnit.conversionFactor : packingQtyNum;
 
       return {
         productId: item.productId as number,
-        qty: baseQty, // Store base unit quantity
-        price: parseFloat(String(item.price)) || 0,
+        qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
+        price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
         currency: selectedCurrency,
         landedCostPerUnit: item.landedCost,
         packingUnitId: item.packingUnitId, // Store the selected packing unit ID
-        packingQuantity: packingQtyNum, // Store the packing quantity entered by the user
+        packingQuantity: roundToPrecision(packingQtyNum, 4), // Store the packing quantity entered by the user, rounded
       };
     });
 
@@ -254,16 +255,16 @@ export const useSellOrderActions = ({
       }
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * selectedPackingUnit.conversionFactor : packingQtyNum;
 
       return {
         productId: item.productId as number,
-        qty: baseQty,
-        price: parseFloat(String(item.price)) || 0,
+        qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
+        price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
         currency: selectedCurrency,
         landedCostPerUnit: item.landedCost,
         packingUnitId: item.packingUnitId,
-        packingQuantity: packingQtyNum,
+        packingQuantity: roundToPrecision(packingQtyNum, 4), // Ensure final packingQuantity is rounded
       };
     });
 
@@ -380,16 +381,16 @@ export const useSellOrderActions = ({
       }
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * selectedPackingUnit.conversionFactor : packingQtyNum;
 
       return {
         productId: item.productId as number,
-        qty: baseQty,
-        price: parseFloat(String(item.price)) || 0,
+        qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
+        price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
         currency: selectedCurrency,
         landedCostPerUnit: item.landedCost,
         packingUnitId: item.packingUnitId,
-        packingQuantity: packingQtyNum,
+        packingQuantity: roundToPrecision(packingQtyNum, 4), // Ensure final packingQuantity is rounded
       };
     });
 

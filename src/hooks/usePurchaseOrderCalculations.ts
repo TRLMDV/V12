@@ -65,7 +65,7 @@ export const usePurchaseOrderCalculations = ({
     const updatedOrderItemsWithLandedCost: OrderItem[] = orderItems.map((item, index) => {
       const qtyNum = parseFloat(String(item.qty)) || 0;
       const priceNum = parseFloat(String(item.price)) || 0;
-      console.log(`[usePurchaseOrderCalculations] Item ${index}: raw price string: "${item.price}", parsed price number: ${priceNum}`);
+      // console.log(`[usePurchaseOrderCalculations] Item ${index}: raw price string: "${item.price}", parsed price number: ${priceNum}`); // Removed debug log
 
       if (!item.productId || qtyNum <= 0 || priceNum <= 0) {
         return { productId: item.productId as number, qty: qtyNum, price: priceNum, currency: item.currency || selectedCurrency };

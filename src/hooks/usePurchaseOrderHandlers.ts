@@ -135,27 +135,30 @@ export const usePurchaseOrderHandlers = ({
       } else if (field === 'packingQuantity') {
         const inputValue = String(value);
         const parsedValue = parseFloat(inputValue) || 0;
+        const roundedValue = roundToPrecision(parsedValue, 4); // Round immediately
 
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
 
         if (selectedPackingUnit && item.packingUnitId !== undefined && item.packingUnitId !== null && item.packingUnitId !== 0) {
-          item.packingQuantity = inputValue; // Store raw string
-          item.qty = String(roundToPrecision(parsedValue * selectedPackingUnit.conversionFactor, 4));
+          item.packingQuantity = String(roundedValue); // Store rounded value as string
+          item.qty = String(roundToPrecision(roundedValue * selectedPackingUnit.conversionFactor, 4));
         } else {
-          item.qty = inputValue; // Store raw string
+          item.qty = String(roundedValue); // Store rounded value as string
           item.packingQuantity = ''; // Clear packingQuantity if no unit is selected
         }
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'price') {
-        item.price = value; // Store raw string
-        console.log(`[usePurchaseOrderHandlers] Item ${index} price changed to: ${value}`);
+        const parsedValue = parseFloat(String(value)) || 0;
+        item.price = String(roundToPrecision(parsedValue, 4)); // Store rounded value as string
+        console.log(`[usePurchaseOrderHandlers] Item ${index} price changed to: ${item.price}`);
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'itemTotal') {
-        item.itemTotal = value; // Store raw string
+        const parsedValue = parseFloat(String(value)) || 0;
+        item.itemTotal = String(roundToPrecision(parsedValue, 4)); // Store rounded value as string
         const qtyNum = parseFloat(String(item.qty)) || 0;
         const itemTotalNum = parseFloat(String(item.itemTotal)) || 0; // Use raw string from state
         if (qtyNum > 0) {

@@ -6,6 +6,7 @@ import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { toast } from 'sonner';
 import { PurchaseOrder, Product, OrderItem, Currency, PackingUnit } from '@/types';
 import { t } from '@/utils/i18n';
+import { roundToPrecision } from '@/utils/formatters'; // Import roundToPrecision
 
 interface UsePurchaseOrderActionsProps {
   order: Partial<PurchaseOrder>;
@@ -69,7 +70,12 @@ export const usePurchaseOrderActions = ({
     }
 
     // validOrderItems are already in the correct OrderItem structure, no need to re-map
-    const finalOrderItems: OrderItem[] = validOrderItems;
+    const finalOrderItems: OrderItem[] = validOrderItems.map(item => ({
+      ...item,
+      qty: roundToPrecision(item.qty, 4), // Ensure final qty is rounded
+      price: roundToPrecision(item.price, 4), // Ensure final price is rounded
+      packingQuantity: item.packingQuantity !== undefined ? roundToPrecision(item.packingQuantity, 4) : undefined, // Ensure final packingQuantity is rounded
+    }));
 
     const orderToSave: PurchaseOrder = {
       ...order,

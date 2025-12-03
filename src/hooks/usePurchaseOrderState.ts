@@ -50,13 +50,13 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         console.log("[usePurchaseOrderState] Initializing orderItems from existing order:", existingOrder.items);
         return existingOrder.items.map(item => ({
           productId: item.productId,
-          qty: formatNumberInput(roundToPrecision(item.qty, 4)), // Apply formatter
-          price: formatNumberInput(roundToPrecision(item.price, 4)), // Apply formatter
-          itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)), // Apply formatter
+          qty: String(roundToPrecision(item.qty, 4)), // Store as string after rounding
+          price: String(roundToPrecision(item.price, 4)), // Store as string after rounding
+          itemTotal: String(roundToPrecision(item.qty * item.price, 4)), // Store as string after rounding
           currency: item.currency || existingOrder.currency,
           landedCostPerUnit: item.landedCostPerUnit,
           packingUnitId: item.packingUnitId,
-          packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)), // Apply formatter
+          packingQuantity: String(roundToPrecision(item.packingQuantity || 0, 4)), // Store as string after rounding
         }));
       }
     }
@@ -87,13 +87,13 @@ export const usePurchaseOrderState = ({ orderId }: UsePurchaseOrderStateProps) =
         });
         setOrderItems(existingOrder.items.map(item => ({
           productId: item.productId,
-          qty: formatNumberInput(roundToPrecision(item.qty, 4)), // Apply formatter
-          price: formatNumberInput(roundToPrecision(item.price, 4)), // Apply formatter
-          itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)), // Apply formatter
+          qty: String(roundToPrecision(item.qty, 4)), // Store as string after rounding
+          price: String(roundToPrecision(item.price, 4)), // Store as string after rounding
+          itemTotal: String(roundToPrecision(item.qty * item.price, 4)), // Store as string after rounding
           currency: item.currency || existingOrder.currency,
           landedCostPerUnit: item.landedCostPerUnit,
           packingUnitId: item.packingUnitId,
-          packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)), // Apply formatter
+          packingQuantity: String(roundToPrecision(item.packingQuantity || 0, 4)), // Store as string after rounding
         })));
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);

@@ -121,18 +121,22 @@ export const useSellOrderHandlers = ({
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
       } else if (field === 'packingQuantity') {
-        item.packingQuantity = value; // Store raw string
-        const packingQtyNum = parseFloat(value) || 0;
+        const inputValue = String(value);
+        const parsedValue = parseFloat(inputValue) || 0;
+        const roundedValue = roundToPrecision(parsedValue, 4); // Round immediately
+        item.packingQuantity = String(roundedValue); // Store raw string
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
-        if (selectedPackingUnit && packingQtyNum > 0) {
-          item.qty = String(roundToPrecision(packingQtyNum * selectedPackingUnit.conversionFactor, 4));
+        if (selectedPackingUnit && roundedValue > 0) {
+          item.qty = String(roundToPrecision(roundedValue * selectedPackingUnit.conversionFactor, 4));
         } else {
           item.qty = ''; // Clear base qty if no valid packing unit or quantity
         }
       } else if (field === 'price') {
-        item.price = value; // Store raw string
+        const parsedValue = parseFloat(String(value)) || 0;
+        item.price = String(roundToPrecision(parsedValue, 4)); // Store raw string
       } else if (field === 'itemTotal') {
-        item.itemTotal = value; // Store raw string
+        const parsedValue = parseFloat(String(value)) || 0;
+        item.itemTotal = String(roundToPrecision(parsedValue, 4)); // Store raw string
         const qtyNum = parseFloat(String(item.qty)) || 0;
         const itemTotalNum = parseFloat(String(item.itemTotal)) || 0; // Use the raw itemTotal from state
         if (qtyNum > 0) {

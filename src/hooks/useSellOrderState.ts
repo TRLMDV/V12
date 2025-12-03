@@ -52,12 +52,12 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
       const existingOrder = sellOrders.find(o => o.id === orderId);
       if (existingOrder) return (existingOrder.items || []).map(item => ({ // Added defensive || []
         productId: item.productId,
-        qty: formatNumberInput(roundToPrecision(item.qty, 4)), // Apply formatter
-        price: formatNumberInput(roundToPrecision(item.price, 4)), // Apply formatter
-        itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)), // Apply formatter
+        qty: String(roundToPrecision(item.qty, 4)), // Store as string after rounding
+        price: String(roundToPrecision(item.price, 4)), // Store as string after rounding
+        itemTotal: String(roundToPrecision(item.qty * item.price, 4)), // Store as string after rounding
         landedCost: productMap[item.productId]?.averageLandedCost,
         packingUnitId: item.packingUnitId, // Load existing packing unit
-        packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)), // Apply formatter
+        packingQuantity: String(roundToPrecision(item.packingQuantity || 0, 4)), // Store as string after rounding
       }));
     }
     return [{ productId: '', qty: '', price: '', itemTotal: '', landedCost: undefined, packingUnitId: undefined, packingQuantity: '' }];
@@ -83,12 +83,12 @@ export const useSellOrderState = ({ orderId }: UseSellOrderStateProps) => {
         setOrder(existingOrder);
         setOrderItems((existingOrder.items || []).map(item => ({ // Added defensive || []
           productId: item.productId,
-          qty: formatNumberInput(roundToPrecision(item.qty, 4)),
-          price: formatNumberInput(roundToPrecision(item.price, 4)),
-          itemTotal: formatNumberInput(roundToPrecision(item.qty * item.price, 4)),
+          qty: String(roundToPrecision(item.qty, 4)),
+          price: String(roundToPrecision(item.price, 4)),
+          itemTotal: String(roundToPrecision(item.qty * item.price, 4)),
           landedCost: productMap[item.productId]?.averageLandedCost,
           packingUnitId: item.packingUnitId,
-          packingQuantity: formatNumberInput(roundToPrecision(item.packingQuantity || 0, 4)),
+          packingQuantity: String(roundToPrecision(item.packingQuantity || 0, 4)),
         })));
         setSelectedCurrency(existingOrder.currency);
         setManualExchangeRate(existingOrder.exchangeRate);
