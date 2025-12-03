@@ -122,6 +122,7 @@ export const usePurchaseOrderForm = ({ orderId, onSuccess }: UsePurchaseOrderFor
     currentExchangeRate,
     onSuccess,
     isEdit,
+    setOrder, // ADDED: Pass setOrder here
   });
 
   return {

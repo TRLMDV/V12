@@ -17,6 +17,7 @@ interface UsePurchaseOrderActionsProps {
   currentExchangeRate: number;
   onSuccess: () => void;
   isEdit: boolean;
+  setOrder: React.Dispatch<React.SetStateAction<Partial<PurchaseOrder>>>; // ADDED: setOrder prop
 }
 
 export const usePurchaseOrderActions = ({
@@ -28,6 +29,7 @@ export const usePurchaseOrderActions = ({
   currentExchangeRate,
   onSuccess,
   isEdit,
+  setOrder, // ADDED: Destructure setOrder
 }: UsePurchaseOrderActionsProps) => {
   // --- Get all necessary data from useData at the top level ---
   const {
@@ -412,13 +414,13 @@ export const usePurchaseOrderActions = ({
       incomingPaymentId: orderIncomingPaymentId,
     };
 
-    const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
+    const oldOrder = isEdit ? purchaseOrders.find(o => o.id === orderToSave.id) : null; // Changed from sellOrders to purchaseOrders
 
-    saveItem('sellOrders', orderToSave);
+    saveItem('purchaseOrders', orderToSave); // Changed from sellOrders to purchaseOrders
     updateStockFromOrder(orderToSave, oldOrder);
     onSuccess();
-    toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
-  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap]);
+    toast.success(t('success'), { description: `Purchase Order #${orderToSave.id || 'new'} saved successfully.` }); // Changed toast message
+  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, purchaseOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap]); // Changed sellOrders to purchaseOrders
 
   // --- Debug Logs for Button States ---
   const isGenerateMovementDisabled = useMemo(() => {
@@ -426,7 +428,7 @@ export const usePurchaseOrderActions = ({
     const noWarehouseId = !order?.warehouseId;
     const noMainWarehouse = !mainWarehouse;
     const sameWarehouse = order?.warehouseId === mainWarehouse?.id;
-    const notShipped = order?.status !== 'Shipped';
+    const notShipped = order?.status !== 'Received'; // Changed from 'Shipped' to 'Received' for PO
     const movementAlreadyGenerated = !!order?.productMovementId;
     const noValidItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
 
@@ -437,7 +439,7 @@ export const usePurchaseOrderActions = ({
     console.log(`  - No Order Warehouse ID (!order.warehouseId): ${noWarehouseId}`);
     console.log(`  - No Main Warehouse (!mainWarehouse): ${noMainWarehouse}`);
     console.log(`  - Same Warehouse (order.warehouseId === mainWarehouse.id): ${sameWarehouse}`);
-    console.log(`  - Not Shipped (order.status !== 'Shipped'): ${notShipped}`);
+    console.log(`  - Not Received (order.status !== 'Received'): ${notShipped}`); // Changed log
     console.log(`  - Movement Already Generated (!!order.productMovementId): ${movementAlreadyGenerated}`);
     console.log(`  - No Valid Items (orderItems.filter(...).length === 0): ${noValidItems}`);
     console.log(`  -> FINAL DISABLED STATE: ${disabled}`);
