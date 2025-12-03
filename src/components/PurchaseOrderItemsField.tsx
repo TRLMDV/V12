@@ -168,22 +168,22 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
 
               <Input
                 type="text"
-                value={item.packingUnitId ? item.packingQuantity : item.qty} // Dynamically display packingQty or baseQty
-                onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)} // Always update via packingQuantity field
+                value={formatNumberInput(item.packingUnitId ? item.packingQuantity : item.qty)} // Apply formatter here
+                onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)}
                 className="col-span-1"
                 // Removed disabled prop
               />
               <Input
                 type="text"
                 step="0.01"
-                value={item.price}
+                value={formatNumberInput(item.price)} // Apply formatter here
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
                 className="col-span-1"
               />
               <Input
                 type="text"
                 step="0.01"
-                value={item.itemTotal}
+                value={formatNumberInput(item.itemTotal)} // Apply formatter here
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)} // Made editable
                 // Removed readOnly prop
                 className="col-span-1" // Removed bg-gray-50 dark:bg-slate-700 to indicate it's editable

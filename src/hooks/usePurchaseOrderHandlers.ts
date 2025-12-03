@@ -120,63 +120,54 @@ export const usePurchaseOrderHandlers = ({
         }
       } else if (field === 'packingUnitId') {
         item.packingUnitId = value === 'none-selected' ? undefined : parseInt(value);
-        const currentDisplayQty = parseFloat(String(item.packingQuantity)) || 0; // Get current value from the input field
+        const currentPackingQty = parseFloat(String(item.packingQuantity)) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
 
         if (selectedPackingUnit) {
-          // If a new packing unit is selected, keep packingQuantity as is, recalculate base qty
-          item.qty = formatNumberInput(roundToPrecision(currentDisplayQty * selectedPackingUnit.conversionFactor, 4));
+          item.qty = String(roundToPrecision(currentPackingQty * selectedPackingUnit.conversionFactor, 4));
         } else {
-          // If 'none-selected' is chosen, treat current input as base qty
-          item.qty = formatNumberInput(roundToPrecision(currentDisplayQty, 4));
+          item.qty = String(roundToPrecision(currentPackingQty, 4)); // If no packing unit, packingQuantity is treated as base qty
           item.packingQuantity = ''; // Clear packing quantity as no unit is selected
         }
-        // After updating qty, recalculate itemTotal
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(roundToPrecision(finalQtyNum * finalPriceNum, 4));
+        item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'packingQuantity') {
         const inputValue = String(value);
         const parsedValue = parseFloat(inputValue) || 0;
 
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
 
-        if (selectedPackingUnit && item.packingUnitId !== undefined && item.packingUnitId !== null && item.packingUnitId !== 0) { // Check if a valid packing unit is selected
-          item.packingQuantity = inputValue;
-          item.qty = formatNumberInput(roundToPrecision(parsedValue * selectedPackingUnit.conversionFactor, 4));
+        if (selectedPackingUnit && item.packingUnitId !== undefined && item.packingUnitId !== null && item.packingUnitId !== 0) {
+          item.packingQuantity = inputValue; // Store raw string
+          item.qty = String(roundToPrecision(parsedValue * selectedPackingUnit.conversionFactor, 4));
         } else {
-          // If no packing unit selected, treat input as base quantity
-          item.qty = inputValue; // Store as string for consistency with other inputs
+          item.qty = inputValue; // Store raw string
           item.packingQuantity = ''; // Clear packingQuantity if no unit is selected
         }
-        // After updating qty, recalculate itemTotal
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(roundToPrecision(finalQtyNum * finalPriceNum, 4));
+        item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'price') {
-        item.price = value;
-        // After updating price, recalculate itemTotal
+        item.price = value; // Store raw string
         const finalQtyNum = parseFloat(String(item.qty)) || 0;
         const finalPriceNum = parseFloat(String(item.price)) || 0;
-        item.itemTotal = formatNumberInput(roundToPrecision(finalQtyNum * finalPriceNum, 4));
+        item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'itemTotal') {
-        const parsedValue = parseFloat(value) || 0;
-        item.itemTotal = formatNumberInput(roundToPrecision(parsedValue, 4)); // Format user input for itemTotal
+        item.itemTotal = value; // Store raw string
         const qtyNum = parseFloat(String(item.qty)) || 0;
-        const itemTotalNum = parseFloat(item.itemTotal) || 0; // Use the formatted itemTotal for price calculation
+        const itemTotalNum = parseFloat(String(item.itemTotal)) || 0; // Use raw string from state
         if (qtyNum > 0) {
-          item.price = formatNumberInput(roundToPrecision(itemTotalNum / qtyNum, 4)); // Calculate price based on user's itemTotal
+          item.price = String(roundToPrecision(itemTotalNum / qtyNum, 4));
         } else {
-          item.price = '0'; // Handle division by zero
+          item.price = '0';
         }
-        // IMPORTANT: Do NOT recalculate itemTotal here, as the user just set it.
-        // The price was calculated from it.
       }
 
       newItems[index] = item;
       return newItems;
     });
-  }, [setOrderItems, productMap, packingUnitMap, piecePackingUnitId]);
+  }, [setOrderItems, productMap, packingUnitMap, piecePackingUnitId, selectedCurrency]);
 
   return {
     handleChange,

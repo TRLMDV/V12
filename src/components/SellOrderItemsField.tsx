@@ -176,7 +176,7 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
 
               <Input
                 type="text"
-                value={item.packingQuantity}
+                value={formatNumberInput(item.packingQuantity)} // Apply formatter here
                 onChange={(e) => handleOrderItemChange(index, 'packingQuantity', e.target.value)}
                 className="col-span-1"
                 disabled={!item.packingUnitId}
@@ -184,14 +184,14 @@ const SellOrderItemsField: React.FC<SellOrderItemsFieldProps> = ({
               <Input
                 type="text"
                 step="0.01"
-                value={item.price}
+                value={formatNumberInput(item.price)} // Apply formatter here
                 onChange={(e) => handleOrderItemChange(index, 'price', e.target.value)}
                 className="col-span-1"
               />
               <Input
                 type="text"
                 step="0.01"
-                value={item.itemTotal}
+                value={formatNumberInput(item.itemTotal)} // Apply formatter here
                 onChange={(e) => handleOrderItemChange(index, 'itemTotal', e.target.value)}
                 className="col-span-1"
               />
