@@ -41,7 +41,9 @@ export const usePurchaseOrderHandlers = ({
   }, [setOrder]);
 
   const handleNumericChange = useCallback((id: keyof PurchaseOrder, value: string) => {
-    setOrder(prev => ({ ...prev, [id]: parseFloat(value) || 0 }));
+    // Store raw string value, parse to float only when needed for calculations
+    const standardizedValue = value.replace(',', '.');
+    setOrder(prev => ({ ...prev, [id]: parseFloat(standardizedValue) || 0 }));
   }, [setOrder]);
 
   const handleSelectChange = useCallback((id: keyof PurchaseOrder, value: string) => {
@@ -74,7 +76,8 @@ export const usePurchaseOrderHandlers = ({
 
   const handleExchangeRateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
-    if (inputValue === '' || /^-?\d*\.?\d*$/.test(inputValue)) {
+    // Allow empty string, negative sign, or valid number format
+    if (inputValue === '' || inputValue === '-' || /^-?\d*\.?\d*$/.test(inputValue)) {
       setManualExchangeRateInput(inputValue);
       const parsedValue = parseFloat(inputValue);
       setManualExchangeRate(isNaN(parsedValue) ? undefined : parsedValue);
@@ -83,7 +86,8 @@ export const usePurchaseOrderHandlers = ({
 
   const handleFeesExchangeRateChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { // New handler
     const inputValue = e.target.value;
-    if (inputValue === '' || /^-?\d*\.?\d*$/.test(inputValue)) {
+    // Allow empty string, negative sign, or valid number format
+    if (inputValue === '' || inputValue === '-' || /^-?\d*\.?\d*$/.test(inputValue)) {
       setManualFeesExchangeRateInput(inputValue);
       const parsedValue = parseFloat(inputValue);
       setManualFeesExchangeRate(isNaN(parsedValue) ? undefined : parsedValue);
@@ -93,12 +97,12 @@ export const usePurchaseOrderHandlers = ({
   const addOrderItem = useCallback(() => {
     setOrderItems(prev => [...prev, {
       productId: '',
-      qty: '',
-      price: '',
-      itemTotal: '',
+      qty: '', // Store as string
+      price: '', // Store as string
+      itemTotal: '', // Store as string
       currency: selectedCurrency,
       packingUnitId: piecePackingUnitId, // Default to 'Piece'
-      packingQuantity: '',
+      packingQuantity: '', // Store as string
     }]);
   }, [setOrderItems, selectedCurrency, piecePackingUnitId]);
 
@@ -111,7 +115,7 @@ export const usePurchaseOrderHandlers = ({
       const newItems = [...prev];
       const item = { ...newItems[index] };
 
-      // Standardize decimal separator to '.' before parsing for all numeric fields
+      // Standardize decimal separator to '.' for internal parsing, but store raw string
       const standardizedValue = String(value).replace(',', '.');
 
       if (field === 'productId') {
@@ -122,45 +126,42 @@ export const usePurchaseOrderHandlers = ({
         }
       } else if (field === 'packingUnitId') {
         item.packingUnitId = value === 'none-selected' ? undefined : parseInt(value);
-        const currentPackingQty = roundToPrecision(parseFloat(String(item.packingQuantity).replace(',', '.')) || 0, 4);
+        const currentPackingQtyNum = parseFloat(String(item.packingQuantity).replace(',', '.')) || 0;
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
 
         if (selectedPackingUnit) {
-          item.qty = String(roundToPrecision(currentPackingQty * selectedPackingUnit.conversionFactor, 4));
+          item.qty = String(roundToPrecision(currentPackingQtyNum * selectedPackingUnit.conversionFactor, 4));
         } else {
-          item.qty = String(currentPackingQty); // If no packing unit, packingQuantity is treated as base qty
+          item.qty = String(currentPackingQtyNum); // If no packing unit, packingQuantity is treated as base qty
           item.packingQuantity = ''; // Clear packing quantity as no unit is selected
         }
-        const finalQtyNum = roundToPrecision(parseFloat(String(item.qty).replace(',', '.')) || 0, 4);
-        const finalPriceNum = roundToPrecision(parseFloat(String(item.price).replace(',', '.')) || 0, 4);
+        const finalQtyNum = parseFloat(String(item.qty).replace(',', '.')) || 0;
+        const finalPriceNum = parseFloat(String(item.price).replace(',', '.')) || 0;
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'packingQuantity') {
+        item.packingQuantity = standardizedValue; // Store raw string
         const parsedValue = parseFloat(standardizedValue) || 0;
         const roundedValue = roundToPrecision(parsedValue, 4);
-        item.packingQuantity = String(roundedValue); // Store rounded value as string
 
         const selectedPackingUnit = item.packingUnitId ? packingUnitMap[item.packingUnitId] : undefined;
 
         if (selectedPackingUnit && item.packingUnitId !== undefined && item.packingUnitId !== null && item.packingUnitId !== 0) {
           item.qty = String(roundToPrecision(roundedValue * selectedPackingUnit.conversionFactor, 4));
         } else {
-          item.qty = String(roundedValue); // If no packing unit, packingQuantity is treated as base qty
-          item.packingQuantity = ''; // Clear packingQuantity if no unit is selected
+          item.qty = standardizedValue; // If no packing unit, packingQuantity is treated as base qty
         }
-        const finalQtyNum = roundToPrecision(parseFloat(String(item.qty).replace(',', '.')) || 0, 4);
-        const finalPriceNum = roundToPrecision(parseFloat(String(item.price).replace(',', '.')) || 0, 4);
+        const finalQtyNum = parseFloat(String(item.qty).replace(',', '.')) || 0;
+        const finalPriceNum = parseFloat(String(item.price).replace(',', '.')) || 0;
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'price') {
-        const parsedValue = parseFloat(standardizedValue) || 0;
-        item.price = String(roundToPrecision(parsedValue, 4)); // Store rounded value as string
-        const finalQtyNum = roundToPrecision(parseFloat(String(item.qty).replace(',', '.')) || 0, 4);
-        const finalPriceNum = roundToPrecision(parseFloat(String(item.price).replace(',', '.')) || 0, 4);
+        item.price = standardizedValue; // Store raw string
+        const finalQtyNum = parseFloat(String(item.qty).replace(',', '.')) || 0;
+        const finalPriceNum = parseFloat(standardizedValue) || 0;
         item.itemTotal = String(roundToPrecision(finalQtyNum * finalPriceNum, 4));
       } else if (field === 'itemTotal') {
-        const parsedValue = parseFloat(standardizedValue) || 0;
-        item.itemTotal = String(roundToPrecision(parsedValue, 4)); // Store rounded value as string
-        const qtyNum = roundToPrecision(parseFloat(String(item.qty).replace(',', '.')) || 0, 4);
-        const itemTotalNum = roundToPrecision(parseFloat(String(item.itemTotal).replace(',', '.')) || 0, 4);
+        item.itemTotal = standardizedValue; // Store raw string
+        const qtyNum = parseFloat(String(item.qty).replace(',', '.')) || 0;
+        const itemTotalNum = parseFloat(standardizedValue) || 0;
         if (qtyNum > 0) {
           item.price = String(roundToPrecision(itemTotalNum / qtyNum, 4));
         } else {

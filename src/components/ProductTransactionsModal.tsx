@@ -117,8 +117,8 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
         const supplier = supplierMap[order.contactId];
 
         const orderCurrency = order.currency;
-        const priceInOrderCurrency = orderItem?.price || 0;
-        const quantity = orderItem?.qty || 0;
+        const priceInOrderCurrency = parseFloat(String(orderItem?.price)) || 0; // Parse price
+        const quantity = parseFloat(String(orderItem?.qty)) || 0; // Parse quantity
         const landedCostPerUnit = orderItem?.landedCostPerUnit || 0;
 
         const rateToMainCurrency = orderCurrency === mainCurrency
@@ -173,8 +173,8 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
         const orderItem = order.items.find(item => item.productId === productId);
         const customer = customerMap[order.contactId];
 
-        const quantity = orderItem?.qty || 0;
-        const pricePerBaseUnit = orderItem?.price || 0;
+        const quantity = parseFloat(String(orderItem?.qty)) || 0; // Parse quantity
+        const pricePerBaseUnit = parseFloat(String(orderItem?.price)) || 0; // Parse price
 
         const itemTotalExclVat = quantity * pricePerBaseUnit;
         const itemTotalInclVat = itemTotalExclVat * (1 + (order.vatPercent / 100));

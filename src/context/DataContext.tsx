@@ -159,11 +159,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (landedCostInMainCurrency <= 0) return;
 
           const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0) as number;
-          const stockBeforeThisOrder = totalStock - (item.qty as number);
+          const stockBeforeThisOrder = totalStock - parseFloat(String(item.qty)); // Parse qty
 
           if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {
             const oldTotalValue = stockBeforeThisOrder * (product.averageLandedCost as number);
-            const newItemsValue = (item.qty as number) * landedCostInMainCurrency;
+            const newItemsValue = parseFloat(String(item.qty)) * landedCostInMainCurrency; // Parse qty
             if (totalStock > 0) {
               product.averageLandedCost = parseFloat(((oldTotalValue + newItemsValue) / totalStock).toFixed(4));
             } else {
@@ -191,7 +191,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
           if (p) {
             if (!p.stock) p.stock = {};
-            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + item.quantity;
+            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + parseFloat(String(item.quantity)); // Parse quantity
           }
         });
       }
@@ -201,7 +201,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
           if (p) {
             if (!p.stock) p.stock = {};
-            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - item.quantity;
+            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - parseFloat(String(item.quantity)); // Parse quantity
             if (p.stock[newOrder.warehouseId] < 0) p.stock[newOrder.warehouseId] = 0;
           }
         });
