@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react'; // Added useMemo
 import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { toast } from 'sonner';
@@ -43,6 +43,11 @@ export const usePurchaseOrderActions = ({
     convertCurrency,
     incomingPayments, // Get incomingPayments here
     bankAccounts, // Get bankAccounts here
+    products, // ADDED: products array
+    setProducts, // ADDED: setProducts for product movement
+    mainWarehouse, // ADDED: mainWarehouse for product movement
+    warehouseMap, // ADDED: warehouseMap for product movement
+    sellOrders, // ADDED: sellOrders for product movement
   } = useData();
 
   const mainCurrency = settings.mainCurrency;
