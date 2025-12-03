@@ -7,11 +7,24 @@ export const formatNumberInput = (value: number | string | undefined | null): st
   if (value === undefined || value === null || value === '') {
     return '';
   }
-  const num = parseFloat(String(value));
+
+  const stringValue = String(value);
+
+  // If the string is just a negative sign, or ends with a decimal point, or ends with '.0' (or more zeros),
+  // return it as is to allow user to type.
+  if (stringValue === '-' || stringValue.endsWith('.') || /^-?\d*\.0*$/.test(stringValue)) {
+    return stringValue;
+  }
+
+  // Otherwise, parse and format for display, removing unnecessary trailing zeros.
+  const num = parseFloat(stringValue);
   if (isNaN(num)) {
     return '';
   }
-  // Convert to string, then remove trailing zeros after a decimal point
-  // e.g., 12.500 -> 12.5, 25.000 -> 25
-  return num.toString().replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '');
+
+  // Use toFixed to control decimal places, then remove trailing zeros if it's an integer
+  // This ensures numbers like 12.50 are displayed as 12.5, and 25.00 as 25.
+  // We'll use a higher precision for internal representation and then trim.
+  const formatted = num.toFixed(10); // Use a high precision
+  return formatted.replace(/\.?0+$/, ''); // Remove trailing zeros and optional decimal point
 };
