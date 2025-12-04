@@ -15,14 +15,14 @@ export function useModals() {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmationModalProps, setConfirmationModalProps] = useState<ConfirmationModalProps | null>(null);
 
-  const showAlertModal = useCallback((title: string, message: string) => {
+  const showAlertModal = useCallback((title: string, message: string, description?: string) => {
     sonnerToast.info(message, {
       duration: 5000,
       action: {
         label: 'OK',
         onClick: () => sonnerToast.dismiss(),
       },
-      description: title,
+      description: description || title, // Use description if provided, otherwise title
     });
   }, []);
 

@@ -51,6 +51,7 @@ interface DataContextType {
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>;
   packingUnitMap: { [key: number]: PackingUnit };
   warehouseMap: { [key: number]: Warehouse };
+  productMap: { [key: number]: Product }; // Added productMap to DataContextType
   
   // Recycle Bin
   recycleBin: RecycleBinItem[];
@@ -71,7 +72,7 @@ interface DataContextType {
   updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void;
 
   // Modals
-  showAlertModal: (title: string, message: string) => void;
+  showAlertModal: (title: string, message: string, description?: string) => void; // Updated signature
   showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void;
   isConfirmationModalOpen: boolean;
   confirmationModalProps: { title: string; message: string; onConfirm: () => void; actionLabel?: string } | null;
@@ -142,6 +143,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 5. Data Maps
   const { packingUnitMap, warehouseMap } = useDataMaps({ packingUnits, warehouses });
+  const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]); // Derived productMap here
 
   // 6. Inventory Management
   const {
@@ -326,6 +328,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits,
     packingUnitMap,
     warehouseMap,
+    productMap, // Added productMap to context value
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts, updateStockForUtilization,
@@ -352,6 +355,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     packingUnits, setPackingUnits,
     packingUnitMap,
     warehouseMap,
+    productMap, // Added productMap as dependency
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts, updateStockForUtilization,

@@ -65,7 +65,7 @@ export const usePurchaseOrderActions = ({
   // For now, I'm removing this as it seems misplaced for a Purchase Order's direct actions.
   const handleGenerateProductMovement = useCallback(() => {
     showAlertModal('Info', t('featureNotApplicable'), 'Product movement generation is not directly applicable from a Purchase Order. Products are received into the warehouse upon order completion.');
-  }, [showAlertModal]);
+  }, [showAlertModal, t]);
 
 
   // This function is for generating an Incoming Payment from a Purchase Order.
@@ -74,7 +74,7 @@ export const usePurchaseOrderActions = ({
   // For now, I'm removing this.
   const handleGenerateIncomingPayment = useCallback(() => {
     showAlertModal('Info', t('featureNotApplicable'), 'Incoming payment generation is not directly applicable from a Purchase Order. Please use the Outgoing Payments section for payments related to Purchase Orders.');
-  }, [showAlertModal]);
+  }, [showAlertModal, t]);
 
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -85,7 +85,7 @@ export const usePurchaseOrderActions = ({
       return;
     }
 
-    const validOrderItems = orderItems.filter(item => item.productId !== undefined && item.productId !== null && item.quantity > 0 && item.price >= 0);
+    const validOrderItems = orderItems.filter(item => item.productId !== undefined && item.productId !== null && item.qty > 0 && item.price >= 0);
     if (validOrderItems.length === 0) {
       showAlertModal('Validation Error', 'Please add at least one valid order item with a product, quantity, and price greater than zero.');
       return;
@@ -169,7 +169,7 @@ export const usePurchaseOrderActions = ({
   }, [
     order, orderItems, selectedCurrency, manualExchangeRate, manualFeesExchangeRate, currentExchangeRateToAZN,
     onSuccess, isEdit, purchaseOrders, saveItem, updateStockFromOrder, updateAverageCosts, showAlertModal, getNextId, packingUnitMap,
-    settings.mainCurrency, currencyRates,
+    settings.mainCurrency, currencyRates, t
   ]);
 
   // These are SellOrder-specific button states and should not be in PurchaseOrder actions.

@@ -88,7 +88,7 @@ export const useSellOrderActions = ({
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
       // Calculate base quantity based on packing unit
-      const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * (packingUnit.conversionFactor || 1) : packingQtyNum;
 
       return {
         productId: item.productId as number,
@@ -221,7 +221,7 @@ export const useSellOrderActions = ({
 
     toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[orderToSave.warehouseId as number]?.name}.` });
 
-  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, setOrder]);
+  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, setOrder, t]);
 
 
   const handleGenerateIncomingPayment = useCallback(() => {
@@ -336,7 +336,7 @@ export const useSellOrderActions = ({
 
     toast.success(t('success'), { description: `Incoming Payment #${newPaymentId} generated successfully for ${t('orderId')} #${orderToSave.id}.` });
 
-  }, [order, orderItems, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, incomingPayments, mainCurrency, setOrder, bankAccounts]);
+  }, [order, orderItems, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, incomingPayments, mainCurrency, setOrder, bankAccounts, t]);
 
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -414,7 +414,7 @@ export const useSellOrderActions = ({
     updateStockFromOrder(orderToSave, oldOrder);
     onSuccess();
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
-  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap]);
+  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap, t]);
 
   // --- Debug Logs for Button States ---
   const isGenerateMovementDisabled = useMemo(() => {
