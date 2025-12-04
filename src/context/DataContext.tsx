@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { t } from '@/utils/i18n';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -300,6 +300,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIncomingPayments, setOutgoingPayments, setProductMovements, setBankAccounts, setUtilizationOrders,
     setSettings, setCurrencyRates, setPackingUnits, setRecycleBin, setNextIds,
   });
+
+  // Effect to reset averageLandedCost if there are no purchase orders
+  useEffect(() => {
+    if (purchaseOrders.length === 0) {
+      setProducts(prevProducts => {
+        let changed = false;
+        const updatedProducts = prevProducts.map(p => {
+          if (p.averageLandedCost !== 0) {
+            changed = true;
+            return { ...p, averageLandedCost: 0 };
+          }
+          return p;
+        });
+        return changed ? updatedProducts : prevProducts;
+      });
+    }
+  }, [purchaseOrders, setProducts]);
+
 
   const productsWithTotalStock = useMemo(() => {
     return Array.isArray(products) ? products.map(p => ({

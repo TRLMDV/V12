@@ -414,7 +414,7 @@ export const useSellOrderActions = ({
     updateStockFromOrder(orderToSave, oldOrder);
     onSuccess();
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
-  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap, t]);
+  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap]);
 
   // --- Debug Logs for Button States ---
   const isGenerateMovementDisabled = useMemo(() => {

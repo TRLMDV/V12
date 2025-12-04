@@ -64,7 +64,7 @@ export const usePurchaseOrderActions = ({
   // If the intent is to move products from the received warehouse to another, that would be a separate Product Movement.
   // For now, I'm removing this as it seems misplaced for a Purchase Order's direct actions.
   const handleGenerateProductMovement = useCallback(() => {
-    showAlertModal('Info', t('featureNotApplicable'), 'Product movement generation is not directly applicable from a Purchase Order. Products are received into the warehouse upon order completion.');
+    showAlertModal(t('featureNotApplicable'), 'Product movement generation is not directly applicable from a Purchase Order. Products are received into the warehouse upon order completion.');
   }, [showAlertModal, t]);
 
 
@@ -73,7 +73,7 @@ export const usePurchaseOrderActions = ({
   // This seems like a misplaced function for a Purchase Order's direct actions.
   // For now, I'm removing this.
   const handleGenerateIncomingPayment = useCallback(() => {
-    showAlertModal('Info', t('featureNotApplicable'), 'Incoming payment generation is not directly applicable from a Purchase Order. Please use the Outgoing Payments section for payments related to Purchase Orders.');
+    showAlertModal(t('featureNotApplicable'), 'Incoming payment generation is not directly applicable from a Purchase Order. Please use the Outgoing Payments section for payments related to Purchase Orders.');
   }, [showAlertModal, t]);
 
 
