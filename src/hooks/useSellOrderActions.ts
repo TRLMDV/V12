@@ -210,7 +210,7 @@ export const useSellOrderActions = ({
       sourceWarehouseId: mainWarehouse.id,
       destWarehouseId: orderToSave.warehouseId as number,
       items: newMovementItems,
-      date: MOCK_CURRENT_DATE.toISOString(),
+      date: orderToSave.orderDate, // Use order date
     };
 
     saveItem('productMovements', newMovement);
@@ -320,7 +320,7 @@ export const useSellOrderActions = ({
       id: newPaymentId,
       orderId: orderToSave.id,
       paymentCategory: 'products',
-      date: MOCK_CURRENT_DATE.toISOString(),
+      date: orderToSave.orderDate, // Use order date
       amount: orderToSave.total,
       paymentCurrency: mainCurrency,
       paymentExchangeRate: undefined,
