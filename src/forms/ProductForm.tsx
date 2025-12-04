@@ -77,9 +77,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
     }
 
     // SKU uniqueness validation
-    const lowercasedSku = product.sku.trim().toLowerCase();
+    const lowercasedSku = String(product.sku).trim().toLowerCase(); // Ensure product.sku is a string
     const isDuplicateSku = products.some(
-      (p) => p.sku.trim().toLowerCase() === lowercasedSku && p.id !== productId
+      (p) => String(p.sku).trim().toLowerCase() === lowercasedSku && p.id !== productId
     );
 
     if (isDuplicateSku) {
