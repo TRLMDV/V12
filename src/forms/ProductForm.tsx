@@ -18,7 +18,7 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
-  const { products, packingUnits, saveItem } = useData();
+  const { products, packingUnits, saveItem, showAlertModal } = useData();
   const isEdit = productId !== undefined;
   const [product, setProduct] = useState<Partial<Product>>({});
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -67,8 +67,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!product.name || !product.sku) {
-      alert('Product Name and SKU are required.');
+    if (!product.name) {
+      showAlertModal(t('validationError'), t('productNameRequired'));
+      return;
+    }
+    if (!product.sku) {
+      showAlertModal(t('validationError'), t('skuRequired'));
+      return;
+    }
+
+    // SKU uniqueness validation
+    const lowercasedSku = product.sku.trim().toLowerCase();
+    const isDuplicateSku = products.some(
+      (p) => p.sku.trim().toLowerCase() === lowercasedSku && p.id !== productId
+    );
+
+    if (isDuplicateSku) {
+      showAlertModal(t('validationError'), t('duplicateSkuError', { sku: product.sku }));
       return;
     }
 

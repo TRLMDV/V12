@@ -48,7 +48,6 @@ const i18n = {
     bankAccountCurrencyRequired: 'Bank account currency is required.',
     invalidInitialBalance: 'Initial balance must be a valid number.',
     deleteBankAccountWarning: 'Are you sure you want to delete the bank account "{accountName}"? This action cannot be undone.',
-    cannotDeleteBankAccountWithPayments: 'Cannot delete bank account because it has associated payments. Please delete all payments linked to this account first.',
     selectBankAccount: 'Select Bank Account',
     noBankAccountsAvailable: 'No bank accounts available. Please create one first.',
     depositMoney: 'Deposit Money',
@@ -206,6 +205,10 @@ const i18n = {
     quantityIncremented: 'quantity incremented', // New translation key
     addedToOrder: 'added to order', // New translation key
     found: 'found', // New translation key
+    // Product form validation
+    productNameRequired: 'Product Name is required.',
+    skuRequired: 'SKU is required.',
+    duplicateSkuError: 'A product with SKU "{sku}" already exists. Please use a unique SKU.',
   }
 };
 
