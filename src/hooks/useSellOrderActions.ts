@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react'; // Added useMemo
 import { useData } from '@/context/DataContext';
 import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
 import { toast } from 'sonner';
@@ -13,10 +13,10 @@ interface SellOrderItemState {
   qty: number | string; // This will be the quantity in base units
   price: number | string;
   itemTotal: number | string;
-  cleanProfit?: number;
-  landedCost?: number;
-  packingUnitId?: number;
-  packingQuantity?: number | string;
+  cleanProfit?: number; // New field for calculated clean profit per item
+  landedCost?: number; // Added: Landed cost for the product
+  packingUnitId?: number; // New: ID of the selected packing unit
+  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
 }
 
 interface UseSellOrderActionsProps {
@@ -79,21 +79,16 @@ export const useSellOrderActions = ({
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
       // --- Safely get packing unit ---
-      let packingUnit;
+      let packingUnit: PackingUnit | undefined;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
           if (typeof item.packingUnitId === 'number') {
               packingUnit = packingUnitMap[item.packingUnitId];
-          } else {
-              // If it's not a number, treat it as if no packing unit is selected
-              item.packingUnitId = undefined;
           }
-      } else {
-          packingUnit = undefined;
       }
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
       // Calculate base quantity based on packing unit
-      const baseQty = packingUnit ? packingQtyNum * selectedPackingUnit.conversionFactor : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * packingUnit.conversionFactor : packingQtyNum;
 
       return {
         productId: item.productId as number,
@@ -110,7 +105,7 @@ export const useSellOrderActions = ({
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
-    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString().slice(0, 10);
+    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString();
     const orderStatus = order.status !== undefined ? order.status : 'Draft';
     const orderVatPercent = order.vatPercent !== undefined ? order.vatPercent : 0;
     const orderCurrency = selectedCurrency;
@@ -215,7 +210,7 @@ export const useSellOrderActions = ({
       sourceWarehouseId: mainWarehouse.id,
       destWarehouseId: orderToSave.warehouseId as number,
       items: newMovementItems,
-      date: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      date: MOCK_CURRENT_DATE.toISOString(),
     };
 
     saveItem('productMovements', newMovement);
@@ -243,19 +238,15 @@ export const useSellOrderActions = ({
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
       // --- Safely get packing unit ---
-      let packingUnit;
+      let packingUnit: PackingUnit | undefined;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
           if (typeof item.packingUnitId === 'number') {
               packingUnit = packingUnitMap[item.packingUnitId];
-          } else {
-              item.packingUnitId = undefined;
           }
-      } else {
-          packingUnit = undefined;
       }
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      const baseQty = packingUnit ? packingQtyNum * selectedPackingUnit.conversionFactor : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * (packingUnit?.conversionFactor || 1) : packingQtyNum; // Use optional chaining and default
 
       return {
         productId: item.productId as number,
@@ -272,7 +263,7 @@ export const useSellOrderActions = ({
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
-    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString().slice(0, 10);
+    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString();
     const orderStatus = order.status !== undefined ? order.status : 'Draft';
     const orderVatPercent = order.vatPercent !== undefined ? order.vatPercent : 0;
     const orderCurrency = selectedCurrency;
@@ -329,7 +320,7 @@ export const useSellOrderActions = ({
       id: newPaymentId,
       orderId: orderToSave.id,
       paymentCategory: 'products',
-      date: MOCK_CURRENT_DATE.toISOString().slice(0, 10),
+      date: MOCK_CURRENT_DATE.toISOString(),
       amount: orderToSave.total,
       paymentCurrency: mainCurrency,
       paymentExchangeRate: undefined,
@@ -369,19 +360,15 @@ export const useSellOrderActions = ({
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
       // --- Safely get packing unit ---
-      let packingUnit;
+      let packingUnit: PackingUnit | undefined;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
           if (typeof item.packingUnitId === 'number') {
               packingUnit = packingUnitMap[item.packingUnitId];
-          } else {
-              item.packingUnitId = undefined;
           }
-      } else {
-          packingUnit = undefined;
       }
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      const baseQty = packingUnit ? packingQtyNum * selectedPackingUnit.conversionFactor : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * (packingUnit?.conversionFactor || 1) : packingQtyNum; // Use optional chaining and default
 
       return {
         productId: item.productId as number,
@@ -398,7 +385,7 @@ export const useSellOrderActions = ({
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
-    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString().slice(0, 10);
+    const orderDate = order.orderDate !== undefined ? order.orderDate : MOCK_CURRENT_DATE.toISOString();
     const orderStatus = order.status !== undefined ? order.status : 'Draft';
     const orderVatPercent = order.vatPercent !== undefined ? order.vatPercent : 0;
     const orderCurrency = selectedCurrency;
