@@ -112,6 +112,8 @@ export const useSellOrderActions = ({
   ): { isValid: boolean } => {
     const productsForValidation: Product[] = JSON.parse(JSON.stringify(currentProducts));
 
+    // If editing an order that was already 'Shipped', temporarily add back its items to stock
+    // to correctly re-validate against the new items/quantities.
     if (isEditMode && existingOrder && existingOrder.status === 'Shipped') {
       (existingOrder.items || []).forEach(item => {
         const p = productsForValidation.find(prod => prod.id === item.productId);
@@ -121,6 +123,7 @@ export const useSellOrderActions = ({
       });
     }
 
+    // Now, check if there's enough stock for the *new* order items if the status is 'Shipped'
     if (orderToSave.status === 'Shipped') {
       for (const item of finalOrderItems) {
         const p = productsForValidation.find(prod => prod.id === item.productId);
@@ -361,7 +364,7 @@ export const useSellOrderActions = ({
     const { isValid: isStockValid } = performPreSaveStockValidation(orderToSave, finalOrderItems, products, isEdit, existingOrder);
 
     if (!isStockValid) {
-      return;
+      return; // Prevent saving if stock is not valid
     }
 
     saveItem('sellOrders', orderToSave);
