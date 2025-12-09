@@ -177,8 +177,8 @@ export const useSellOrderActions = ({
 
       const sourceStock = product.stock?.[mainWarehouse.id] || 0;
       if (sourceStock < qtyNum) {
-        const productName = productMap[item.productId]?.name || 'Unknown Product';
-        showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName} (${product.sku}) in ${mainWarehouse.name}. ${t('available')}: ${sourceStock}, ${t('requested')}: ${qtyNum}.`);
+        const productName = productMap[item.productId as number]?.name || 'Unknown Product';
+        showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName} (${product.sku}). ${t('available')}: ${sourceStock}, ${t('requested')}: ${qtyNum}.`);
         return;
       }
 
@@ -408,13 +408,44 @@ export const useSellOrderActions = ({
       incomingPaymentId: orderIncomingPaymentId,
     };
 
+    // Deep copy products for stock validation and potential updates
+    const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
+    const currentSellOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
+
+    // If editing an order that was previously 'Shipped', temporarily "return" its items to stock for validation
+    if (isEdit && currentSellOrder && currentSellOrder.status === 'Shipped') {
+        (currentSellOrder.items || []).forEach(item => {
+            const p = productsCopy.find(prod => prod.id === item.productId);
+            if (p && p.stock) {
+                p.stock[currentSellOrder.warehouseId] = (p.stock[currentSellOrder.warehouseId] || 0) + item.qty;
+            }
+        });
+    }
+
+    // Perform stock validation for the new/updated order if its status is 'Shipped'
+    if (orderToSave.status === 'Shipped') {
+        for (const item of finalOrderItems) {
+            const p = productsCopy.find(prod => prod.id === item.productId);
+            if (!p || !p.stock) {
+                showAlertModal('Error', `Product data missing for item ID ${item.productId}`);
+                return;
+            }
+            const stockInWarehouse = p.stock[orderToSave.warehouseId as number] || 0;
+            if (stockInWarehouse < item.qty) {
+                const productName = productMap[item.productId as number]?.name || 'Unknown Product';
+                showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName} (${productMap[item.productId as number]?.sku}). ${t('available')}: ${stockInWarehouse}, ${t('requested')}: ${item.qty}.`);
+                return;
+            }
+        }
+    }
+
     const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
 
     saveItem('sellOrders', orderToSave);
     updateStockFromOrder(orderToSave, oldOrder);
     onSuccess();
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
-  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap]);
+  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap, products, productMap, t]);
 
   // --- Debug Logs for Button States ---
   const isGenerateMovementDisabled = useMemo(() => {
