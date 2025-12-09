@@ -8,7 +8,6 @@ import { useCrudOperations } from '@/hooks/useCrudOperations';
 import { useRecycleBin } from '@/hooks/useRecycleBin';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 
-// New modular hooks
 import { useDataState } from '@/hooks/useDataState';
 import { useDataMaps } from '@/hooks/useDataMaps';
 import { useCurrencyConverter } from '@/hooks/useCurrencyConverter';
@@ -19,7 +18,6 @@ import {
   CurrencyRates, Settings, RecycleBinItem, CollectionKey, PackingUnit, BankAccount, UtilizationOrder, Currency, Reminder
 } from '@/types';
 
-// --- Context Definition ---
 interface DataContextType {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
@@ -51,9 +49,8 @@ interface DataContextType {
   setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>;
   packingUnitMap: { [key: number]: PackingUnit };
   warehouseMap: { [key: number]: Warehouse };
-  productMap: { [key: number]: Product }; // Added productMap to DataContextType
+  productMap: { [key: number]: Product };
   
-  // Recycle Bin
   recycleBin: RecycleBinItem[];
   setRecycleBin: React.Dispatch<React.SetStateAction<RecycleBinItem[]>>;
   addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
@@ -62,7 +59,6 @@ interface DataContextType {
   cleanRecycleBin: () => void;
   getItemSummary: (item: any, collectionKey: CollectionKey) => string;
 
-  // CRUD operations
   saveItem: (key: CollectionKey, item: any) => void;
   deleteItem: (key: CollectionKey, id: number) => void;
   getNextId: (key: CollectionKey) => number;
@@ -70,29 +66,25 @@ interface DataContextType {
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
   updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
   updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void;
+  updateStockForProductMovement: (newMovement: ProductMovement | null, oldMovement: ProductMovement | null) => void; // New: Add to context type
 
-  // Modals
-  showAlertModal: (title: string, message: string, description?: string) => void; // Updated signature
+  showAlertModal: (title: string, message: string, description?: string) => void;
   showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void;
   isConfirmationModalOpen: boolean;
   confirmationModalProps: { title: string; message: string; onConfirm: () => void; actionLabel?: string } | null;
   closeConfirmationModal: () => void;
 
-  // Currency conversion utility
   convertCurrency: (amount: number, fromCurrency: Currency, toCurrency: Currency) => number;
 
-  // Running balances for bank accounts
   runningBalancesMap: Map<number, Map<string, number>>;
 
-  // Next IDs
   nextIds: { [key: string]: number };
-  setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>; // Added setNextIds to DataContextType
+  setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // 1. State Management
   const {
     products, setProducts,
     suppliers, setSuppliers,
@@ -112,7 +104,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     recycleBin, setRecycleBin,
   } = useDataState();
 
-  // Add console logs for debugging
   console.log("[DataContext] products:", products);
   console.log("[DataContext] customers:", customers);
   console.log("[DataContext] suppliers:", suppliers);
@@ -122,11 +113,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log("[DataContext] outgoingPayments:", outgoingPayments);
   console.log("[DataContext] productMovements:", productMovements);
   console.log("[DataContext] packingUnits:", packingUnits);
-  console.log("[DataContext] bankAccounts (from useDataState):", bankAccounts); // Added log
+  console.log("[DataContext] bankAccounts (from useDataState):", bankAccounts);
   console.log("[DataContext] utilizationOrders:", utilizationOrders);
-  console.log("[DataContext] nextIds (from useDataState):", nextIds); // Added log
+  console.log("[DataContext] nextIds (from useDataState):", nextIds);
 
-  // 2. Modals
   const {
     showAlertModal,
     showConfirmationModal,
@@ -135,20 +125,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     closeConfirmationModal,
   } = useModals();
 
-  // 3. Currency Conversion
   const { convertCurrency } = useCurrencyConverter({ currencyRates });
 
-  // 4. Bank Balances
   const { runningBalancesMap } = useBankBalances({ bankAccounts, incomingPayments, outgoingPayments, convertCurrency });
 
-  // 5. Data Maps
   const { packingUnitMap, warehouseMap } = useDataMaps({ packingUnits, warehouses });
-  const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]); // Derived productMap here
+  const productMap = useMemo(() => products.reduce((acc, p) => ({ ...acc, [p.id]: p }), {} as { [key: number]: Product }), [products]);
 
-  // 6. Inventory Management
   const {
     updateStockFromOrder: baseUpdateStockFromOrder,
     updateAverageCosts: baseUpdateAverageAverageCosts,
+    updateStockForProductMovement: baseUpdateStockForProductMovement,
   } = useInventoryManagement({ products: Array.isArray(products) ? products : [], setProducts });
 
   const updateAverageCosts = React.useCallback((purchaseOrder: PurchaseOrder) => {
@@ -157,22 +144,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       (purchaseOrder.items || []).forEach(item => {
         const product = updatedProducts.find((p: Product) => p.id === item.productId);
         if (product) {
-          const landedCostInMainCurrency = item.landedCostPerUnit || 0;
-          if (landedCostInMainCurrency <= 0) return;
+          const landedCostInAZN = item.landedCostPerUnit || 0;
+          if (landedCostInAZN <= 0) return;
 
           const totalStock = Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0) as number;
-          const stockBeforeThisOrder = totalStock - parseFloat(String(item.qty)); // Parse qty
+          const stockBeforeThisOrder = totalStock - parseFloat(String(item.qty));
 
           if (stockBeforeThisOrder > 0 && (product.averageLandedCost || 0) > 0) {
             const oldTotalValue = stockBeforeThisOrder * (product.averageLandedCost as number);
-            const newItemsValue = parseFloat(String(item.qty)) * landedCostInMainCurrency; // Parse qty
+            const newItemsValue = parseFloat(String(item.qty)) * landedCostInAZN;
             if (totalStock > 0) {
               product.averageLandedCost = parseFloat(((oldTotalValue + newItemsValue) / totalStock).toFixed(4));
             } else {
-              product.averageLandedCost = landedCostInMainCurrency;
+              product.averageLandedCost = landedCostInAZN;
             }
           } else {
-            product.averageLandedCost = landedCostInMainCurrency;
+            product.averageLandedCost = landedCostInAZN;
           }
         }
       });
@@ -184,6 +171,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     baseUpdateStockFromOrder(newOrder, oldOrder);
   }, [baseUpdateStockFromOrder]);
 
+  const updateStockForProductMovement = React.useCallback((newMovement: ProductMovement | null, oldMovement: ProductMovement | null) => {
+    baseUpdateStockForProductMovement(newMovement, oldMovement);
+  }, [baseUpdateStockForProductMovement]);
+
   const updateStockForUtilization = React.useCallback((newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => {
     setProducts(prevProducts => {
       const updatedProducts = JSON.parse(JSON.stringify(prevProducts));
@@ -193,7 +184,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
           if (p) {
             if (!p.stock) p.stock = {};
-            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + parseFloat(String(item.quantity)); // Parse quantity
+            p.stock[oldOrder.warehouseId] = (p.stock[oldOrder.warehouseId] || 0) + parseFloat(String(item.quantity));
           }
         });
       }
@@ -203,7 +194,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
           if (p) {
             if (!p.stock) p.stock = {};
-            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - parseFloat(String(item.quantity)); // Parse quantity
+            p.stock[newOrder.warehouseId] = (p.stock[newOrder.warehouseId] || 0) - parseFloat(String(item.quantity));
             if (p.stock[newOrder.warehouseId] < 0) p.stock[newOrder.warehouseId] = 0;
           }
         });
@@ -212,10 +203,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [setProducts]);
 
-  // 7. Recycle Bin
   const {
-    recycleBin: recycleBinHook, // Renamed to avoid conflict with state variable
-    setRecycleBin: setRecycleBinHook, // Renamed
+    recycleBin: recycleBinHook,
+    setRecycleBin: setRecycleBinHook,
     addToRecycleBin,
     restoreFromRecycleBin,
     deletePermanentlyFromRecycleBin,
@@ -241,13 +231,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showConfirmationModal,
   });
 
-  // Ensure the top-level recycleBin state is updated by the hook's setter
   React.useEffect(() => {
     setRecycleBin(recycleBinHook);
   }, [recycleBinHook, setRecycleBin]);
 
 
-  // 8. CRUD Operations
   const {
     getNextId,
     setNextIdForCollection,
@@ -276,10 +264,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateStockFromOrder,
     updateAverageCosts,
     updateStockForUtilization,
+    updateStockForProductMovement,
     addToRecycleBin,
   });
 
-  // 9. App Initialization
   useAppInitialization({
     products: Array.isArray(products) ? products : [],
     suppliers: Array.isArray(suppliers) ? suppliers : [],
@@ -301,7 +289,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSettings, setCurrencyRates, setPackingUnits, setRecycleBin, setNextIds,
   });
 
-  // Effect to reset averageLandedCost if there are no purchase orders
   useEffect(() => {
     if (purchaseOrders.length === 0) {
       setProducts(prevProducts => {
@@ -346,16 +333,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     packingUnits: Array.isArray(packingUnits) ? packingUnits : [], setPackingUnits,
     packingUnitMap,
     warehouseMap,
-    productMap, // Added productMap to context value
+    productMap,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts, updateStockForUtilization,
+    updateStockForProductMovement,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
     runningBalancesMap,
-    nextIds, // Pass nextIds
-    setNextIds, // Pass setNextIds
+    nextIds,
+    setNextIds,
   }), [
     productsWithTotalStock, setProducts,
     suppliers, setSuppliers,
@@ -373,20 +361,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     packingUnits, setPackingUnits,
     packingUnitMap,
     warehouseMap,
-    productMap, // Added productMap as dependency
+    productMap,
     recycleBin, setRecycleBin, addToRecycleBin, restoreFromRecycleBin, deletePermanentlyFromRecycleBin, cleanRecycleBin, getItemSummary,
     saveItem, deleteItem, getNextId, setNextIdForCollection,
     updateStockFromOrder, updateAverageCosts, updateStockForUtilization,
+    updateStockForProductMovement,
     showAlertModal, showConfirmationModal,
     isConfirmationModalOpen, confirmationModalProps, closeConfirmationModal,
     convertCurrency,
     runningBalancesMap,
-    nextIds, // Add nextIds as dependency
-    setNextIds, // Add setNextIds as dependency
+    nextIds,
+    setNextIds,
   ]);
 
-  console.log("[DataContext] Final context value.bankAccounts:", value.bankAccounts); // Added log
-  console.log("[DataContext] Final context value.nextIds:", value.nextIds); // Added log
+  console.log("[DataContext] Final context value.bankAccounts:", value.bankAccounts);
+  console.log("[DataContext] Final context value.nextIds:", value.nextIds);
 
   return (
     <DataContext.Provider value={value}>

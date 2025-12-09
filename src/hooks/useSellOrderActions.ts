@@ -48,7 +48,6 @@ export const useSellOrderActions = ({
     updateStockFromOrder,
     showAlertModal,
     getNextId,
-    setProducts,
     products,
     warehouseMap,
     packingUnitMap,
@@ -56,12 +55,12 @@ export const useSellOrderActions = ({
     settings,
     bankAccounts,
     incomingPayments,
+    updateStockForProductMovement,
   } = useData();
 
   const mainCurrency = settings.mainCurrency;
   const currentExchangeRateToAZN = selectedCurrency === 'AZN' ? 1 : (manualExchangeRate !== undefined ? manualExchangeRate : currencyRates[selectedCurrency]);
 
-  // Helper function for validating and preparing order items
   const validateAndPrepareOrderData = useCallback((): { finalOrderItems: OrderItem[]; isValid: boolean } => {
     if (!order.contactId || !order.warehouseId || !order.orderDate) {
       showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required.');
@@ -104,50 +103,46 @@ export const useSellOrderActions = ({
     return { finalOrderItems, isValid: true };
   }, [order, orderItems, selectedCurrency, manualExchangeRate, showAlertModal, packingUnitMap, t]);
 
-  // Helper function for pre-save stock validation
   const performPreSaveStockValidation = useCallback((
     orderToSave: SellOrder,
     finalOrderItems: OrderItem[],
     currentProducts: Product[],
     isEditMode: boolean,
     existingOrder: SellOrder | null,
-  ): { updatedProducts: Product[]; isValid: boolean } => {
-    const productsCopy: Product[] = JSON.parse(JSON.stringify(currentProducts));
+  ): { isValid: boolean } => {
+    const productsForValidation: Product[] = JSON.parse(JSON.stringify(currentProducts));
 
-    // If editing an order that was previously 'Shipped', temporarily "return" its items to stock for accurate validation
     if (isEditMode && existingOrder && existingOrder.status === 'Shipped') {
       (existingOrder.items || []).forEach(item => {
-        const p = productsCopy.find(prod => prod.id === item.productId);
+        const p = productsForValidation.find(prod => prod.id === item.productId);
         if (p && p.stock) {
           p.stock[existingOrder.warehouseId] = (p.stock[existingOrder.warehouseId] || 0) + item.qty;
         }
       });
     }
 
-    // Perform stock validation for the new/updated order if its status is 'Shipped'
     if (orderToSave.status === 'Shipped') {
       for (const item of finalOrderItems) {
-        const p = productsCopy.find(prod => prod.id === item.productId);
+        const p = productsForValidation.find(prod => prod.id === item.productId);
         if (!p || !p.stock) {
           showAlertModal('Error', `Product data missing for item ID ${item.productId}`);
-          return { updatedProducts: currentProducts, isValid: false };
+          return { isValid: false };
         }
         const stockInWarehouse = p.stock[orderToSave.warehouseId as number] || 0;
         if (stockInWarehouse < item.qty) {
           const productName = productMap[item.productId as number]?.name || 'Unknown Product';
           showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName} (${productMap[item.productId as number]?.sku}). ${t('available')}: ${stockInWarehouse}, ${t('requested')}: ${item.qty}.`);
-          return { updatedProducts: currentProducts, isValid: false };
+          return { isValid: false };
         }
       }
     }
-    return { updatedProducts: productsCopy, isValid: true };
+    return { isValid: true };
   }, [showAlertModal, products, productMap, t]);
 
   const handleGenerateProductMovement = useCallback(() => {
     const { finalOrderItems, isValid } = validateAndPrepareOrderData();
     if (!isValid) return;
 
-    // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
@@ -173,11 +168,6 @@ export const useSellOrderActions = ({
       productMovementId: orderProductMovementId,
       incomingPaymentId: orderIncomingPaymentId,
     };
-
-    if (!orderToSave.contactId || !orderToSave.warehouseId || !orderToSave.orderDate) {
-      showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required before generating a product movement.');
-      return;
-    }
 
     try {
         saveItem('sellOrders', orderToSave);
@@ -206,7 +196,6 @@ export const useSellOrderActions = ({
     }
 
     const newMovementItems: { productId: number; quantity: number }[] = [];
-    const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
 
     for (const item of finalOrderItems) {
       const qtyNum = item.qty;
@@ -214,7 +203,7 @@ export const useSellOrderActions = ({
         continue;
       }
 
-      const product = productsCopy.find(p => p.id === item.productId);
+      const product = products.find(p => p.id === item.productId);
       if (!product) {
         showAlertModal('Error', `Product with ID ${item.productId} not found.`);
         return;
@@ -228,24 +217,11 @@ export const useSellOrderActions = ({
       }
 
       newMovementItems.push({ productId: item.productId as number, quantity: qtyNum });
-
-      if (!product.stock) product.stock = {};
-      product.stock[mainWarehouse.id] = sourceStock - qtyNum;
-      product.stock[orderToSave.warehouseId as number] = (product.stock[orderToSave.warehouseId as number] || 0) + qtyNum;
     }
 
     if (newMovementItems.length === 0) {
       showAlertModal('Info', t('noValidProductsForMovement'));
       return;
-    }
-
-    try {
-        setProducts(productsCopy);
-    } catch (setProductsError) {
-        console.error("DEBUG: FAILED to update products state:", setProductsError);
-        console.error("DEBUG: The productsCopy object:", productsCopy);
-        showAlertModal('Error', 'Failed to update product stock data. It might be corrupted. Please check the console.');
-        return;
     }
 
     const newMovementId = getNextId('productMovements');
@@ -265,14 +241,13 @@ export const useSellOrderActions = ({
 
     toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[orderToSave.warehouseId as number]?.name}.` });
 
-  }, [order, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, setOrder, t, validateAndPrepareOrderData]);
+  }, [order, products, mainWarehouse, showAlertModal, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, setOrder, t, validateAndPrepareOrderData, updateStockForProductMovement]);
 
 
   const handleGenerateIncomingPayment = useCallback(() => {
     const { finalOrderItems, isValid } = validateAndPrepareOrderData();
     if (!isValid) return;
 
-    // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
@@ -356,7 +331,6 @@ export const useSellOrderActions = ({
     const { finalOrderItems, isValid } = validateAndPrepareOrderData();
     if (!isValid) return;
 
-    // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
     const orderContactId = order.contactId !== undefined ? order.contactId : 0;
     const orderWarehouseId = order.warehouseId !== undefined ? order.warehouseId : 0;
@@ -384,21 +358,19 @@ export const useSellOrderActions = ({
     };
 
     const existingOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
-    const { updatedProducts, isValid: isStockValid } = performPreSaveStockValidation(orderToSave, finalOrderItems, products, isEdit, existingOrder);
+    const { isValid: isStockValid } = performPreSaveStockValidation(orderToSave, finalOrderItems, products, isEdit, existingOrder);
 
     if (!isStockValid) {
       return;
     }
 
-    setProducts(updatedProducts); // Update products state with the validated stock changes
-
     saveItem('sellOrders', orderToSave);
-    updateStockFromOrder(orderToSave, existingOrder); // Pass existingOrder for correct stock reversal
+    updateStockFromOrder(orderToSave, existingOrder);
     onSuccess();
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
   }, [
     order, isEdit, sellOrders, products, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN,
-    onSuccess, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap, productMap, setProducts, t,
+    onSuccess, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap, productMap, t,
     validateAndPrepareOrderData, performPreSaveStockValidation
   ]);
 

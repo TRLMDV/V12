@@ -18,19 +18,18 @@ interface UseCrudOperationsProps {
   setIncomingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setOutgoingPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
   setProductMovements: React.Dispatch<React.SetStateAction<ProductMovement[]>>;
-  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>; // New: setUtilizationOrders
-  setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>; // Added
-  setSettings: React.Dispatch<React.SetStateAction<Settings>>; // Added for paymentCategories, quickButtons, reminders
-  setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>; // Added
-  nextIds: { [key: string]: number }; // Still need nextIds value for getNextId
+  setUtilizationOrders: React.Dispatch<React.SetStateAction<UtilizationOrder[]>>;
+  setPackingUnits: React.Dispatch<React.SetStateAction<PackingUnit[]>>;
+  setSettings: React.Dispatch<React.SetStateAction<Settings>>;
+  setBankAccounts: React.Dispatch<React.SetStateAction<BankAccount[]>>;
+  nextIds: { [key: string]: number };
   setNextIds: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
   showAlertModal: (title: string, message: string) => void;
-  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void; // Updated signature
+  showConfirmationModal: (title: string, message: string, onConfirm: () => void, actionLabel?: string) => void;
   updateStockFromOrder: (newOrder: PurchaseOrder | SellOrder | null, oldOrder: PurchaseOrder | SellOrder | null) => void;
-  updateAverageCosts: (purchaseOrder: PurchaseOrder) => void; // Added
-  updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void; // New: updateStockForUtilization
-  addToRecycleBin: (item: any, collectionKey: CollectionKey) => void;
-  // Pass current state values for validation where needed, but not as dependencies for useCallback
+  updateAverageCosts: (purchaseOrder: PurchaseOrder) => void;
+  updateStockForUtilization: (newOrder: UtilizationOrder | null, oldOrder: UtilizationOrder | null) => void;
+  updateStockForProductMovement: (newMovement: ProductMovement | null, oldMovement: ProductMovement | null) => void; // New prop
   products: Product[];
   suppliers: Supplier[];
   customers: Customer[];
@@ -40,10 +39,10 @@ interface UseCrudOperationsProps {
   incomingPayments: Payment[];
   outgoingPayments: Payment[];
   productMovements: ProductMovement[];
-  utilizationOrders: UtilizationOrder[]; // New: utilizationOrders
-  packingUnits: PackingUnit[]; // Added
-  settings: Settings; // Added for paymentCategories, quickButtons, reminders
-  bankAccounts: BankAccount[]; // Added
+  utilizationOrders: UtilizationOrder[];
+  packingUnits: PackingUnit[];
+  settings: Settings;
+  bankAccounts: BankAccount[];
 }
 
 export function useCrudOperations({
@@ -56,31 +55,31 @@ export function useCrudOperations({
   setIncomingPayments,
   setOutgoingPayments,
   setProductMovements,
-  setUtilizationOrders, // Destructure new prop
-  setPackingUnits, // Destructure new prop
-  setSettings, // Destructure new prop
-  setBankAccounts, // Destructure new prop
+  setUtilizationOrders,
+  setPackingUnits,
+  setSettings,
+  setBankAccounts,
   nextIds, setNextIds,
   showAlertModal, showConfirmationModal,
   updateStockFromOrder,
   updateAverageCosts,
-  updateStockForUtilization, // Destructure new prop
+  updateStockForUtilization,
+  updateStockForProductMovement, // Destructure new prop
   addToRecycleBin,
-  // Current state values for validation, not for useCallback dependencies
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
 }: UseCrudOperationsProps) {
 
   const getNextId = useCallback((key: CollectionKey) => {
     return nextIds[key] || 1;
-  }, [nextIds]); // nextIds is a dependency here, which is fine as it's a single object.
+  }, [nextIds]);
 
   const setNextIdForCollection = useCallback((key: CollectionKey, newNextId: number) => {
     setNextIds(prev => ({ ...prev, [key]: newNextId }));
-  }, [setNextIds]); // setNextIds is stable.
+  }, [setNextIds]);
 
   const saveItem = useCallback((key: CollectionKey, item: any) => {
     let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<PaymentCategorySetting[]>> | React.Dispatch<React.SetStateAction<PackingUnit[]>> | React.Dispatch<React.SetStateAction<BankAccount[]>> | React.Dispatch<React.SetStateAction<QuickButton[]>> | React.Dispatch<React.SetStateAction<Reminder[]>>;
-    let currentCollection: any[] = []; // To be populated for validation
+    let currentCollection: any[] = [];
 
     switch (key) {
       case 'products': setter = setProducts; currentCollection = products; break;
@@ -92,7 +91,7 @@ export function useCrudOperations({
       case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
       case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
       case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
-      case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break; // New: utilizationOrders
+      case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break;
       case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
       case 'bankAccounts':
         setter = setBankAccounts;
@@ -104,11 +103,11 @@ export function useCrudOperations({
           const existingItemIndex = existingCategories.findIndex((i: any) => i.id === item.id);
           let updatedCategories;
 
-          if (item.id === 0 || existingItemIndex === -1) { // New item
+          if (item.id === 0 || existingItemIndex === -1) {
             const newItemId = getNextId(key);
             updatedCategories = [...existingCategories, { ...item, id: newItemId }];
             setNextIdForCollection(key, newItemId + 1);
-          } else { // Existing item, update it
+          } else {
             updatedCategories = existingCategories.map((i: any) => i.id === item.id ? item : i);
           }
           return { ...prevSettings, paymentCategories: updatedCategories };
@@ -121,28 +120,28 @@ export function useCrudOperations({
           const existingItemIndex = existingButtons.findIndex((i: any) => i.id === item.id);
           let updatedButtons;
 
-          if (item.id === 0 || existingItemIndex === -1) { // New item
+          if (item.id === 0 || existingItemIndex === -1) {
             const newItemId = getNextId(key);
             updatedButtons = [...existingButtons, { ...item, id: newItemId }];
             setNextIdForCollection(key, newItemId + 1);
-          } else { // Existing item, update it
+          } else {
             updatedButtons = existingButtons.map((i: any) => i.id === item.id ? item : i);
           }
           return { ...prevSettings, quickButtons: updatedButtons };
         });
         sonnerToast.success(t('success'), { description: `${t('detailsUpdated')}` });
         return;
-      case 'reminders': // New: Reminders
+      case 'reminders':
         setSettings((prevSettings: Settings) => {
           const existingReminders = prevSettings.reminders || [];
           const existingItemIndex = existingReminders.findIndex((i: any) => i.id === item.id);
           let updatedReminders;
 
-          if (item.id === 0 || existingItemIndex === -1) { // New item
+          if (item.id === 0 || existingItemIndex === -1) {
             const newItemId = getNextId(key);
             updatedReminders = [...existingReminders, { ...item, id: newItemId }];
             setNextIdForCollection(key, newItemId + 1);
-          } else { // Existing item, update it
+          } else {
             updatedReminders = existingReminders.map((i: any) => i.id === item.id ? item : i);
           }
           return { ...prevSettings, reminders: updatedReminders };
@@ -153,7 +152,6 @@ export function useCrudOperations({
         return;
     }
 
-    // Specific validation for warehouses (needs currentCollection)
     if (key === 'warehouses' && item.type === 'Main') {
       const existingMainWarehouse = currentCollection.find((w: Warehouse) => w.type === 'Main' && w.id !== item.id);
       if (existingMainWarehouse) {
@@ -162,23 +160,19 @@ export function useCrudOperations({
       }
     }
 
-    // Stock validation for Utilization Orders
     if (key === 'utilizationOrders') {
       const newUtilizationOrder = item as UtilizationOrder;
       const oldUtilizationOrder = (currentCollection as UtilizationOrder[]).find(uo => uo.id === newUtilizationOrder.id);
 
-      // Temporarily revert stock for old order if editing
       if (oldUtilizationOrder) {
         updateStockForUtilization(null, oldUtilizationOrder);
       }
 
-      // Check stock for new order
-      const productsCopy: Product[] = JSON.parse(JSON.stringify(products)); // Deep copy for dry run
+      const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
       for (const utilItem of newUtilizationOrder.items) {
         const product = productsCopy.find(p => p.id === utilItem.productId);
         if (!product || !product.stock) {
           showAlertModal('Error', `Product data missing for item ID ${utilItem.productId}`);
-          // Revert temporary stock changes if validation fails
           if (oldUtilizationOrder) updateStockForUtilization(oldUtilizationOrder, null);
           return;
         }
@@ -187,26 +181,59 @@ export function useCrudOperations({
           const originalProduct = products.find(prod => prod.id === utilItem.productId);
           const safeProductName = originalProduct?.name || 'Unknown Product';
           showAlertModal('Stock Error', `${t('notEnoughStock')} ${safeProductName}. ${t('available')}: ${stockInWarehouse}, ${t('requested')}: ${utilItem.quantity}.`);
-          // Revert temporary stock changes if validation fails
           if (oldUtilizationOrder) updateStockForUtilization(oldUtilizationOrder, null);
           return;
         }
-        // Apply tentative stock changes for subsequent checks in the same form submission
         product.stock[newUtilizationOrder.warehouseId] = stockInWarehouse - utilItem.quantity;
       }
-      // If all checks pass, apply the actual stock changes
       updateStockForUtilization(newUtilizationOrder, oldUtilizationOrder);
     }
+
+    // Handle ProductMovement stock updates here
+    if (key === 'productMovements') {
+      const newMovement = item as ProductMovement;
+      const oldMovement = (currentCollection as ProductMovement[]).find(m => m.id === newMovement.id);
+
+      const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
+      if (oldMovement) {
+        (oldMovement.items || []).forEach(oldItem => {
+          const p = productsCopy.find(prod => prod.id === oldItem.productId);
+          if (p && p.stock) {
+            p.stock[oldMovement.sourceWarehouseId] = (p.stock[oldMovement.sourceWarehouseId] || 0) + oldItem.quantity;
+            p.stock[oldMovement.destWarehouseId] = (p.stock[oldMovement.destWarehouseId] || 0) - oldItem.quantity;
+          }
+        });
+      }
+
+      for (const moveItem of newMovement.items) {
+        const p = productsCopy.find(prod => prod.id === moveItem.productId);
+        if (!p || !p.stock) {
+          showAlertModal('Error', `Product data missing for item ID ${moveItem.productId}`);
+          return;
+        }
+        const stockInSource = p.stock[newMovement.sourceWarehouseId] || 0;
+        if (stockInSource < moveItem.quantity) {
+          const originalProduct = products.find(prod => prod.id === moveItem.productId);
+          const safeProductName = originalProduct?.name || 'Unknown Product';
+          showAlertModal('Stock Error', `${t('notEnoughStock')} ${safeProductName}. ${t('available')}: ${stockInSource}, ${t('requested')}: ${moveItem.quantity}.`);
+          return;
+        }
+        p.stock[newMovement.sourceWarehouseId] = stockInSource - moveItem.quantity;
+        p.stock[newMovement.destWarehouseId] = (p.stock[newMovement.destWarehouseId] || 0) + moveItem.quantity;
+      }
+      updateStockForProductMovement(newMovement, oldMovement);
+    }
+
 
     (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => {
       const existingItemIndex = prevItems.findIndex(i => i.id === item.id);
       let updatedItems;
 
-      if (item.id === 0 || existingItemIndex === -1) { // New item
+      if (item.id === 0 || existingItemIndex === -1) {
         const newItemId = getNextId(key);
         updatedItems = [...prevItems, { ...item, id: newItemId }];
-        setNextIdForCollection(key, newItemId + 1); // Increment next ID for this collection
-      } else { // Existing item, update it
+        setNextIdForCollection(key, newItemId + 1);
+      } else {
         updatedItems = prevItems.map(i => i.id === item.id ? item : i);
       }
       return updatedItems;
@@ -215,14 +242,13 @@ export function useCrudOperations({
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,
-    getNextId, setNextIdForCollection, showAlertModal, updateStockForUtilization,
-    // Include current state values for validation, but not as dependencies for useCallback
+    getNextId, setNextIdForCollection, showAlertModal, updateStockForUtilization, updateStockForProductMovement,
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
   ]);
 
   const deleteItem = useCallback((key: CollectionKey, id: number) => {
     let setter: React.Dispatch<React.SetStateAction<any[]>> | React.Dispatch<React.SetStateAction<Settings>>;
-    let currentCollection: any[] = []; // To be populated for validation
+    let currentCollection: any[] = [];
 
     switch (key) {
       case 'products': setter = setProducts; currentCollection = products; break;
@@ -234,9 +260,9 @@ export function useCrudOperations({
       case 'incomingPayments': setter = setIncomingPayments; currentCollection = incomingPayments; break;
       case 'outgoingPayments': setter = setOutgoingPayments; currentCollection = outgoingPayments; break;
       case 'productMovements': setter = setProductMovements; currentCollection = productMovements; break;
-      case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break; // New: utilizationOrders
+      case 'utilizationOrders': setter = setUtilizationOrders; currentCollection = utilizationOrders; break;
       case 'packingUnits': setter = setPackingUnits; currentCollection = packingUnits; break;
-      case 'bankAccounts': setter = setBankAccounts; currentCollection = bankAccounts; break; // Added
+      case 'bankAccounts': setter = setBankAccounts; currentCollection = bankAccounts; break;
       case 'paymentCategories':
         const categoryToDelete = (settings.paymentCategories || []).find((c: PaymentCategorySetting) => c.id === id);
         if (!categoryToDelete) {
@@ -263,7 +289,7 @@ export function useCrudOperations({
         }));
         sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
         return;
-      case 'reminders': // New: Reminders
+      case 'reminders':
         const reminderToDelete = (settings.reminders || []).find((r: Reminder) => r.id === id);
         if (!reminderToDelete) {
           showAlertModal(t('error'), t('itemNotFound'));
@@ -285,7 +311,6 @@ export function useCrudOperations({
       return;
     }
 
-    // --- Deletion validation checks (need current state values) ---
     if (key === 'products') {
       const hasOrders = sellOrders.some(o => o.items?.some(i => i.productId === id)) || purchaseOrders.some(o => o.items?.some(i => i.productId === id));
       if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInOrders')); return; }
@@ -293,7 +318,7 @@ export function useCrudOperations({
       const hasMovements = productMovements.some(m => m.items?.some(i => i.productId === id));
       if (hasMovements) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInMovements')); return; }
 
-      const hasUtilizationOrders = utilizationOrders.some(uo => uo.items?.some(i => i.productId === id)); // New: Check utilization orders
+      const hasUtilizationOrders = utilizationOrders.some(uo => uo.items?.some(i => i.productId === id));
       if (hasUtilizationOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteProductInUtilizationOrders')); return; }
 
       const productToDelete = products.find(p => p.id === id);
@@ -315,7 +340,7 @@ export function useCrudOperations({
       const hasOrders = purchaseOrders.some(o => o.warehouseId === id) ||
                          sellOrders.some(o => o.warehouseId === id) ||
                          productMovements.some(m => m.sourceWarehouseId === id || m.destWarehouseId === id) ||
-                         utilizationOrders.some(uo => uo.warehouseId === id); // New: Check utilization orders
+                         utilizationOrders.some(uo => uo.warehouseId === id);
       if (hasOrders) { showAlertModal(t('deletionFailed'), t('cannotDeleteWarehouseInUse')); return; }
     }
     if (key === 'suppliers' || key === 'customers') {
@@ -333,7 +358,7 @@ export function useCrudOperations({
         return;
       }
     }
-    if (key === 'bankAccounts') { // New validation for bank accounts
+    if (key === 'bankAccounts') {
       const hasIncomingPayments = incomingPayments.some(p => p.bankAccountId === id);
       const hasOutgoingPayments = outgoingPayments.some(p => p.bankAccountId === id);
       if (hasIncomingPayments || hasOutgoingPayments) {
@@ -342,7 +367,6 @@ export function useCrudOperations({
       }
     }
 
-    // --- Specific logic for SellOrders deletion: Delete associated ProductMovement and IncomingPayment ---
     if (key === 'sellOrders') {
       const sellOrderToDelete = itemToDelete as SellOrder;
       let associatedItemsMessage = '';
@@ -368,34 +392,26 @@ export function useCrudOperations({
         t('deleteSellOrder'),
         confirmMessage,
         () => {
-          // Perform cascading deletions first
           if (sellOrderToDelete.productMovementId) {
-            // Recursively call deleteItem for the product movement
-            // This will move the product movement to recycle bin and unlink it from the sell order
             deleteItem('productMovements', sellOrderToDelete.productMovementId);
           }
           if (sellOrderToDelete.incomingPaymentId) {
-            // Recursively call deleteItem for the incoming payment
-            // This will move the incoming payment to recycle bin and unlink it from the sell order
             deleteItem('incomingPayments', sellOrderToDelete.incomingPaymentId);
           }
 
-          // Reverse stock change for the sell order itself
           const orderToDelete = itemToDelete as SellOrder;
           if (orderToDelete) updateStockFromOrder(null, orderToDelete);
 
-          // Then delete the sell order itself
           addToRecycleBin(itemToDelete, key);
           (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id));
           sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
         },
         t('delete')
       );
-      return; // Exit early as confirmation modal handles the deletion flow
+      return;
     }
 
-    // Reverse stock change if deleting a completed order/movement/utilization
-    if (key === 'purchaseOrders') { // Removed '|| key === 'sellOrders''
+    if (key === 'purchaseOrders') {
       const orderToDelete = itemToDelete as PurchaseOrder | SellOrder;
       if (orderToDelete) updateStockFromOrder(null, orderToDelete);
     } else if (key === 'productMovements') {
@@ -406,22 +422,9 @@ export function useCrudOperations({
             ? { ...so, productMovementId: undefined }
             : so
         ));
-
-        setProducts(prevProducts => prevProducts.map(p => {
-          if (p.stock && movementToDelete.items?.some(item => item.productId === p.id)) {
-            const newP = { ...p, stock: { ...p.stock } };
-            movementToDelete.items.forEach(item => {
-              if (item.productId === p.id) {
-                newP.stock[movementToDelete.sourceWarehouseId] = (newP.stock[movementToDelete.sourceWarehouseId] || 0) + item.quantity;
-                newP.stock[movementToDelete.destWarehouseId] = (newP.stock[movementToDelete.destWarehouseId] || 0) - item.quantity;
-              }
-            });
-            return newP;
-          }
-          return p;
-        }));
+        updateStockForProductMovement(null, movementToDelete);
       }
-    } else if (key === 'utilizationOrders') { // New: Revert stock for utilization orders
+    } else if (key === 'utilizationOrders') {
       const utilizationOrderToDelete = itemToDelete as UtilizationOrder;
       if (utilizationOrderToDelete) {
         updateStockForUtilization(null, utilizationOrderToDelete);
@@ -437,15 +440,13 @@ export function useCrudOperations({
       }
     }
 
-    // Move to recycle bin instead of permanent deletion
     addToRecycleBin(itemToDelete, key);
-    (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id)); // Remove from active data
+    (setter as React.Dispatch<React.SetStateAction<any[]>>)(prevItems => prevItems.filter(i => i.id !== id));
     sonnerToast.success(t('success'), { description: t('itemMovedToRecycleBin') });
   }, [
     setProducts, setSuppliers, setCustomers, setWarehouses, setPurchaseOrders, setSellOrders,
     setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,
-    showAlertModal, showConfirmationModal, updateStockFromOrder, updateStockForUtilization, addToRecycleBin,
-    // Include current state values for validation, but not as dependencies for useCallback
+    showAlertModal, showConfirmationModal, updateStockFromOrder, updateStockForUtilization, addToRecycleBin, updateStockForProductMovement,
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
   ]);
 

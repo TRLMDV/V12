@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from 'react';
-import { Product, PurchaseOrder, SellOrder } from '@/types'; // Import necessary types from types file
+import { Product, PurchaseOrder, SellOrder, ProductMovement } from '@/types'; // Import necessary types from types file
 
 interface UseInventoryManagementProps {
   products: Product[];
@@ -74,8 +74,40 @@ export function useInventoryManagement({ products, setProducts }: UseInventoryMa
     });
   }, [setProducts]);
 
+  const updateStockForProductMovement = useCallback((newMovement: ProductMovement | null, oldMovement: ProductMovement | null) => {
+    setProducts(prevProducts => {
+      const updatedProducts = JSON.parse(JSON.stringify(prevProducts));
+
+      // Reverse old movement's stock changes if it exists
+      if (oldMovement) {
+        (oldMovement.items || []).forEach(item => {
+          const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
+          if (p && p.stock) {
+            p.stock[oldMovement.sourceWarehouseId] = (p.stock[oldMovement.sourceWarehouseId] || 0) + item.quantity; // Add back to source
+            p.stock[oldMovement.destWarehouseId] = (p.stock[oldMovement.destWarehouseId] || 0) - item.quantity; // Remove from destination
+          }
+        });
+      }
+
+      // Apply new movement's stock changes if it exists
+      if (newMovement) {
+        (newMovement.items || []).forEach(item => {
+          const p = updatedProducts.find((prod: Product) => prod.id === item.productId);
+          if (p) {
+            if (!p.stock) p.stock = {};
+            p.stock[newMovement.sourceWarehouseId] = (p.stock[newMovement.sourceWarehouseId] || 0) - item.quantity; // Remove from source
+            p.stock[newMovement.destWarehouseId] = (p.stock[newMovement.destWarehouseId] || 0) + item.quantity; // Add to destination
+            if (p.stock[newMovement.sourceWarehouseId] < 0) p.stock[newMovement.sourceWarehouseId] = 0; // Prevent negative stock
+          }
+        });
+      }
+      return updatedProducts;
+    });
+  }, [setProducts]);
+
   return {
     updateStockFromOrder,
     updateAverageCosts,
+    updateStockForProductMovement,
   };
 }
