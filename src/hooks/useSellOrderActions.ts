@@ -1,22 +1,22 @@
 "use client";
 
-import { useCallback, useMemo } from 'react'; // Added useMemo
+import { useCallback, useMemo } from 'react';
 import { useData } from '@/context/DataContext';
-import { MOCK_CURRENT_DATE } from '@/data/initialData'; // Corrected import
+import { MOCK_CURRENT_DATE } from '@/data/initialData';
 import { toast } from 'sonner';
 import { SellOrder, Product, OrderItem, ProductMovement, Payment, Currency, PackingUnit, Warehouse } from '@/types';
 import { t } from '@/utils/i18n';
-import { roundToPrecision } from '@/utils/formatters'; // Import roundToPrecision
+import { roundToPrecision } from '@/utils/formatters';
 
 interface SellOrderItemState {
   productId: number | '';
   qty: number | string; // This will be the quantity in base units
   price: number | string;
   itemTotal: number | string;
-  cleanProfit?: number; // New field for calculated clean profit per item
-  landedCost?: number; // Added: Landed cost for the product
-  packingUnitId?: number; // New: ID of the selected packing unit
-  packingQuantity?: number | string; // New: Quantity in terms of the selected packing unit
+  cleanProfit?: number;
+  landedCost?: number;
+  packingUnitId?: number;
+  packingQuantity?: number | string;
 }
 
 interface UseSellOrderActionsProps {
@@ -28,7 +28,7 @@ interface UseSellOrderActionsProps {
   productMap: { [key: number]: Product };
   onSuccess: () => void;
   isEdit: boolean;
-  setOrder: React.Dispatch<React.SetStateAction<Partial<SellOrder>>>; // Added setOrder
+  setOrder: React.Dispatch<React.SetStateAction<Partial<SellOrder>>>;
 }
 
 export const useSellOrderActions = ({
@@ -40,9 +40,8 @@ export const useSellOrderActions = ({
   productMap,
   onSuccess,
   isEdit,
-  setOrder, // Destructure setOrder
+  setOrder,
 }: UseSellOrderActionsProps) => {
-  // --- Get all necessary data from useData at the top level ---
   const {
     sellOrders,
     saveItem,
@@ -55,51 +54,98 @@ export const useSellOrderActions = ({
     packingUnitMap,
     currencyRates,
     settings,
-    convertCurrency,
-    incomingPayments, // Get incomingPayments here
-    bankAccounts, // Get bankAccounts here
+    bankAccounts,
+    incomingPayments,
   } = useData();
 
   const mainCurrency = settings.mainCurrency;
-
   const currentExchangeRateToAZN = selectedCurrency === 'AZN' ? 1 : (manualExchangeRate !== undefined ? manualExchangeRate : currencyRates[selectedCurrency]);
 
-  const handleGenerateProductMovement = useCallback(() => {
-    if (!order) {
-      console.error("DEBUG: Order object is null or undefined in handleGenerateProductMovement.");
-      showAlertModal('Error', 'Order data is missing. Please try again.');
-      return;
+  // Helper function for validating and preparing order items
+  const validateAndPrepareOrderData = useCallback((): { finalOrderItems: OrderItem[]; isValid: boolean } => {
+    if (!order.contactId || !order.warehouseId || !order.orderDate) {
+      showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required.');
+      return { finalOrderItems: [], isValid: false };
     }
 
     const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
     if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero before generating a product movement.');
-      return;
+      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero.');
+      return { finalOrderItems: [], isValid: false };
+    }
+
+    if (selectedCurrency !== 'AZN' && (!manualExchangeRate || manualExchangeRate <= 0)) {
+      showAlertModal('Validation Error', 'Please enter a valid exchange rate for the selected currency.');
+      return { finalOrderItems: [], isValid: false };
     }
 
     const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
-      // --- Safely get packing unit ---
       let packingUnit: PackingUnit | undefined;
       if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
-          if (typeof item.packingUnitId === 'number') {
-              packingUnit = packingUnitMap[item.packingUnitId];
-          }
+        if (typeof item.packingUnitId === 'number') {
+          packingUnit = packingUnitMap[item.packingUnitId];
+        }
       }
 
       const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      // Calculate base quantity based on packing unit
-      const baseQty = packingUnit ? packingQtyNum * (packingUnit.conversionFactor || 1) : packingQtyNum;
+      const baseQty = packingUnit ? packingQtyNum * (packingUnit?.conversionFactor || 1) : packingQtyNum;
 
       return {
         productId: item.productId as number,
-        qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
-        price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
+        qty: roundToPrecision(baseQty, 4),
+        price: roundToPrecision(parseFloat(String(item.price)), 4),
         currency: selectedCurrency,
         landedCostPerUnit: item.landedCost,
-        packingUnitId: item.packingUnitId, // Store the selected packing unit ID
-        packingQuantity: roundToPrecision(packingQtyNum, 4), // Store the packing quantity entered by the user, rounded
+        packingUnitId: item.packingUnitId,
+        packingQuantity: roundToPrecision(packingQtyNum, 4),
       };
     });
+
+    return { finalOrderItems, isValid: true };
+  }, [order, orderItems, selectedCurrency, manualExchangeRate, showAlertModal, packingUnitMap, t]);
+
+  // Helper function for pre-save stock validation
+  const performPreSaveStockValidation = useCallback((
+    orderToSave: SellOrder,
+    finalOrderItems: OrderItem[],
+    currentProducts: Product[],
+    isEditMode: boolean,
+    existingOrder: SellOrder | null,
+  ): { updatedProducts: Product[]; isValid: boolean } => {
+    const productsCopy: Product[] = JSON.parse(JSON.stringify(currentProducts));
+
+    // If editing an order that was previously 'Shipped', temporarily "return" its items to stock for accurate validation
+    if (isEditMode && existingOrder && existingOrder.status === 'Shipped') {
+      (existingOrder.items || []).forEach(item => {
+        const p = productsCopy.find(prod => prod.id === item.productId);
+        if (p && p.stock) {
+          p.stock[existingOrder.warehouseId] = (p.stock[existingOrder.warehouseId] || 0) + item.qty;
+        }
+      });
+    }
+
+    // Perform stock validation for the new/updated order if its status is 'Shipped'
+    if (orderToSave.status === 'Shipped') {
+      for (const item of finalOrderItems) {
+        const p = productsCopy.find(prod => prod.id === item.productId);
+        if (!p || !p.stock) {
+          showAlertModal('Error', `Product data missing for item ID ${item.productId}`);
+          return { updatedProducts: currentProducts, isValid: false };
+        }
+        const stockInWarehouse = p.stock[orderToSave.warehouseId as number] || 0;
+        if (stockInWarehouse < item.qty) {
+          const productName = productMap[item.productId as number]?.name || 'Unknown Product';
+          showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName} (${productMap[item.productId as number]?.sku}). ${t('available')}: ${stockInWarehouse}, ${t('requested')}: ${item.qty}.`);
+          return { updatedProducts: currentProducts, isValid: false };
+        }
+      }
+    }
+    return { updatedProducts: productsCopy, isValid: true };
+  }, [showAlertModal, products, productMap, t]);
+
+  const handleGenerateProductMovement = useCallback(() => {
+    const { finalOrderItems, isValid } = validateAndPrepareOrderData();
+    if (!isValid) return;
 
     // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
@@ -136,8 +182,8 @@ export const useSellOrderActions = ({
     try {
         saveItem('sellOrders', orderToSave);
     } catch (saveError) {
-        console.error("DEBUG: [Currency Clue] FAILED to save orderToSave:", saveError);
-        console.error("DEBUG: [Currency Clue] The object that failed to save:", orderToSave);
+        console.error("DEBUG: FAILED to save orderToSave:", saveError);
+        console.error("DEBUG: The object that failed to save:", orderToSave);
         showAlertModal('Error', 'Failed to save order data. It might be corrupted. Please check the console for details.');
         return;
     }
@@ -160,11 +206,10 @@ export const useSellOrderActions = ({
     }
 
     const newMovementItems: { productId: number; quantity: number }[] = [];
-    // Deep copy products for stock validation/update
     const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
 
     for (const item of finalOrderItems) {
-      const qtyNum = item.qty; // This is now the base unit quantity
+      const qtyNum = item.qty;
       if (!item.productId || qtyNum <= 0) {
         continue;
       }
@@ -184,7 +229,6 @@ export const useSellOrderActions = ({
 
       newMovementItems.push({ productId: item.productId as number, quantity: qtyNum });
 
-      // Update stock in productsCopy
       if (!product.stock) product.stock = {};
       product.stock[mainWarehouse.id] = sourceStock - qtyNum;
       product.stock[orderToSave.warehouseId as number] = (product.stock[orderToSave.warehouseId as number] || 0) + qtyNum;
@@ -198,8 +242,8 @@ export const useSellOrderActions = ({
     try {
         setProducts(productsCopy);
     } catch (setProductsError) {
-        console.error("DEBUG: [Currency Clue] FAILED to update products state:", setProductsError);
-        console.error("DEBUG: [Currency Clue] The productsCopy object:", productsCopy);
+        console.error("DEBUG: FAILED to update products state:", setProductsError);
+        console.error("DEBUG: The productsCopy object:", productsCopy);
         showAlertModal('Error', 'Failed to update product stock data. It might be corrupted. Please check the console.');
         return;
     }
@@ -210,54 +254,23 @@ export const useSellOrderActions = ({
       sourceWarehouseId: mainWarehouse.id,
       destWarehouseId: orderToSave.warehouseId as number,
       items: newMovementItems,
-      date: orderToSave.orderDate, // Use order date
+      date: orderToSave.orderDate,
     };
 
     saveItem('productMovements', newMovement);
 
     const updatedOrderWithMovement = { ...orderToSave, productMovementId: newMovementId };
     saveItem('sellOrders', updatedOrderWithMovement);
-    setOrder(updatedOrderWithMovement); // Update local state to disable button
+    setOrder(updatedOrderWithMovement);
 
     toast.success(t('success'), { description: `Product Movement #${newMovementId} generated successfully from ${mainWarehouse.name} to ${warehouseMap[orderToSave.warehouseId as number]?.name}.` });
 
-  }, [order, orderItems, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, setOrder, t]);
+  }, [order, products, mainWarehouse, showAlertModal, setProducts, getNextId, saveItem, warehouseMap, sellOrders, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, productMap, setOrder, t, validateAndPrepareOrderData]);
 
 
   const handleGenerateIncomingPayment = useCallback(() => {
-    if (!order) {
-      showAlertModal('Error', 'Order data is missing. Please try again.');
-      return;
-    }
-
-    const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
-    if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero before generating an incoming payment.');
-      return;
-    }
-
-    const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
-      // --- Safely get packing unit ---
-      let packingUnit: PackingUnit | undefined;
-      if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
-          if (typeof item.packingUnitId === 'number') {
-              packingUnit = packingUnitMap[item.packingUnitId];
-          }
-      }
-
-      const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      const baseQty = packingUnit ? packingQtyNum * (packingUnit?.conversionFactor || 1) : packingQtyNum; // Use optional chaining and default
-
-      return {
-        productId: item.productId as number,
-        qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
-        price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
-        currency: selectedCurrency,
-        landedCostPerUnit: item.landedCost,
-        packingUnitId: item.packingUnitId,
-        packingQuantity: roundToPrecision(packingQtyNum, 4), // Ensure final packingQuantity is rounded
-      };
-    });
+    const { finalOrderItems, isValid } = validateAndPrepareOrderData();
+    if (!isValid) return;
 
     // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
@@ -298,17 +311,15 @@ export const useSellOrderActions = ({
       return;
     }
 
-    // --- Use incomingPayments from the top-level useData call ---
     const existingIncomingPayment = incomingPayments.find(p => p.orderId === orderToSave.id);
     if (existingIncomingPayment) {
       showAlertModal('Info', t('incomingPaymentAlreadyExists'));
       const updatedOrderWithPayment = { ...orderToSave, incomingPaymentId: existingIncomingPayment.id };
       saveItem('sellOrders', updatedOrderWithPayment);
-      setOrder(updatedOrderWithPayment); // Update local state to disable button
+      setOrder(updatedOrderWithPayment);
       return;
     }
 
-    // Find a default bank account for the main currency
     const defaultBankAccount = bankAccounts.find(ba => ba.currency === mainCurrency);
     if (!defaultBankAccount) {
       showAlertModal('Error', t('noBankAccountsAvailable'));
@@ -320,66 +331,30 @@ export const useSellOrderActions = ({
       id: newPaymentId,
       orderId: orderToSave.id,
       paymentCategory: 'products',
-      date: orderToSave.orderDate, // Use order date
+      date: orderToSave.orderDate,
       amount: orderToSave.total,
       paymentCurrency: mainCurrency,
       paymentExchangeRate: undefined,
       method: t('autoGenerated'),
-      bankAccountId: defaultBankAccount.id, // Set the default bank account ID
+      bankAccountId: defaultBankAccount.id,
     };
 
     saveItem('incomingPayments', newPayment);
 
     const updatedOrderWithPayment = { ...orderToSave, incomingPaymentId: newPaymentId };
     saveItem('sellOrders', updatedOrderWithPayment);
-    setOrder(updatedOrderWithPayment); // Update local state to disable button
+    setOrder(updatedOrderWithPayment);
 
     toast.success(t('success'), { description: `Incoming Payment #${newPaymentId} generated successfully for ${t('orderId')} #${orderToSave.id}.` });
 
-  }, [order, orderItems, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, incomingPayments, mainCurrency, setOrder, bankAccounts, t]);
+  }, [order, showAlertModal, getNextId, saveItem, selectedCurrency, currentExchangeRateToAZN, packingUnitMap, incomingPayments, mainCurrency, setOrder, bankAccounts, t, validateAndPrepareOrderData]);
 
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!order.contactId || !order.warehouseId || !order.orderDate) {
-      showAlertModal('Validation Error', 'Customer, Warehouse, and Order Date are required.');
-      return;
-    }
-
-    const validOrderItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0 && parseFloat(String(item.price)) >= 0);
-    if (validOrderItems.length === 0) {
-      showAlertModal('Validation Error', 'Please add at least one valid order item with a product, packing quantity, and price greater than zero.');
-      return;
-    }
-
-    if (selectedCurrency !== 'AZN' && (!manualExchangeRate || manualExchangeRate <= 0)) {
-      showAlertModal('Validation Error', 'Please enter a valid exchange rate for the selected currency.');
-      return;
-    }
-
-    const finalOrderItems: OrderItem[] = validOrderItems.map(item => {
-      // --- Safely get packing unit ---
-      let packingUnit: PackingUnit | undefined;
-      if (item.packingUnitId !== undefined && item.packingUnitId !== null) {
-          if (typeof item.packingUnitId === 'number') {
-              packingUnit = packingUnitMap[item.packingUnitId];
-          }
-      }
-
-      const packingQtyNum = parseFloat(String(item.packingQuantity)) || 0;
-      const baseQty = packingUnit ? packingQtyNum * (packingUnit?.conversionFactor || 1) : packingQtyNum; // Use optional chaining and default
-
-      return {
-        productId: item.productId as number,
-        qty: roundToPrecision(baseQty, 4), // Ensure final qty is rounded
-        price: roundToPrecision(parseFloat(String(item.price)), 4), // Ensure final price is rounded
-        currency: selectedCurrency,
-        landedCostPerUnit: item.landedCost,
-        packingUnitId: item.packingUnitId,
-        packingQuantity: roundToPrecision(packingQtyNum, 4), // Ensure final packingQuantity is rounded
-      };
-    });
+    const { finalOrderItems, isValid } = validateAndPrepareOrderData();
+    if (!isValid) return;
 
     // --- Safely construct orderToSave object ---
     const orderId = order.id !== undefined ? order.id : getNextId('sellOrders');
@@ -408,46 +383,25 @@ export const useSellOrderActions = ({
       incomingPaymentId: orderIncomingPaymentId,
     };
 
-    // Deep copy products for stock validation and potential updates
-    const productsCopy: Product[] = JSON.parse(JSON.stringify(products));
-    const currentSellOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
+    const existingOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
+    const { updatedProducts, isValid: isStockValid } = performPreSaveStockValidation(orderToSave, finalOrderItems, products, isEdit, existingOrder);
 
-    // If editing an order that was previously 'Shipped', temporarily "return" its items to stock for validation
-    if (isEdit && currentSellOrder && currentSellOrder.status === 'Shipped') {
-        (currentSellOrder.items || []).forEach(item => {
-            const p = productsCopy.find(prod => prod.id === item.productId);
-            if (p && p.stock) {
-                p.stock[currentSellOrder.warehouseId] = (p.stock[currentSellOrder.warehouseId] || 0) + item.qty;
-            }
-        });
+    if (!isStockValid) {
+      return;
     }
 
-    // Perform stock validation for the new/updated order if its status is 'Shipped'
-    if (orderToSave.status === 'Shipped') {
-        for (const item of finalOrderItems) {
-            const p = productsCopy.find(prod => prod.id === item.productId);
-            if (!p || !p.stock) {
-                showAlertModal('Error', `Product data missing for item ID ${item.productId}`);
-                return;
-            }
-            const stockInWarehouse = p.stock[orderToSave.warehouseId as number] || 0;
-            if (stockInWarehouse < item.qty) {
-                const productName = productMap[item.productId as number]?.name || 'Unknown Product';
-                showAlertModal('Stock Error', `${t('notEnoughStock')} ${productName} (${productMap[item.productId as number]?.sku}). ${t('available')}: ${stockInWarehouse}, ${t('requested')}: ${item.qty}.`);
-                return;
-            }
-        }
-    }
-
-    const oldOrder = isEdit ? sellOrders.find(o => o.id === orderToSave.id) : null;
+    setProducts(updatedProducts); // Update products state with the validated stock changes
 
     saveItem('sellOrders', orderToSave);
-    updateStockFromOrder(orderToSave, oldOrder);
+    updateStockFromOrder(orderToSave, existingOrder); // Pass existingOrder for correct stock reversal
     onSuccess();
     toast.success(t('success'), { description: `Sell Order #${orderToSave.id || 'new'} saved successfully.` });
-  }, [order, orderItems, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN, onSuccess, isEdit, sellOrders, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap, products, productMap, t]);
+  }, [
+    order, isEdit, sellOrders, products, selectedCurrency, manualExchangeRate, currentExchangeRateToAZN,
+    onSuccess, saveItem, updateStockFromOrder, showAlertModal, getNextId, packingUnitMap, productMap, setProducts, t,
+    validateAndPrepareOrderData, performPreSaveStockValidation
+  ]);
 
-  // --- Debug Logs for Button States ---
   const isGenerateMovementDisabled = useMemo(() => {
     const noOrder = !order;
     const noWarehouseId = !order?.warehouseId;
@@ -458,16 +412,6 @@ export const useSellOrderActions = ({
     const noValidItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
 
     const disabled = noOrder || noWarehouseId || noMainWarehouse || sameWarehouse || notShipped || movementAlreadyGenerated || noValidItems;
-
-    console.log("DEBUG: [Movement Button State] Conditions for DISABLED:");
-    console.log(`  - No Order (!order): ${noOrder}`);
-    console.log(`  - No Order Warehouse ID (!order.warehouseId): ${noWarehouseId}`);
-    console.log(`  - No Main Warehouse (!mainWarehouse): ${noMainWarehouse}`);
-    console.log(`  - Same Warehouse (order.warehouseId === mainWarehouse.id): ${sameWarehouse}`);
-    console.log(`  - Not Shipped (order.status !== 'Shipped'): ${notShipped}`);
-    console.log(`  - Movement Already Generated (!!order.productMovementId): ${movementAlreadyGenerated}`);
-    console.log(`  - No Valid Items (orderItems.filter(...).length === 0): ${noValidItems}`);
-    console.log(`  -> FINAL DISABLED STATE: ${disabled}`);
 
     return disabled;
   }, [order, mainWarehouse, orderItems]);
@@ -480,14 +424,6 @@ export const useSellOrderActions = ({
     const noMainCurrencyBankAccount = !bankAccounts.some(ba => ba.currency === mainCurrency);
 
     const disabled = noOrder || notShipped || paymentAlreadyGenerated || noValidItems || noMainCurrencyBankAccount;
-
-    console.log("DEBUG: [Payment Button State] Conditions for DISABLED:");
-    console.log(`  - No Order (!order): ${noOrder}`);
-    console.log(`  - Not Shipped (order.status !== 'Shipped'): ${notShipped}`);
-    console.log(`  - Payment Already Generated (!!order.incomingPaymentId): ${paymentAlreadyGenerated}`);
-    console.log(`  - No Valid Items (orderItems.filter(...).length === 0): ${noValidItems}`);
-    console.log(`  - No Main Currency Bank Account (!bankAccounts.some(...)): ${noMainCurrencyBankAccount}`);
-    console.log(`  -> FINAL DISABLED STATE: ${disabled}`);
 
     return disabled;
   }, [order, orderItems, bankAccounts, mainCurrency]);
