@@ -378,7 +378,7 @@ export function useCrudOperations({
         confirmMessage,
         () => {
           if (sellOrderToDelete.productMovementId) {
-            deleteItem('productMovements', sellOrderToDelete.productMovementId);
+            deleteItem('productMovements', sellOrderToDelete.productMovementId); // This will now trigger the logic above
           }
           if (sellOrderToDelete.incomingPaymentId) {
             deleteItem('incomingPayments', sellOrderToDelete.incomingPaymentId);
@@ -402,11 +402,17 @@ export function useCrudOperations({
     } else if (key === 'productMovements') {
       const movementToDelete = itemToDelete as ProductMovement;
       if (movementToDelete) {
-        setSellOrders(prevSellOrders => prevSellOrders.map(so =>
-          so.productMovementId === movementToDelete.id
-            ? { ...so, productMovementId: undefined }
-            : so
-        ));
+        // Find the linked SellOrder and update its status if it was 'Shipped'
+        setSellOrders(prevSellOrders => prevSellOrders.map(so => {
+          if (so.productMovementId === movementToDelete.id) {
+            return {
+              ...so,
+              productMovementId: undefined,
+              status: so.status === 'Shipped' ? 'Confirmed' : so.status, // Revert status from Shipped to Confirmed
+            };
+          }
+          return so;
+        }));
         updateStockForProductMovement(null, movementToDelete); // Reverse stock changes
       }
     } else if (key === 'utilizationOrders') {
