@@ -238,81 +238,77 @@ const SalesChart: React.FC<SalesChartProps> = () => {
       <CardContent>
         {salesData.length > 0 && maxY > 0 ? (
           <ResponsiveContainer width="100%" height={360}>
-            <>
-              {displayMode === 'single' ? (
-                <AreaChart
-                  data={salesData}
-                  margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
-                >
-                  <defs>
-                    <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.9} />
-                      <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.1} />
-                    </linearGradient>
-                    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="rgba(0,0,0,0.15)" />
-                    </filter>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-                  <YAxis stroke="hsl(var(--foreground))" domain={[0, Math.ceil(maxY * 1.1)]} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
-                    itemStyle={{ color: 'hsl(var(--foreground))' }}
-                    labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
-                    formatter={(value: number) => [`${value.toFixed(2)} ${mainCurrency}`, t('totalSalesValue')]}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey={dataKeysToRender[0]}
-                    stroke="#4F46E5"
-                    strokeWidth={2.5}
-                    fill="url(#salesGradient)"
-                    dot={{ r: 3, strokeWidth: 1.5 }}
-                    isAnimationActive
-                    animationDuration={800}
-                    filter="url(#shadow)"
-                  />
-                </AreaChart>
-              ) : (
-                // All periods: compare all years as multiple lines over months
-                <LineChart
-                  data={salesData}
-                  margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-                  <YAxis stroke="hsl(var(--foreground))" domain={[0, Math.ceil(maxY * 1.1)]} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
-                    itemStyle={{ color: 'hsl(var(--foreground))' }}
-                    labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
-                    formatter={(value: number, name: string) => [`${(value as number).toFixed(2)} ${mainCurrency}`, name]}
-                  />
-                  <Legend />
-                  {dataKeysToRender.map((key, index) => {
-                    // Highlight the most recent year; prior years grey
-                    const isLatest = index === dataKeysToRender.length - 1;
-                    const color = isLatest ? '#10B981' /* green */ : '#9CA3AF' /* grey */;
-                    return (
-                      <Line
-                        key={key}
-                        type="monotone"
-                        dataKey={key}
-                        name={key}
-                        stroke={color}
-                        strokeWidth={2.5}
-                        dot={false}
-                        activeDot={{ r: 4 }}
-                        isAnimationActive
-                        animationDuration={700}
-                      />
-                    );
-                  })}
-                </LineChart>
-              )}
-            </>
+            {displayMode === 'single' ? (
+              <AreaChart
+                data={salesData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+              >
+                <defs>
+                  <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.1} />
+                  </linearGradient>
+                  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="rgba(0,0,0,0.15)" />
+                  </filter>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
+                <YAxis stroke="hsl(var(--foreground))" domain={[0, Math.ceil(maxY * 1.1)]} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                  formatter={(value: number) => [`${value.toFixed(2)} ${mainCurrency}`, t('totalSalesValue')]}
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey={dataKeysToRender[0]}
+                  stroke="#4F46E5"
+                  strokeWidth={2.5}
+                  fill="url(#salesGradient)"
+                  dot={{ r: 3, strokeWidth: 1.5 }}
+                  isAnimationActive
+                  animationDuration={800}
+                  filter="url(#shadow)"
+                />
+              </AreaChart>
+            ) : (
+              <LineChart
+                data={salesData}
+                margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
+                <YAxis stroke="hsl(var(--foreground))" domain={[0, Math.ceil(maxY * 1.1)]} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                  formatter={(value: number, name: string) => [`${(value as number).toFixed(2)} ${mainCurrency}`, name]}
+                />
+                <Legend />
+                {dataKeysToRender.map((key, index) => {
+                  const isLatest = index === dataKeysToRender.length - 1;
+                  const color = isLatest ? '#10B981' : '#9CA3AF';
+                  return (
+                    <Line
+                      key={key}
+                      type="monotone"
+                      dataKey={key}
+                      name={key}
+                      stroke={color}
+                      strokeWidth={2.5}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                      isAnimationActive
+                      animationDuration={700}
+                    />
+                  );
+                })}
+              </LineChart>
+            )}
           </ResponsiveContainer>
         ) : (
           <div className="h-[360px] flex items-center justify-center text-gray-500 dark:text-slate-400">
