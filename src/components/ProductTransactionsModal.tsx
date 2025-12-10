@@ -20,14 +20,14 @@ interface ProductTransactionsModalProps {
 }
 
 type SortConfig = {
-  key: 'orderDate' | 'orderId' | 'supplierName' | 'customerName' | 'quantity' | 'priceInOrderCurrency' | 'priceExclVat' | 'priceInclVat' | 'landedCostPerUnit';
+  key: 'orderDate' | 'orderId' | 'supplierName' | 'customerName' | 'quantity' | 'priceInOrderCurrency' | 'priceExclVat' | 'priceInclVat' | 'landedCostPerUnit' | 'unitPriceExclVat';
   direction: 'ascending' | 'descending';
 };
 
 const ITEMS_PER_PAGE = 100;
 
 const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isOpen, onClose, productId }) => {
-  const { products, purchaseOrders, sellOrders, suppliers, customers, currencyRates, settings } = useData();
+  const { products, purchaseOrders, sellOrders, suppliers, customers, currencyRates, settings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
 
   const [isPurchaseOrdersOpen, setIsPurchaseOrdersOpen] = useState(false);
@@ -175,8 +175,13 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
 
         const quantity = parseFloat(String(orderItem?.qty)) || 0; // Parse quantity
         const pricePerBaseUnit = parseFloat(String(orderItem?.price)) || 0; // Parse price
+        // Convert unit price to main currency if needed
+        const unitPriceExclVat = convertCurrency
+          ? convertCurrency(pricePerBaseUnit, order.currency, mainCurrency)
+          : pricePerBaseUnit;
 
-        const itemTotalExclVat = quantity * pricePerBaseUnit;
+        // Totals (keep existing logic; displayed currency label is main currency)
+        const itemTotalExclVat = quantity * unitPriceExclVat;
         const itemTotalInclVat = itemTotalExclVat * (1 + (order.vatPercent / 100));
 
         return {
@@ -184,6 +189,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
           orderDate: order.orderDate,
           customerName: customer?.name || 'N/A',
           quantity: quantity,
+          unitPriceExclVat: unitPriceExclVat,
           priceExclVat: itemTotalExclVat,
           priceInclVat: itemTotalInclVat,
         };
@@ -376,6 +382,9 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                         <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('quantity', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
                           {t('qty')} {getSortIndicator('quantity', salesOrderSortConfig)}
                         </TableHead>
+                        <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('unitPriceExclVat', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
+                          Unit Price (Excl. VAT) {getSortIndicator('unitPriceExclVat', salesOrderSortConfig)}
+                        </TableHead>
                         <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('priceExclVat', salesOrderSortConfig, setSalesOrderSortConfig, setSalesOrderCurrentPage)}>
                           {t('priceExclVat')} {getSortIndicator('priceExclVat', salesOrderSortConfig)}
                         </TableHead>
@@ -391,6 +400,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                           <TableCell className="p-3">{so.customerName}</TableCell>
                           <TableCell className="p-3">{format(parseISO(so.orderDate), 'yyyy-MM-dd HH:mm')}</TableCell> {/* Format with time */}
                           <TableCell className="p-3">{so.quantity}</TableCell>
+                          <TableCell className="p-3">{Number(so.unitPriceExclVat).toFixed(2)} {mainCurrency}</TableCell>
                           <TableCell className="p-3">{so.priceExclVat.toFixed(2)} {mainCurrency}</TableCell>
                           <TableCell className="p-3">{so.priceInclVat.toFixed(2)} {mainCurrency}</TableCell>
                         </TableRow>
