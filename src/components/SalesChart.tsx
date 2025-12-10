@@ -28,7 +28,7 @@ const COLORS = [
   '#3f51b5', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'
 ]; // A palette of colors for multiple lines
 
-// Helper to shade hex colors slightly lighter/darker
+// Helper to shade hex colors slightly lighter/darker for 3D effect
 function shadeColor(hex: string, percent: number) {
   const f = hex.startsWith('#') ? hex.substring(1) : hex;
   const num = parseInt(f, 16);
@@ -46,26 +46,22 @@ function shadeColor(hex: string, percent: number) {
 // Custom 3D bar shape
 const ThreeDBar = (props: any) => {
   const { x, y, width, height, fill } = props;
-  const depth = 6; // "3D" depth
+  const depth = 6;
   const topFill = shadeColor(fill, 15);
   const sideFill = shadeColor(fill, -15);
   if (width <= 0 || height <= 0) return null;
 
   return (
     <g>
-      {/* Front face */}
       <rect x={x} y={y} width={width} height={height} fill={fill} />
-      {/* Top face */}
       <polygon
         points={`${x},${y} ${x + depth},${y - depth} ${x + width + depth},${y - depth} ${x + width},${y}`}
         fill={topFill}
       />
-      {/* Side face */}
       <polygon
         points={`${x + width},${y} ${x + width + depth},${y - depth} ${x + width + depth},${y + height - depth} ${x + width},${y + height}`}
         fill={sideFill}
       />
-      {/* Soft shadow */}
       <rect x={x + width * 0.1} y={y + height} width={width} height={4} fill="rgba(0,0,0,0.08)" />
     </g>
   );
@@ -270,7 +266,6 @@ const SalesChart: React.FC<SalesChartProps> = () => {
         {salesData.length > 0 ? (
           <ResponsiveContainer width="100%" height={360}>
             <>
-              {/* Single period: sleek gradient area with subtle shadow */}
               {displayMode === 'single' ? (
                 <AreaChart
                   data={salesData}
@@ -308,7 +303,6 @@ const SalesChart: React.FC<SalesChartProps> = () => {
                   />
                 </AreaChart>
               ) : (
-                // All periods: grouped 3D bars per year
                 <BarChart
                   data={salesData}
                   margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
