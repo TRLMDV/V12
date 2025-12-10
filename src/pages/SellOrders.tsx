@@ -47,7 +47,7 @@ const SellOrders: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100;
 
-  // Stable handler to avoid resetting currentPage on parent re-renders
+  // Stable handler to avoid resetting currentPage due to changing function identity
   const handleFiltersChange = useCallback((newFilters: {
     filterWarehouseId: number | 'all';
     filterCustomerValue: number | 'all' | string;

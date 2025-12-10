@@ -44,6 +44,18 @@ const PurchaseOrders: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100; // User requested 100 items per page
 
+  // Stable handler to avoid resetting currentPage due to changing function identity
+  const handleFiltersChange = useCallback((newFilters: {
+    filterWarehouseId: number | 'all';
+    filterSupplierValue: number | 'all' | string;
+    startDateFilter: string;
+    endDateFilter: string;
+    productFilterId: number | 'all';
+  }) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page on filter change
+  }, [setFilters, setCurrentPage]);
+
   const requestSort = useCallback((key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -246,10 +258,7 @@ const PurchaseOrders: React.FC = () => {
         </Button>
       </div>
 
-      <PurchaseOrderFilters onFiltersChange={(newFilters) => {
-        setFilters(newFilters);
-        setCurrentPage(1); // Reset to first page on filter change
-      }} />
+      <PurchaseOrderFilters onFiltersChange={handleFiltersChange} />
 
       <PurchaseOrdersTable
         orders={paginatedOrders} // Pass paginated orders
