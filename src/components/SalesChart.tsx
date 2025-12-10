@@ -161,6 +161,18 @@ const SalesChart: React.FC<SalesChartProps> = () => {
     }
   }, [salesData, displayMode, allYears]);
 
+  // Find maximum Y value across all series so the chart has a positive domain
+  const maxY = useMemo(() => {
+    let max = 0;
+    for (const row of salesData as any[]) {
+      for (const key of dataKeysToRender) {
+        const v = Number(row?.[key] ?? 0);
+        if (!Number.isNaN(v) && v > max) max = v;
+      }
+    }
+    return max;
+  }, [salesData, dataKeysToRender]);
+
   return (
     <Card className="dark:bg-slate-800 dark:border-slate-700 mb-6">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -224,7 +236,7 @@ const SalesChart: React.FC<SalesChartProps> = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {salesData.length > 0 ? (
+        {salesData.length > 0 && maxY > 0 ? (
           <ResponsiveContainer width="100%" height={360}>
             <>
               {displayMode === 'single' ? (
@@ -243,7 +255,7 @@ const SalesChart: React.FC<SalesChartProps> = () => {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                   <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-                  <YAxis stroke="hsl(var(--foreground))" domain={['auto', 'auto']} />
+                  <YAxis stroke="hsl(var(--foreground))" domain={[0, Math.ceil(maxY * 1.1)]} />
                   <Tooltip
                     contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
                     itemStyle={{ color: 'hsl(var(--foreground))' }}
@@ -271,7 +283,7 @@ const SalesChart: React.FC<SalesChartProps> = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                   <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
-                  <YAxis stroke="hsl(var(--foreground))" domain={['auto', 'auto']} />
+                  <YAxis stroke="hsl(var(--foreground))" domain={[0, Math.ceil(maxY * 1.1)]} />
                   <Tooltip
                     contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))' }}
                     itemStyle={{ color: 'hsl(var(--foreground))' }}
