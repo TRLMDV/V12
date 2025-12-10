@@ -47,6 +47,19 @@ const SellOrders: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 100;
 
+  // Stable handler to avoid resetting currentPage on parent re-renders
+  const handleFiltersChange = useCallback((newFilters: {
+    filterWarehouseId: number | 'all';
+    filterCustomerValue: number | 'all' | string;
+    startDateFilter: string;
+    endDateFilter: string;
+    productFilterId: number | 'all';
+    paymentStatusFilter: 'all' | 'Paid' | 'Partially Paid' | 'Unpaid';
+  }) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  }, [setFilters, setCurrentPage]);
+
   const requestSort = useCallback((key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -236,10 +249,7 @@ const SellOrders: React.FC = () => {
         </Button>
       </div>
 
-      <SellOrderFilters onFiltersChange={(newFilters) => {
-        setFilters(newFilters);
-        setCurrentPage(1);
-      }} />
+      <SellOrderFilters onFiltersChange={handleFiltersChange} />
 
       <SellOrdersTable
         orders={paginatedOrders}
