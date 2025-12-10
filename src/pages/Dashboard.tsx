@@ -11,9 +11,11 @@ import SalesChart from '@/components/SalesChart';
 import FlipClock from '@/components/FlipClock';
 import ReminderCalendar from '@/components/ReminderCalendar';
 import { parseISO, format } from 'date-fns'; // Import format
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const Dashboard: React.FC = () => {
-  const { products, sellOrders, incomingPayments, currencyRates, settings, convertCurrency } = useData();
+  const { products, sellOrders, incomingPayments, currencyRates, settings, setSettings, convertCurrency } = useData();
   const mainCurrency = settings.mainCurrency;
   const activeCurrencies = settings.activeCurrencies || [];
   const showDashboardCurrencyRates = settings.showDashboardCurrencyRates;
@@ -77,8 +79,26 @@ const Dashboard: React.FC = () => {
         <QuickButtonsGrid quickButtons={quickButtons} />
       )}
 
-      {showSalesChartOnDashboard && (
+      {showSalesChartOnDashboard ? (
         <SalesChart />
+      ) : (
+        <Card className="dark:bg-slate-800 dark:border-slate-700 mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-gray-700 dark:text-slate-300">
+              {t('salesOverview')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <p className="text-gray-600 dark:text-slate-400">
+              Sales chart is currently disabled in Settings.
+            </p>
+            <Button
+              onClick={() => setSettings(prev => ({ ...prev, showSalesChartOnDashboard: true }))}
+            >
+              Enable Chart
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {showDashboardCurrencyRates && (
