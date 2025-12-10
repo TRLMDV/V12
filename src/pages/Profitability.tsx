@@ -106,7 +106,8 @@ const Profitability: React.FC = () => {
           // Only process if the item's product is in our consideration set
           if (productStats[item.productId]) {
             const product = productStats[item.productId];
-            const itemRevenueExVat = (item.price * item.qty) / (1 + order.vatPercent / 100);
+            // Corrected calculation: item.price is already EXCL. VAT
+            const itemRevenueExVat = item.price * item.qty; 
             product.qtySold += item.qty;
             product.totalSales += itemRevenueExVat;
             product.totalCOGS += item.qty * (product.product.averageLandedCost || 0);
