@@ -16,7 +16,7 @@ import { Product, SellOrder, PurchaseOrder } from '@/types'; // Import types fro
 import { Button } from '@/components/ui/button'; // Import Button component
 
 type SortConfig = {
-  key: 'productName' | 'sku' | 'qtySold' | 'totalSales' | 'totalCOGS' | 'cleanProfit' | 'salesPercentage' | 'daysInStock';
+  key: 'productName' | 'sku' | 'qtySold' | 'avgSellPrice' | 'landCostPerUnit' | 'totalSales' | 'totalLandCost' | 'rentabilityPercent' | 'salesPercentage' | 'profit';
   direction: 'ascending' | 'descending';
 };
 
@@ -25,7 +25,7 @@ const Profitability: React.FC = () => {
   const [period, setPeriod] = useState<'allTime' | 'thisYear' | 'thisMonth' | 'thisWeek' | 'today'>('allTime');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'cleanProfit', direction: 'descending' });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'profit', direction: 'descending' });
 
   // New states for product filter
   const [productFilterId, setProductFilterId] = useState<number | 'all'>('all');
@@ -105,12 +105,12 @@ const Profitability: React.FC = () => {
         order.items.forEach(item => {
           // Only process if the item's product is in our consideration set
           if (productStats[item.productId]) {
-            const product = productStats[item.productId];
-            // Corrected calculation: item.price is already EXCL. VAT
-            const itemRevenueExVat = item.price * item.qty; 
-            product.qtySold += item.qty;
-            product.totalSales += itemRevenueExVat;
-            product.totalCOGS += item.qty * (product.product.averageLandedCost || 0);
+            const stats = productStats[item.productId];
+            // item.price is per-unit EXCL. VAT
+            const itemRevenueExVat = item.price * item.qty;
+            stats.qtySold += item.qty;
+            stats.totalSales += itemRevenueExVat;
+            stats.totalCOGS += item.qty * (stats.product.averageLandedCost || 0);
           }
         });
       }
@@ -125,22 +125,32 @@ const Profitability: React.FC = () => {
 
     const finalData = Object.values(productStats)
       .filter(stats => stats.qtySold > 0) // Only show products that were sold
-      .map(stats => ({
-        ...stats,
-        productName: stats.product.name,
-        sku: stats.product.sku,
-        salesPercentage: totalOverallSales > 0 ? (stats.totalSales / totalOverallSales) * 100 : 0,
-        // Days in stock calculation (simplified: average days product was in stock during the period)
-        // This is a complex calculation, for now, we'll use a placeholder or a simpler metric.
-        // For a real system, this would involve tracking inventory levels over time.
-        daysInStock: 'N/A', // Placeholder
-      }));
+      .map(stats => {
+        const avgSellPrice = stats.qtySold > 0 ? stats.totalSales / stats.qtySold : 0;
+        const landCostPerUnit = stats.product.averageLandedCost || 0;
+        const totalLandCost = stats.qtySold * landCostPerUnit; // equals totalCOGS
+        const profit = stats.cleanProfit;
+        const rentabilityPercent = stats.totalSales > 0 ? (profit / stats.totalSales) * 100 : 0; // margin %
+        const salesPercentage = totalOverallSales > 0 ? (stats.totalSales / totalOverallSales) * 100 : 0;
+
+        return {
+          ...stats,
+          productName: stats.product.name,
+          sku: stats.product.sku,
+          avgSellPrice,
+          landCostPerUnit,
+          totalLandCost,
+          profit,
+          rentabilityPercent,
+          salesPercentage,
+        };
+      });
 
     if (sortConfig.key) {
       finalData.sort((a, b) => {
         const key = sortConfig.key;
-        const valA = a[key] === undefined ? '' : a[key];
-        const valB = b[key] === undefined ? '' : b[key];
+        const valA = (a as any)[key] === undefined ? '' : (a as any)[key];
+        const valB = (b as any)[key] === undefined ? '' : (b as any)[key];
 
         let comparison = 0;
         if (typeof valA === 'string' || typeof valB === 'string') {
@@ -157,7 +167,7 @@ const Profitability: React.FC = () => {
   }, [products, sellOrders, purchaseOrders, effectiveStartDate, effectiveEndDate, sortConfig, productFilterId]);
 
   const totalCleanProfit = useMemo(() => {
-    return profitabilityData.reduce((sum, item) => sum + item.cleanProfit, 0);
+    return profitabilityData.reduce((sum, item) => sum + item.profit, 0);
   }, [profitabilityData]);
 
   const requestSort = (key: SortConfig['key']) => {
@@ -286,28 +296,34 @@ const Profitability: React.FC = () => {
             <TableHeader>
               <TableRow className="bg-gray-100 dark:bg-slate-700">
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('productName')}>
-                  {t('productName')} {getSortIndicator('productName')}
+                  Product name {getSortIndicator('productName')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('sku')}>
-                  {t('sku')} {getSortIndicator('sku')}
+                  SKU {getSortIndicator('sku')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('qtySold')}>
-                  {t('qtySold')} {getSortIndicator('qtySold')}
+                  Quantity sold {getSortIndicator('qtySold')}
+                </TableHead>
+                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('avgSellPrice')}>
+                  Sell price (1 piece) {getSortIndicator('avgSellPrice')}
+                </TableHead>
+                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('landCostPerUnit')}>
+                  Land cost (per unit) {getSortIndicator('landCostPerUnit')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalSales')}>
-                  {t('totalSales')} (Excl. VAT) {getSortIndicator('totalSales')}
+                  Total of sold {getSortIndicator('totalSales')}
                 </TableHead>
-                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalCOGS')}>
-                  {t('cogsTotal')} {getSortIndicator('totalCOGS')}
+                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalLandCost')}>
+                  Total of land cost {getSortIndicator('totalLandCost')}
                 </TableHead>
-                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('cleanProfit')}>
-                  {t('cleanProfit')} {getSortIndicator('cleanProfit')}
+                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('rentabilityPercent')}>
+                  Rentability % {getSortIndicator('rentabilityPercent')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('salesPercentage')}>
-                  {t('salesPercentage')} {getSortIndicator('salesPercentage')}
+                  Sales % {getSortIndicator('salesPercentage')}
                 </TableHead>
-                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('daysInStock')}>
-                  {t('daysInStock')} {getSortIndicator('daysInStock')}
+                <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('profit')}>
+                  Profit {getSortIndicator('profit')}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -317,23 +333,24 @@ const Profitability: React.FC = () => {
                   <TableCell className="p-3">{data.productName}</TableCell>
                   <TableCell className="p-3">{data.sku}</TableCell>
                   <TableCell className="p-3 font-bold">{data.qtySold}</TableCell>
+                  <TableCell className="p-3">{data.avgSellPrice.toFixed(2)} AZN</TableCell>
+                  <TableCell className="p-3">{data.landCostPerUnit.toFixed(2)} AZN</TableCell>
                   <TableCell className="p-3">{data.totalSales.toFixed(2)} AZN</TableCell>
-                  <TableCell className="p-3">{data.totalCOGS.toFixed(2)} AZN</TableCell>
-                  <TableCell className={`p-3 font-bold ${data.cleanProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {data.cleanProfit.toFixed(2)} AZN
-                  </TableCell>
+                  <TableCell className="p-3">{data.totalLandCost.toFixed(2)} AZN</TableCell>
+                  <TableCell className="p-3">{data.rentabilityPercent.toFixed(2)}%</TableCell>
                   <TableCell className="p-3">{data.salesPercentage.toFixed(2)}%</TableCell>
-                  <TableCell className="p-3">{data.daysInStock}</TableCell>
+                  <TableCell className={`p-3 font-bold ${data.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {data.profit.toFixed(2)} AZN
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
             <TableFooter>
               <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
-                <TableCell colSpan={5} className="p-3 text-right text-lg">{t('totalCleanProfit')}:</TableCell>
+                <TableCell colSpan={9} className="p-3 text-right text-lg">Total Profit:</TableCell>
                 <TableCell className={`p-3 text-lg ${totalCleanProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {totalCleanProfit.toFixed(2)} AZN
                 </TableCell>
-                <TableCell colSpan={2} className="p-3"></TableCell>
               </TableRow>
             </TableFooter>
           </Table>
