@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import {
   format, parseISO, getYear, getMonth, getDate, setMonth, setYear, addYears, subYears, addMonths, subMonths,
@@ -28,45 +28,6 @@ const COLORS = [
   '#3f51b5', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'
 ]; // A palette of colors for multiple lines
 
-// Helper to shade hex colors slightly lighter/darker for 3D effect
-function shadeColor(hex: string, percent: number) {
-  const f = hex.startsWith('#') ? hex.substring(1) : hex;
-  const num = parseInt(f, 16);
-  const r = (num >> 16) & 0xff;
-  const g = (num >> 8) & 0xff;
-  const b = num & 0xff;
-  const t = percent < 0 ? 0 : 255;
-  const p = Math.abs(percent) / 100;
-  const R = Math.round((t - r) * p + r);
-  const G = Math.round((t - g) * p + g);
-  const B = Math.round((t - b) * p + b);
-  return `#${(R << 16 | G << 8 | B).toString(16).padStart(6, '0')}`;
-}
-
-// Custom 3D bar shape
-const ThreeDBar = (props: any) => {
-  const { x, y, width, height, fill } = props;
-  const depth = 6;
-  const topFill = shadeColor(fill, 15);
-  const sideFill = shadeColor(fill, -15);
-  if (width <= 0 || height <= 0) return null;
-
-  return (
-    <g>
-      <rect x={x} y={y} width={width} height={height} fill={fill} />
-      <polygon
-        points={`${x},${y} ${x + depth},${y - depth} ${x + width + depth},${y - depth} ${x + width},${y}`}
-        fill={topFill}
-      />
-      <polygon
-        points={`${x + width},${y} ${x + width + depth},${y - depth} ${x + width + depth},${y + height - depth} ${x + width},${y + height}`}
-        fill={sideFill}
-      />
-      <rect x={x + width * 0.1} y={y + height} width={width} height={4} fill="rgba(0,0,0,0.08)" />
-    </g>
-  );
-};
-
 // Define a more flexible type for monthly sales entries
 interface MonthlySalesEntry {
   name: string;
@@ -78,7 +39,7 @@ const SalesChart: React.FC<SalesChartProps> = () => {
   const mainCurrency = settings.mainCurrency;
 
   const [chartType, setChartType] = useState<ChartPeriod>('yearly');
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('single'); // New state for display mode
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('all'); // Default to all-years comparison
   const [currentDate, setCurrentDate] = useState(MOCK_CURRENT_DATE); // Use MOCK_CURRENT_DATE for initial state
 
   const currentYear = getYear(currentDate);
@@ -303,7 +264,8 @@ const SalesChart: React.FC<SalesChartProps> = () => {
                   />
                 </AreaChart>
               ) : (
-                <BarChart
+                // All periods: compare all years as multiple lines over months
+                <LineChart
                   data={salesData}
                   margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
                 >
@@ -318,20 +280,25 @@ const SalesChart: React.FC<SalesChartProps> = () => {
                   />
                   <Legend />
                   {dataKeysToRender.map((key, index) => {
-                    const color = COLORS[index % COLORS.length];
+                    // Highlight the most recent year; prior years grey
+                    const isLatest = index === dataKeysToRender.length - 1;
+                    const color = isLatest ? '#10B981' /* green */ : '#9CA3AF' /* grey */;
                     return (
-                      <Bar
+                      <Line
                         key={key}
+                        type="monotone"
                         dataKey={key}
                         name={key}
-                        barSize={18}
+                        stroke={color}
+                        strokeWidth={2.5}
+                        dot={false}
+                        activeDot={{ r: 4 }}
                         isAnimationActive
                         animationDuration={700}
-                        shape={(props: any) => <ThreeDBar {...props} fill={color} />}
                       />
                     );
                   })}
-                </BarChart>
+                </LineChart>
               )}
             </>
           </ResponsiveContainer>
