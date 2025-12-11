@@ -80,7 +80,11 @@ const SettingsPage: React.FC = () => {
           ALL_CURRENCIES={ALL_CURRENCIES}
           mainCurrency={settings.mainCurrency}
         />
-        <DefaultVatSettings />
+        <DefaultVatSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+        />
         <DefaultMarkupSettings />
         <DashboardCurrencyRatesToggle />
         <CalendarSettings />
