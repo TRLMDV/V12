@@ -22,6 +22,8 @@ import Bank from "./pages/Bank";
 import Utilization from "./pages/Utilization";
 import ExpeditorsReport from "./pages/ExpeditorsReport";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import AuthGuard from "./components/AuthGuard";
 // MOCK_CURRENT_DATE is not used directly in App.tsx, removing import
 
 const queryClient = new QueryClient();
@@ -33,24 +35,25 @@ const App = () => (
       <Sonner position="bottom-left" /> {/* Changed position to bottom-left */}
       <BrowserRouter>
           <Routes>
-            <Route path="/" element={<MainLayout><Dashboard /></MainLayout>} />
-            <Route path="/products" element={<MainLayout><Products /></MainLayout>} />
-            <Route path="/purchase-orders" element={<MainLayout><PurchaseOrders /></MainLayout>} />
-            <Route path="/sell-orders" element={<MainLayout><SellOrders /></MainLayout>} />
-            <Route path="/suppliers" element={<MainLayout><Suppliers /></MainLayout>} />
-            <Route path="/customers" element={<MainLayout><Customers /></MainLayout>} />
-            <Route path="/incoming-payments" element={<MainLayout><IncomingPayments /></MainLayout>} />
-            <Route path="/outgoing-payments" element={<MainLayout><OutgoingPayments /></MainLayout>} />
-            <Route path="/warehouses" element={<MainLayout><Warehouses /></MainLayout>} />
-            <Route path="/product-movement" element={<MainLayout><ProductMovement /></MainLayout>} />
-            <Route path="/finance" element={<MainLayout><Finance /></MainLayout>} />
-            <Route path="/profitability" element={<MainLayout><Profitability /></MainLayout>} />
-            <Route path="/data-import-export" element={<MainLayout><DataImportExport /></MainLayout>} />
-            <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
-            <Route path="/bank" element={<MainLayout><Bank /></MainLayout>} />
-            <Route path="/utilization" element={<MainLayout><Utilization /></MainLayout>} />
-            <Route path="/expeditors-report" element={<MainLayout><ExpeditorsReport /></MainLayout>} />
-            <Route path="*" element={<NotFound />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<AuthGuard><MainLayout><Dashboard /></MainLayout></AuthGuard>} />
+            <Route path="/products" element={<AuthGuard><MainLayout><Products /></MainLayout></AuthGuard>} />
+            <Route path="/purchase-orders" element={<AuthGuard><MainLayout><PurchaseOrders /></MainLayout></AuthGuard>} />
+            <Route path="/sell-orders" element={<AuthGuard><MainLayout><SellOrders /></MainLayout></AuthGuard>} />
+            <Route path="/suppliers" element={<AuthGuard><MainLayout><Suppliers /></MainLayout></AuthGuard>} />
+            <Route path="/customers" element={<AuthGuard><MainLayout><Customers /></MainLayout></AuthGuard>} />
+            <Route path="/incoming-payments" element={<AuthGuard><MainLayout><IncomingPayments /></MainLayout></AuthGuard>} />
+            <Route path="/outgoing-payments" element={<AuthGuard><MainLayout><OutgoingPayments /></MainLayout></AuthGuard>} />
+            <Route path="/warehouses" element={<AuthGuard><MainLayout><Warehouses /></MainLayout></AuthGuard>} />
+            <Route path="/product-movement" element={<AuthGuard><MainLayout><ProductMovement /></MainLayout></AuthGuard>} />
+            <Route path="/finance" element={<AuthGuard><MainLayout><Finance /></MainLayout></AuthGuard>} />
+            <Route path="/profitability" element={<AuthGuard><MainLayout><Profitability /></MainLayout></AuthGuard>} />
+            <Route path="/data-import-export" element={<AuthGuard><MainLayout><DataImportExport /></MainLayout></AuthGuard>} />
+            <Route path="/settings" element={<AuthGuard><MainLayout><SettingsPage /></MainLayout></AuthGuard>} />
+            <Route path="/bank" element={<AuthGuard><MainLayout><Bank /></MainLayout></AuthGuard>} />
+            <Route path="/utilization" element={<AuthGuard><MainLayout><Utilization /></MainLayout></AuthGuard>} />
+            <Route path="/expeditors-report" element={<AuthGuard><MainLayout><ExpeditorsReport /></MainLayout></AuthGuard>} />
+            <Route path="*" element={<AuthGuard><NotFound /></AuthGuard>} />
           </Routes>
       </BrowserRouter>
     </TooltipProvider>
