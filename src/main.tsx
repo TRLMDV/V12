@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './index.css';
+import './globals.css';
 import { I18nProvider } from './context/I18nProvider';
 import { DataProvider } from "@/context/DataContext.tsx"; // Use alias for consistent import
 
