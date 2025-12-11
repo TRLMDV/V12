@@ -113,6 +113,16 @@ const Finance: React.FC = () => {
     filteredOutgoingPayments.forEach(p => {
       totalOutgoingInMainCurrency += convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
     });
+
+    // NEW: VAT used and VAT balance
+    let totalVatUsedInMainCurrency = 0;
+    filteredOutgoingPayments.forEach(p => {
+      if ((p.method || '').toUpperCase() === 'VAT') {
+        totalVatUsedInMainCurrency += convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
+      }
+    });
+
+    const vatBalanceInMainCurrency = totalVatCollectedInMainCurrency - totalVatUsedInMainCurrency;
     
     const netCashFlowInMainCurrency = totalIncomingInMainCurrency - totalOutgoingInMainCurrency;
 
@@ -121,6 +131,8 @@ const Finance: React.FC = () => {
       totalCOGS: totalCOGSInMainCurrency,
       grossProfit: grossProfitInMainCurrency,
       totalVatCollected: totalVatCollectedInMainCurrency,
+      totalVatUsed: totalVatUsedInMainCurrency,
+      vatBalance: vatBalanceInMainCurrency,
       totalIncoming: totalIncomingInMainCurrency,
       totalOutgoing: totalOutgoingInMainCurrency,
       netCashFlow: netCashFlowInMainCurrency,
@@ -211,6 +223,28 @@ const Finance: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{filteredData.totalVatCollected.toFixed(2)} {mainCurrency}</div>
             <p className="text-xs text-muted-foreground">{t('vatCollectedFromSales')}</p>
+          </CardContent>
+        </Card>
+        <Card className="dark:bg-slate-800 dark:border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('usedVat')}</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{filteredData.totalVatUsed.toFixed(2)} {mainCurrency}</div>
+            <p className="text-xs text-muted-foreground">{t('vatUsedOnPayments')}</p>
+          </CardContent>
+        </Card>
+        <Card className="dark:bg-slate-800 dark:border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('vatBalance')}</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${filteredData.vatBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              {filteredData.vatBalance.toFixed(2)} {mainCurrency}
+            </div>
+            <p className="text-xs text-muted-foreground">{t('vatBalanceOnHand')}</p>
           </CardContent>
         </Card>
       </div>

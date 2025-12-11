@@ -209,6 +209,11 @@ const i18n = {
     productNameRequired: 'Product Name is required.',
     skuRequired: 'SKU is required.',
     duplicateSkuError: 'A product with SKU "{sku}" already exists. Please use a unique SKU.',
+    // VAT metrics additions
+    usedVat: 'VAT Used',
+    vatBalance: 'VAT Balance',
+    vatUsedOnPayments: 'VAT used to pay expenses',
+    vatBalanceOnHand: 'VAT currently on balance',
   }
 };
 
