@@ -253,6 +253,7 @@ const i18n = {
     packingUnitAdded: 'Packing unit added successfully.',
     packingUnitUpdated: 'Packing unit updated successfully.',
     packingUnitDeleted: 'Packing unit deleted successfully.',
+    defaultPacking: 'Default Packing',
   },
   ru: {
     backupRestore: 'Резервное копирование и восстановление', backupData: 'Сохранить резервную копию', restoreData: 'Восстановить данные', restoreWarning: 'Это перезапишет все текущие данные. Вы уверены, что хотите продолжить?', restoreSuccess: 'Данные успешно восстановлены. Приложение будет перезагружено.', restoreError: 'Неверный файл резервной копии.',
@@ -496,6 +497,7 @@ const i18n = {
     packingUnitAdded: 'Единица упаковки успешно добавлена.',
     packingUnitUpdated: 'Единица упаковки успешно обновлена.',
     packingUnitDeleted: 'Единица упаковки успешно удалена.',
+    defaultPacking: 'Упаковка по умолчанию',
   }
 };
 
