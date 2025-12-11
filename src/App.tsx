@@ -20,6 +20,7 @@ import DataImportExport from "./pages/DataImportExport";
 import SettingsPage from "./pages/Settings";
 import Bank from "./pages/Bank";
 import Utilization from "./pages/Utilization";
+import ExpeditorsReport from "./pages/ExpeditorsReport";
 import NotFound from "./pages/NotFound";
 // MOCK_CURRENT_DATE is not used directly in App.tsx, removing import
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
             <Route path="/bank" element={<MainLayout><Bank /></MainLayout>} />
             <Route path="/utilization" element={<MainLayout><Utilization /></MainLayout>} />
+            <Route path="/expeditors-report" element={<MainLayout><ExpeditorsReport /></MainLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
       </BrowserRouter>

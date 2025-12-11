@@ -33,7 +33,8 @@ export interface PackingUnit extends BaseItem {
 
 export interface Warehouse extends BaseItem {
   location: string;
-  type: 'Main' | 'Secondary'; // Changed from 'Storage' | 'Retail' to 'Secondary' for consistency
+  type: 'Main' | 'Secondary';
+  expeditor?: string; // NEW: Optional expeditor name assigned to this warehouse
 }
 
 // --- Contacts ---
@@ -197,6 +198,7 @@ export interface Settings {
   quickButtons: QuickButton[]; // New: Quick buttons for dashboard
   reminders: Reminder[]; // New: Reminders for calendar
   language?: 'en' | 'ru'; // New: App language
+  expeditorProfitDivisor?: number; // NEW: Configurable divisor (e.g., 1.17) for expeditor profit
 }
 
 // --- Quick Buttons ---

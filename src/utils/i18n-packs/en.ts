@@ -268,6 +268,20 @@ const en = {
   enableChart: 'Enable Chart',
   salesChartDisabledMessage: 'Sales chart is currently disabled in Settings.',
   unknownCustomer: 'Unknown Customer',
+  // NEW: Expeditor feature
+  expeditor: 'Expeditor',
+  expeditorNamePlaceholder: 'e.g., John Doe',
+  expeditorProfit: 'Expeditor Profit',
+  expeditorsReport: 'Expeditors Report',
+  expeditorTotals: 'Totals by Expeditor',
+  selectExpeditor: 'Select Expeditor',
+  allExpeditors: 'All Expeditors',
+  divisorSettings: 'Expeditor Profit Divisor',
+  profitDivisor: 'Profit Divisor (e.g., 1.17)',
+  saveDivisor: 'Save Divisor',
+  reportPeriod: 'Report Period',
+  ordersList: 'Orders List',
+  totalToPay: 'Total to Pay',
 };
 
 export default en;

@@ -23,6 +23,7 @@ import QuickButtonsSettings from '@/components/settings/QuickButtonsSettings';
 import SalesChartSettings from '@/components/settings/SalesChartSettings'; // New import
 import ClockSettings from '@/components/settings/ClockSettings'; // New import
 import CalendarSettings from '@/components/settings/CalendarSettings'; // New import
+import ExpeditorSettings from '@/components/settings/ExpeditorSettings';
 
 // Define ALL_CURRENCIES here as it's a global constant for currency selection
 const ALL_CURRENCIES: Currency[] = [
@@ -121,6 +122,7 @@ const SettingsPage: React.FC = () => {
           getNextId={(key: 'quickButtons') => getNextId('quickButtons')}
           setNextIdForCollection={(key: 'quickButtons', nextId: number) => setNextIdForCollection('quickButtons', nextId)}
         />
+        <ExpeditorSettings />
         <CurrencyRatesSettings
           currencyRates={currencyRates}
           setCurrencyRates={setCurrencyRates}

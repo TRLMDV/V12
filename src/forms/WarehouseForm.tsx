@@ -49,10 +49,11 @@ const WarehouseForm: React.FC<WarehouseFormProps> = ({ warehouseId, onSuccess })
 
     const warehouseToSave: Warehouse = {
       ...warehouse,
-      id: warehouse.id || 0, // Will be overwritten by saveItem if new
+      id: warehouse.id || 0,
       name: warehouse.name,
       location: warehouse.location || '',
-      type: warehouse.type || 'Secondary', // Ensure type is set
+      type: warehouse.type || 'Secondary',
+      expeditor: warehouse.expeditor || '', // NEW: persist optional expeditor
     };
 
     saveItem('warehouses', warehouseToSave);
@@ -98,6 +99,18 @@ const WarehouseForm: React.FC<WarehouseFormProps> = ({ warehouseId, onSuccess })
               <SelectItem value="Secondary">{t('secondaryWarehouseType')}</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="expeditor" className="text-right">
+            {t('expeditor')}
+          </Label>
+          <Input
+            id="expeditor"
+            value={(warehouse as any).expeditor || ''}
+            onChange={handleChange}
+            className="col-span-3"
+            placeholder={t('expeditorNamePlaceholder')}
+          />
         </div>
       </div>
       <div className="flex justify-end">

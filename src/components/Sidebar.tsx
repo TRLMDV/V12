@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { t, getKeyAsPageId } from '@/utils/i18n';
 import { useData } from '@/context/DataContext';
 import {
-  Home, Package, ShoppingCart, DollarSign, Users, Truck, Warehouse, TrendingUp, BarChart, Settings, UploadCloud, ArrowLeftRight, Banknote, MinusCircle, // Added MinusCircle icon
+  Home, Package, ShoppingCart, DollarSign, Users, Truck, Warehouse, TrendingUp, BarChart, Settings, UploadCloud, ArrowLeftRight, Banknote, MinusCircle, ClipboardCheck, // Added ClipboardCheck icon
 } from 'lucide-react';
 import { Settings as SettingsType } from '@/types';
 
@@ -19,6 +19,7 @@ const navItems = [
   { id: 'warehouses', icon: <Warehouse className="w-6 h-6 mr-3" /> },
   { id: 'productMovement', icon: <ArrowLeftRight className="w-6 h-6 mr-3" /> },
   { id: 'utilization', icon: <MinusCircle className="w-6 h-6 mr-3" /> }, // New: Utilization
+  { id: 'expeditorsReport', icon: <ClipboardCheck className="w-6 h-6 mr-3" /> }, // NEW
   { id: 'finance', icon: <BarChart className="w-6 h-6 mr-3" /> },
   { id: 'profitability', icon: <TrendingUp className="w-6 h-6 mr-3" /> },
   { id: 'bank', icon: <Banknote className="w-6 h-6 mr-3" /> },

@@ -268,6 +268,20 @@ const ru = {
   enableChart: 'Включить диаграмму',
   salesChartDisabledMessage: 'Диаграмма продаж сейчас отключена в настройках.',
   unknownCustomer: 'Неизвестный клиент',
+  // NEW: Expeditor feature
+  expeditor: 'Экспедитор',
+  expeditorNamePlaceholder: 'например, Иван Иванов',
+  expeditorProfit: 'Прибыль экспедитора',
+  expeditorsReport: 'Отчёт по экспедиторам',
+  expeditorTotals: 'Итоги по экспедиторам',
+  selectExpeditor: 'Выберите экспедитора',
+  allExpeditors: 'Все экспедиторы',
+  divisorSettings: 'Делитель прибыли экспедитора',
+  profitDivisor: 'Делитель прибыли (например, 1.17)',
+  saveDivisor: 'Сохранить делитель',
+  reportPeriod: 'Период отчёта',
+  ordersList: 'Список заказов',
+  totalToPay: 'Итого к выплате',
 };
 
 export default ru;
