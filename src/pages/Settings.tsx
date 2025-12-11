@@ -105,7 +105,14 @@ const SettingsPage: React.FC = () => {
           setSettings={setSettings}
           t={t}
         />
-        <PackingSettings />
+        <PackingSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+          showConfirmationModal={showConfirmationModal}
+          getNextId={getNextId}
+          setNextIdForCollection={setNextIdForCollection}
+        />
         <QuickButtonsSettings />
         <CurrencyRatesSettings
           currencyRates={currencyRates}
