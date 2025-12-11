@@ -100,7 +100,11 @@ const SettingsPage: React.FC = () => {
           setSettings={setSettings}
           t={t}
         />
-        <ClockSettings />
+        <ClockSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+        />
         <PackingSettings />
         <QuickButtonsSettings />
         <CurrencyRatesSettings
