@@ -556,6 +556,7 @@ Object.assign(BASE_RU, {
 class I18n {
   private dictionaries: Record<AppLanguage, Translations>;
   private currentLang: AppLanguage;
+  private loaders: Record<string, () => Promise<{ default?: Translations } | Translations>> = {};
 
   constructor() {
     this.dictionaries = {
@@ -577,8 +578,25 @@ class I18n {
     return text;
   }
 
+  registerLanguageLoader(lang: string, loader: () => Promise<{ default?: Translations } | Translations>) {
+    this.loaders[lang] = loader;
+  }
+
+  async loadLanguage(lang: string): Promise<void> {
+    if (this.dictionaries[lang as AppLanguage]) return;
+    const loader = this.loaders[lang];
+    if (!loader) return;
+    const pack = await loader();
+    const entries = (pack && (pack as any).default) ? (pack as any).default as Translations : (pack as Translations);
+    this.dictionaries[lang as AppLanguage] = {
+      ...(this.dictionaries[lang as AppLanguage] || {}),
+      ...(entries || {}),
+    };
+  }
+
   setLanguage(lang: AppLanguage) {
     this.currentLang = lang;
+    this.loadLanguage(lang);
     if (typeof window !== 'undefined') {
       localStorage.setItem('appLanguage', lang);
     }
@@ -615,4 +633,12 @@ export function getLanguage(): AppLanguage {
 
 export function addTranslations(lang: AppLanguage, entries: Translations) {
   i18n.addTranslations(lang, entries);
+}
+
+export function registerLanguageLoader(lang: string, loader: () => Promise<{ default?: Translations } | Translations>) {
+  i18n.registerLanguageLoader(lang, loader);
+}
+
+export async function loadLanguage(lang: AppLanguage | string): Promise<void> {
+  await i18n.loadLanguage(lang as string);
 }
