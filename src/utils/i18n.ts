@@ -214,6 +214,43 @@ const i18n = {
     vatBalance: 'VAT Balance',
     vatUsedOnPayments: 'VAT used to pay expenses',
     vatBalanceOnHand: 'VAT currently on balance',
+    // Settings: Main currency
+    mainCurrencySettings: 'Main Currency Settings',
+    mainCurrency: 'Main Currency',
+    saveMainCurrency: 'Save Main Currency',
+    mainCurrencyUpdated: 'Main currency updated.',
+    // Settings: Active currencies
+    activeCurrenciesSelection: 'Active Currencies Selection',
+    activeCurrenciesDescription: 'Select which currencies are active and can be used in the app.',
+    saveActiveCurrencies: 'Save Active Currencies',
+    mainCurrencyCannotBeDeactivated: 'Main currency cannot be deactivated.',
+    allCurrenciesSelected: 'All currencies selected.',
+    allCurrenciesDeselected: 'All currencies deselected (only main currency kept).',
+    activeCurrenciesUpdated: 'Active currencies updated.',
+    // Settings: Default VAT
+    defaultVat: 'Default VAT (%)',
+    saveDefaultVat: 'Save Default VAT',
+    vatUpdated: 'Default VAT updated.',
+    // Settings: Default Markup
+    defaultMarkup: 'Default Markup (%)',
+    saveDefaultMarkup: 'Save Default Markup',
+    markupUpdated: 'Default markup updated.',
+    // Settings: Dashboard currency rates toggle
+    dashboardCurrencyRates: 'Dashboard Currency Rates',
+    showCurrencyRatesOnDashboard: 'Show Currency Rates on Dashboard',
+    // Settings: Packing units
+    packingUnits: 'Packing Units',
+    addPackingUnit: 'Add Packing Unit',
+    packingUnitName: 'Packing Unit Name',
+    baseUnit: 'Base Unit',
+    conversionFactor: 'Conversion Factor',
+    noPackingUnitsFound: 'No packing units found.',
+    editPackingUnit: 'Edit Packing Unit',
+    deletePackingUnit: 'Delete Packing Unit',
+    deletePackingUnitWarning: 'Are you sure you want to delete this packing unit? This action cannot be undone.',
+    packingUnitAdded: 'Packing unit added successfully.',
+    packingUnitUpdated: 'Packing unit updated successfully.',
+    packingUnitDeleted: 'Packing unit deleted successfully.',
   },
   ru: {
     backupRestore: 'Резервное копирование и восстановление', backupData: 'Сохранить резервную копию', restoreData: 'Восстановить данные', restoreWarning: 'Это перезапишет все текущие данные. Вы уверены, что хотите продолжить?', restoreSuccess: 'Данные успешно восстановлены. Приложение будет перезагружено.', restoreError: 'Неверный файл резервной копии.',
@@ -418,6 +455,43 @@ const i18n = {
     vatBalance: 'Баланс НДС',
     vatUsedOnPayments: 'НДС, использованный для оплаты расходов',
     vatBalanceOnHand: 'Текущий остаток НДС',
+    // Настройки: Основная валюта
+    mainCurrencySettings: 'Настройки основной валюты',
+    mainCurrency: 'Основная валюта',
+    saveMainCurrency: 'Сохранить основную валюту',
+    mainCurrencyUpdated: 'Основная валюта обновлена.',
+    // Настройки: Активные валюты
+    activeCurrenciesSelection: 'Выбор активных валют',
+    activeCurrenciesDescription: 'Выберите, какие валюты активны и могут использоваться в приложении.',
+    saveActiveCurrencies: 'Сохранить активные валюты',
+    mainCurrencyCannotBeDeactivated: 'Нельзя отключить основную валюту.',
+    allCurrenciesSelected: 'Выбраны все валюты.',
+    allCurrenciesDeselected: 'Все валюты сняты (оставлена только основная).',
+    activeCurrenciesUpdated: 'Список активных валют обновлён.',
+    // Настройки: НДС по умолчанию
+    defaultVat: 'НДС по умолчанию (%)',
+    saveDefaultVat: 'Сохранить НДС по умолчанию',
+    vatUpdated: 'НДС по умолчанию обновлён.',
+    // Настройки: Наценка по умолчанию
+    defaultMarkup: 'Наценка по умолчанию (%)',
+    saveDefaultMarkup: 'Сохранить наценку по умолчанию',
+    markupUpdated: 'Наценка по умолчанию обновлена.',
+    // Настройки: Курсы валют на панели
+    dashboardCurrencyRates: 'Курсы валют на панели',
+    showCurrencyRatesOnDashboard: 'Показывать курсы валют на панели',
+    // Настройки: Единицы упаковки
+    packingUnits: 'Единицы упаковки',
+    addPackingUnit: 'Добавить единицу упаковки',
+    packingUnitName: 'Название единицы упаковки',
+    baseUnit: 'Базовая единица',
+    conversionFactor: 'Коэффициент преобразования',
+    noPackingUnitsFound: 'Единицы упаковки не найдены.',
+    editPackingUnit: 'Редактировать единицу упаковки',
+    deletePackingUnit: 'Удалить единицу упаковки',
+    deletePackingUnitWarning: 'Удалить эту единицу упаковки? Это действие необратимо.',
+    packingUnitAdded: 'Единица упаковки успешно добавлена.',
+    packingUnitUpdated: 'Единица упаковки успешно обновлена.',
+    packingUnitDeleted: 'Единица упаковки успешно удалена.',
   }
 };
 
