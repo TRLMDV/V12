@@ -47,7 +47,10 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
   const totalExpeditorProfit = orders.reduce((sum, order) => {
     const wh = warehouseMap[order.warehouseId];
     if (wh && wh.expeditor) {
-      return sum + (order.total / divisor);
+      const base = order.totalExclVat;
+      const companyShare = base / divisor;
+      const expeditorShare = base - companyShare;
+      return sum + expeditorShare;
     }
     return sum;
   }, 0);
@@ -99,7 +102,9 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
           {orders.length > 0 ? (
             orders.map((order, index) => {
               const wh = warehouseMap[order.warehouseId];
-              const expeditorProfit = wh && wh.expeditor ? (order.total / divisor) : 0;
+              const base = order.totalExclVat;
+              const companyShare = base / divisor;
+              const expeditorProfit = wh && wh.expeditor ? (base - companyShare) : 0;
               return (
                 <TableRow key={order.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}

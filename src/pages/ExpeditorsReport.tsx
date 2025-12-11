@@ -29,7 +29,9 @@ const ExpeditorsReport: React.FC = () => {
       .map(o => {
         const wh = warehouseMap[o.warehouseId];
         const expeditor = wh?.expeditor || '';
-        const profit = expeditor ? (o.total / divisor) : 0;
+        const base = o.total / (1 + (o.vatPercent || 0) / 100);
+        const companyShare = base / divisor;
+        const profit = expeditor ? (base - companyShare) : 0;
         return { ...o, expeditor, profit };
       })
       .filter(o => o.expeditor && (selectedExpeditor === 'all' || o.expeditor === selectedExpeditor));
