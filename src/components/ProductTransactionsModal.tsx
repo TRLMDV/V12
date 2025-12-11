@@ -215,6 +215,19 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     return { quantity, priceExclVat, priceInclVat };
   }, [relevantSellOrders]);
 
+  // ADD: total count for filtered sales orders (used by pagination)
+  const totalSellOrdersCount = useMemo(() => {
+    if (!product) return 0;
+    let filtered = sellOrders.filter(order => order.items.some(item => item.productId === productId));
+    if (soStartDateFilter) {
+      filtered = filtered.filter(order => parseISO(order.orderDate) >= parseISO(soStartDateFilter));
+    }
+    if (soEndDateFilter) {
+      filtered = filtered.filter(order => parseISO(order.orderDate) <= parseISO(soEndDateFilter));
+    }
+    return filtered.length;
+  }, [product, sellOrders, productId, soStartDateFilter, soEndDateFilter]);
+
   if (!product) return null;
 
   return (
@@ -428,7 +441,7 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                     </TableFooter>
                   </Table>
                   <PaginationControls
-                    totalItems={totalSellOrders}
+                    totalItems={totalSellOrdersCount}
                     itemsPerPage={ITEMS_PER_PAGE}
                     currentPage={salesOrderCurrentPage}
                     onPageChange={setSalesOrderCurrentPage}
