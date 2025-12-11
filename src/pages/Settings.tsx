@@ -59,7 +59,11 @@ const SettingsPage: React.FC = () => {
           setSettings={setSettings}
           t={t}
         />
-        <ThemeSettings />
+        <ThemeSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+        />
         <LanguageSettings />
         <MainCurrencySettings
           settings={settings}
