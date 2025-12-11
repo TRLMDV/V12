@@ -552,9 +552,17 @@ Object.assign(BASE_RU, {
   unknownCustomer: 'Неизвестный клиент',
 });
 
-// Modular i18n class
+// Optional type for keys (useful in TypeScript intellisense)
+export type TranslationKey = keyof typeof BASE_EN;
+
+// Modular i18n with namespaces and dynamic loaders
+type NamespacedTranslations = {
+  global: Translations;
+  namespaces: Record<string, Translations>;
+};
+
 class I18n {
-  private dictionaries: Record<AppLanguage, Translations>;
+  private dictionaries: Record<string, NamespacedTranslations>;
   private currentLang: AppLanguage;
   private loaders: Record<string, () => Promise<{ default?: Translations } | Translations>> = {};
   private fallbackLang: AppLanguage = 'en';
@@ -563,24 +571,48 @@ class I18n {
 
   constructor() {
     this.dictionaries = {
-      en: { ...BASE_EN },
-      ru: { ...BASE_RU }
+      en: { global: { ...BASE_EN }, namespaces: {} },
+      ru: { global: { ...BASE_RU }, namespaces: {} },
     };
     this.currentLang =
       (typeof window !== 'undefined' && (localStorage.getItem('appLanguage') as AppLanguage)) || 'en';
   }
 
-  t(key: keyof typeof BASE_EN | string, replacements?: { [key: string]: string | number }): string {
-    const dict = this.dictionaries[this.currentLang] || this.dictionaries[this.fallbackLang];
+  private resolveKey(dict: NamespacedTranslations, key: string): string | undefined {
+    // Try global
+    if (dict.global[key] !== undefined) return dict.global[key];
+
+    // Support namespace via dot or colon (e.g., "dashboard.title" or "dashboard:title")
+    const nsSepIndexDot = key.indexOf('.');
+    const nsSepIndexColon = key.indexOf(':');
+    const nsSepIndex = nsSepIndexDot >= 0 ? nsSepIndexDot : nsSepIndexColon;
+
+    if (nsSepIndex >= 0) {
+      const ns = key.substring(0, nsSepIndex);
+      const nsKey = key.substring(nsSepIndex + 1);
+      const nsDict = dict.namespaces[ns];
+      if (nsDict && nsDict[nsKey] !== undefined) return nsDict[nsKey];
+    }
+
+    // Search all namespaces for direct key (fallback convenience)
+    for (const ns in dict.namespaces) {
+      if (dict.namespaces[ns][key] !== undefined) return dict.namespaces[ns][key];
+    }
+
+    return undefined;
+  }
+
+  t(key: TranslationKey | string, replacements?: { [key: string]: string | number }): string {
+    const currentDict = this.dictionaries[this.currentLang] || this.dictionaries[this.fallbackLang];
+    const fallbackDict = this.dictionaries[this.fallbackLang];
+
     let text =
-      (dict as Record<string, string>)[key] ??
-      (this.dictionaries[this.fallbackLang] as Record<string, string>)[key] ??
+      this.resolveKey(currentDict, String(key)) ??
+      this.resolveKey(fallbackDict, String(key)) ??
       String(key);
 
-    // Warn when missing key in current language (dev aid, non-breaking)
     if (this.missingKeyWarnings && text === key) {
-      // Only warn if key truly missing from both current and fallback dictionaries
-      const presentInFallback = (this.dictionaries[this.fallbackLang] as Record<string, string>)[key] !== undefined;
+      const presentInFallback = !!this.resolveKey(fallbackDict, String(key));
       if (!presentInFallback) {
         console.warn(`[i18n] Missing translation key "${key}" for language "${this.currentLang}".`);
       }
@@ -588,7 +620,6 @@ class I18n {
 
     if (replacements) {
       for (const placeholder in replacements) {
-        // Replace ALL occurrences of placeholder using global regex
         const regex = new RegExp(`\\{${placeholder}\\}`, 'g');
         text = text.replace(regex, String(replacements[placeholder]));
       }
@@ -601,28 +632,26 @@ class I18n {
   }
 
   async loadLanguage(lang: string): Promise<void> {
-    if (this.dictionaries[lang as AppLanguage]) return;
+    if (this.dictionaries[lang]) return;
     const loader = this.loaders[lang];
     if (!loader) return;
     const pack = await loader();
     const entries = (pack && (pack as any).default) ? (pack as any).default as Translations : (pack as Translations);
-    this.dictionaries[lang as AppLanguage] = {
-      ...(this.dictionaries[lang as AppLanguage] || {}),
-      ...(entries || {}),
+    this.dictionaries[lang] = {
+      global: { ...(entries || {}) },
+      namespaces: {},
     };
   }
 
   setLanguage(lang: AppLanguage) {
     this.currentLang = lang;
-    // Trigger async load if a loader exists
     this.loadLanguage(lang).then(() => {
-      // Notify subscribers after potential async load completes
       this.notifyLanguageChange();
     });
     if (typeof window !== 'undefined') {
       localStorage.setItem('appLanguage', lang);
     }
-    // Notify immediately as well so UI can update synchronously
+    // Also notify synchronously so UI updates immediately
     this.notifyLanguageChange();
   }
 
@@ -632,9 +661,32 @@ class I18n {
 
   addTranslations(lang: AppLanguage, entries: Translations) {
     if (!this.dictionaries[lang]) {
-      this.dictionaries[lang] = {};
+      this.dictionaries[lang] = { global: {}, namespaces: {} };
     }
-    Object.assign(this.dictionaries[lang], entries);
+    Object.assign(this.dictionaries[lang].global, entries);
+  }
+
+  addNamespaceTranslations(lang: AppLanguage, namespace: string, entries: Translations) {
+    if (!this.dictionaries[lang]) {
+      this.dictionaries[lang] = { global: {}, namespaces: {} };
+    }
+    if (!this.dictionaries[lang].namespaces[namespace]) {
+      this.dictionaries[lang].namespaces[namespace] = {};
+    }
+    Object.assign(this.dictionaries[lang].namespaces[namespace], entries);
+  }
+
+  registerLanguagePack(lang: string, entries: Translations) {
+    if (!this.dictionaries[lang]) {
+      this.dictionaries[lang] = { global: {}, namespaces: {} };
+    }
+    Object.assign(this.dictionaries[lang].global, entries);
+  }
+
+  hasKey(lang: AppLanguage, key: string): boolean {
+    const dict = this.dictionaries[lang];
+    if (!dict) return false;
+    return this.resolveKey(dict, key) !== undefined;
   }
 
   setFallbackLanguage(lang: AppLanguage) {
@@ -668,7 +720,7 @@ class I18n {
 const i18n = new I18n();
 
 // Public API (preserves existing imports)
-export function t(key: keyof typeof BASE_EN | string, replacements?: { [key: string]: string | number }): string {
+export function t(key: TranslationKey | string, replacements?: { [key: string]: string | number }): string {
   return i18n.t(key, replacements);
 }
 
@@ -686,6 +738,19 @@ export function getLanguage(): AppLanguage {
 
 export function addTranslations(lang: AppLanguage, entries: Translations) {
   i18n.addTranslations(lang, entries);
+}
+
+// Helpers for modular packs and dynamic languages
+export function addNamespaceTranslations(lang: AppLanguage, namespace: string, entries: Translations) {
+  i18n.addNamespaceTranslations(lang, namespace, entries);
+}
+
+export function registerLanguagePack(lang: string, entries: Translations) {
+  i18n.registerLanguagePack(lang, entries);
+}
+
+export function hasKey(lang: AppLanguage, key: string): boolean {
+  return i18n.hasKey(lang, key);
 }
 
 export function registerLanguageLoader(lang: string, loader: () => Promise<{ default?: Translations } | Translations>) {
@@ -706,4 +771,12 @@ export function setMissingKeyWarnings(enabled: boolean) {
 
 export function getAvailableLanguages(): string[] {
   return i18n.getAvailableLanguages();
+}
+
+export function onLanguageChanged(listener: (lang: AppLanguage) => void) {
+  i18n.onLanguageChanged(listener);
+}
+
+export function offLanguageChanged(listener: (lang: AppLanguage) => void) {
+  i18n.offLanguageChanged(listener);
 }
