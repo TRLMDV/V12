@@ -1,9 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { t, getKeyAsPageId } from '@/utils/i18n';
 import { useData } from '@/context/DataContext';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthProvider';
 import {
-  Home, Package, ShoppingCart, DollarSign, Users, Truck, Warehouse, TrendingUp, BarChart, Settings, UploadCloud, ArrowLeftRight, Banknote, MinusCircle, ClipboardCheck, // Added ClipboardCheck icon
+  Home, Package, ShoppingCart, DollarSign, Users, Truck, Warehouse, TrendingUp, BarChart, Settings, UploadCloud, ArrowLeftRight, Banknote, MinusCircle, ClipboardCheck, LogOut,
 } from 'lucide-react';
 import { Settings as SettingsType } from '@/types';
 
@@ -30,6 +32,8 @@ const navItems = [
 const Sidebar: React.FC = () => {
   const { settings } = useData();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const currentPageId = location.pathname === '/' ? 'dashboard' : getKeyAsPageId(location.pathname.substring(1));
 
   const companyName = settings.companyName || '';
@@ -77,6 +81,19 @@ const Sidebar: React.FC = () => {
           })}
         </ul>
       </nav>
+      <div className="mt-2 pt-2 border-t dark:border-slate-700">
+        <Button
+          variant="outline"
+          className="w-full justify-start"
+          onClick={async () => {
+            await signOut();
+            navigate('/login', { replace: true });
+          }}
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Log Out</span>
+        </Button>
+      </div>
     </div>
   );
 };
