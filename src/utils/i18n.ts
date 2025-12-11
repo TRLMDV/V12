@@ -1,3 +1,4 @@
+Артикул, actions -> действие.">
 import { useState, useEffect } from 'react';
 
 const i18n = {
@@ -256,6 +257,8 @@ const i18n = {
     defaultPacking: 'Default Packing',
     searchBySku: 'Search by SKU',
     enterSku: 'Enter SKU',
+    actions: 'Actions',
+    sku: 'SKU',
   },
   ru: {
     backupRestore: 'Резервное копирование и восстановление', backupData: 'Сохранить резервную копию', restoreData: 'Восстановить данные', restoreWarning: 'Это перезапишет все текущие данные. Вы уверены, что хотите продолжить?', restoreSuccess: 'Данные успешно восстановлены. Приложение будет перезагружено.', restoreError: 'Неверный файл резервной копии.',
@@ -502,6 +505,8 @@ const i18n = {
     defaultPacking: 'Упаковка по умолчанию',
     searchBySku: 'Поиск по SKU',
     enterSku: 'Введите SKU',
+    actions: 'действие',
+    sku: 'Артикул',
   }
 };
 
