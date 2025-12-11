@@ -504,8 +504,6 @@ const i18n = {
     defaultPacking: 'Упаковка по умолчанию',
     searchBySku: 'Поиск по SKU',
     enterSku: 'Введите SKU',
-    actions: 'действие',
-    sku: 'Артикул',
   }
 };
 
