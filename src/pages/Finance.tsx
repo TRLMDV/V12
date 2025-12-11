@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BarChart, DollarSign, TrendingUp, Wallet } from 'lucide-react';
 import { PurchaseOrder, SellOrder, Payment, Product } from '@/types'; // Import types from types file
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const Finance: React.FC = () => {
-  const { purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, currencyRates, settings, convertCurrency } = useData();
+  const { purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, currencyRates, settings, convertCurrency, warehouseMap } = useData();
   const mainCurrency = settings.mainCurrency;
 
   const [period, setPeriod] = useState<'allTime' | 'thisYear' | 'thisMonth' | 'thisWeek' | 'today'>('allTime');
@@ -86,12 +87,24 @@ const Finance: React.FC = () => {
     let totalCOGSInMainCurrency = 0;
     let totalVatCollectedInMainCurrency = 0;
 
+    // ADD: expeditor totals accumulator (by warehouse expeditor name)
+    const expeditorTotals: Record<string, number> = {};
+    const divisor = settings.expeditorProfitDivisor || 1.17;
+
     filteredSellOrders.forEach(order => {
       if (order.status === 'Shipped') {
         // order.total is already in mainCurrency
         const subtotalExVatInMainCurrency = order.total / (1 + order.vatPercent / 100);
         totalRevenueInMainCurrency += subtotalExVatInMainCurrency;
         totalVatCollectedInMainCurrency += order.total - subtotalExVatInMainCurrency;
+
+        // ADD: accumulate expeditor profit for orders shipped from warehouses with an expeditor
+        const wh = warehouseMap[order.warehouseId];
+        if (wh && wh.expeditor) {
+          const companyShare = subtotalExVatInMainCurrency / divisor;
+          const expeditorShare = subtotalExVatInMainCurrency - companyShare;
+          expeditorTotals[wh.expeditor] = (expeditorTotals[wh.expeditor] || 0) + expeditorShare;
+        }
 
         order.items.forEach(item => {
           const product = productMap[item.productId];
@@ -137,8 +150,10 @@ const Finance: React.FC = () => {
       totalIncoming: totalIncomingInMainCurrency,
       totalOutgoing: totalOutgoingInMainCurrency,
       netCashFlow: netCashFlowInMainCurrency,
+      // ADD: return expeditor totals for UI section
+      expeditorTotals,
     };
-  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates, settings.mainCurrency, convertCurrency]);
+  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates, settings.mainCurrency, settings.expeditorProfitDivisor, warehouseMap, convertCurrency]);
 
   return (
     <div className="container mx-auto p-4">
@@ -281,6 +296,37 @@ const Finance: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* ADD: Expeditor totals per period */}
+      <h2 className="text-2xl font-semibold text-gray-800 dark:text-slate-200 mt-8 mb-4">{t('expeditorTotals')}</h2>
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-100 dark:bg-slate-700">
+              <TableHead className="p-3">{t('expeditor')}</TableHead>
+              <TableHead className="p-3">{t('totalToPay')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredData.expeditorTotals && Object.keys(filteredData.expeditorTotals).length > 0 ? (
+              Object.entries(filteredData.expeditorTotals).map(([name, total]) => (
+                <TableRow key={name} className="border-b dark:border-slate-700">
+                  <TableCell className="p-3">{name}</TableCell>
+                  <TableCell className="p-3 font-semibold text-emerald-600 dark:text-emerald-400">
+                    {total.toFixed(2)} {mainCurrency}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={2} className="p-3 text-center text-gray-500 dark:text-slate-400">
+                  {t('noItemsFound')}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
