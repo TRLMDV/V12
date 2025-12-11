@@ -95,7 +95,11 @@ const SettingsPage: React.FC = () => {
           setSettings={setSettings}
           t={t}
         />
-        <CalendarSettings />
+        <CalendarSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+        />
         <ClockSettings />
         <PackingSettings />
         <QuickButtonsSettings />
