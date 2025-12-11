@@ -57,7 +57,14 @@ const SettingsPage: React.FC = () => {
         <CompanyDetailsSettings />
         <ThemeSettings />
         <LanguageSettings />
-        <MainCurrencySettings />
+        <MainCurrencySettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+          ALL_CURRENCIES={ALL_CURRENCIES}
+          activeCurrencies={activeCurrencies}
+          setActiveCurrencies={setActiveCurrencies}
+        />
         <ActiveCurrenciesSettings />
         <DefaultVatSettings />
         <DefaultMarkupSettings />
@@ -66,7 +73,13 @@ const SettingsPage: React.FC = () => {
         <ClockSettings />
         <PackingSettings />
         <QuickButtonsSettings />
-        <CurrencyRatesSettings />
+        <CurrencyRatesSettings
+          currencyRates={currencyRates}
+          setCurrencyRates={setCurrencyRates}
+          t={t}
+          activeCurrencies={settings.activeCurrencies}
+          mainCurrency={settings.mainCurrency}
+        />
       </div>
     </div>
   );
