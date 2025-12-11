@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, isSameDay, isPast, isToday, parseISO, setHours, setMinutes, setSeconds, isFuture, getHours, getMinutes } from 'date-fns';
+import type { Locale } from 'date-fns';
+import { enUS, ru as ruLocale } from 'date-fns/locale';
 import { PlusCircle, BellRing, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import FormModal from '@/components/FormModal';
@@ -20,6 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const ReminderCalendar: React.FC = () => {
   const { settings, saveItem, deleteItem, getNextId, setNextIdForCollection, showAlertModal, showConfirmationModal, setSettings } = useData();
+  const appLanguage = (settings as any).language || 'en';
+  const dateLocale: Locale = appLanguage === 'ru' ? ruLocale : enUS;
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState<Reminder | undefined>(undefined);
@@ -169,12 +173,13 @@ const ReminderCalendar: React.FC = () => {
             components={{
               DayContent: ({ date }) => renderDay(date),
             }}
+            locale={dateLocale}
           />
         </div>
         <div className="flex-grow">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-300">
-              {selectedDate ? format(selectedDate, 'PPP') : t('selectADate')}
+              {selectedDate ? format(selectedDate, 'PPP', { locale: dateLocale }) : t('selectADate')}
             </h3>
             <Button onClick={handleAddReminder} size="sm">
               <PlusCircle className="w-4 h-4 mr-2" />
@@ -216,6 +221,7 @@ const ReminderCalendar: React.FC = () => {
           onSuccess={handleSaveReminder}
           onCancel={() => setIsReminderModalOpen(false)}
           initialDate={selectedDate}
+          locale={dateLocale}
         />
       </FormModal>
 
@@ -236,9 +242,10 @@ interface ReminderFormProps {
   onSuccess: (reminder: Reminder) => void;
   onCancel: () => void;
   initialDate?: Date;
+  locale: Locale;
 }
 
-const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCancel, initialDate }) => {
+const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCancel, initialDate, locale }) => {
   const [message, setMessage] = useState(reminder?.message || '');
   const [date, setDate] = useState<Date | undefined>(reminder ? parseISO(reminder.dateTime) : initialDate || new Date());
   const [selectedHour, setSelectedHour] = useState<string>(reminder ? String(getHours(parseISO(reminder.dateTime))).padStart(2, '0') : '09');
@@ -301,7 +308,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
                 className="col-span-3 justify-start text-left font-normal"
               >
                 <BellRing className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>{t('pickADate')}</span>}
+                {date ? format(date, "PPP", { locale }) : <span>{t('pickADate')}</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -310,6 +317,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ reminder, onSuccess, onCanc
                 selected={date}
                 onSelect={setDate}
                 initialFocus
+                locale={locale}
               />
             </PopoverContent>
           </Popover>
