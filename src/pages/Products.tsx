@@ -213,7 +213,6 @@ const Products: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('priceWithMarkupAndVatCalc')}>
                 {t('landedCostPlusMarkupPlusVat')} {sortConfig.key === 'priceWithMarkupAndVatCalc' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
-              <TableHead className="p-3">{t('noDot')}</TableHead>
               <TableHead className="p-3">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
