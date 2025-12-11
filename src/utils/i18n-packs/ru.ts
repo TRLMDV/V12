@@ -360,8 +360,6 @@ const ru = {
   deletePermanently: 'Удалить навсегда',
   noItemsInRecycleBin: 'В корзине нет элементов.',
   currencyRatesDescription: 'Установите курсы к {mainCurrency} для активных валют.',
-  // Purchase Order Details
-  totalLandedCost: 'Итого себестоимость',
   // Profitability
   filterByProduct: 'Фильтр по товару',
   // Settings - Erase all data
