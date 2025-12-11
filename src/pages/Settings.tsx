@@ -90,7 +90,11 @@ const SettingsPage: React.FC = () => {
           setSettings={setSettings}
           t={t}
         />
-        <DashboardCurrencyRatesToggle />
+        <DashboardCurrencyRatesToggle
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+        />
         <CalendarSettings />
         <ClockSettings />
         <PackingSettings />
