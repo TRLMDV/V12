@@ -50,7 +50,7 @@ const Dashboard: React.FC = () => {
             ...order,
             amountDue: amountDueInMainCurrency,
             daysOverdue: Math.floor(timeDiff / (1000 * 60 * 60 * 24)) - 30,
-            customerName: customers[order.contactId] || 'Unknown Customer'
+            customerName: customers[order.contactId] || t('unknownCustomer')
           });
         }
       }
@@ -90,12 +90,12 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <p className="text-gray-600 dark:text-slate-400">
-              Sales chart is currently disabled in Settings.
+              {t('salesChartDisabledMessage')}
             </p>
             <Button
               onClick={() => setSettings(prev => ({ ...prev, showSalesChartOnDashboard: true }))}
             >
-              Enable Chart
+              {t('enableChart')}
             </Button>
           </CardContent>
         </Card>
@@ -111,7 +111,7 @@ const Dashboard: React.FC = () => {
                 const rateToMainCurrency = convertCurrency(1, 'AZN', mainCurrency) / rateToAZN;
                 return (
                   <div key={currency} className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{currency} to {mainCurrency}</p>
+                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{currency} {t('toCurrency', { targetCurrency: mainCurrency })}</p>
                     <p className="text-2xl font-bold text-gray-800 dark:text-slate-200">{(1 / rateToMainCurrency).toFixed(4)}</p>
                   </div>
                 );

@@ -59,7 +59,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
+            <TableHead className="p-3">{t('noDot')}</TableHead>{/* New: Numbering column */}
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('id')}>
               {t('orderId')} / {t('customer')} {getSortIndicator('id')}
             </TableHead>
@@ -77,10 +77,10 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
               {t('paymentStatus')} {getSortIndicator('paymentStatus')}
             </TableHead>
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalExclVat')}>
-              {t('total')} (Excl. VAT) {getSortIndicator('totalExclVat')}
+              {t('total')} ({t('exclVat')}) {getSortIndicator('totalExclVat')}
             </TableHead>
             <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={handleSortClick('totalInclVat')}>
-              {t('total')} (Incl. VAT) {getSortIndicator('totalInclVat')}
+              {t('total')} ({t('inclVat')}) {getSortIndicator('totalInclVat')}
             </TableHead>
             <TableHead className="p-3">{t('actions')}</TableHead>
           </TableRow>

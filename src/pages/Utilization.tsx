@@ -295,7 +295,7 @@ const Utilization: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalItems')}>
                 {t('totalItems')} {getSortIndicator('totalItems')}
               </TableHead>
-              <TableHead className="p-3">{t('comment')}</TableHead> {/* New: Comment column */}
+              <TableHead className="p-3">{t('noDot')}</TableHead> {/* New: Comment column */}
               <TableHead className="p-3">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>

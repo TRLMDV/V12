@@ -213,6 +213,7 @@ const Products: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('priceWithMarkupAndVatCalc')}>
                 {t('landedCostPlusMarkupPlusVat')} {sortConfig.key === 'priceWithMarkupAndVatCalc' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
+              <TableHead className="p-3">{t('noDot')}</TableHead>
               <TableHead className="p-3">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
@@ -220,9 +221,9 @@ const Products: React.FC = () => {
             {paginatedProducts.length > 0 ? (
               paginatedProducts.map((p, index) => {
                 const stockIsLow = p.totalStock < p.minStock;
-                const landedCostDisplay = p.averageLandedCost > 0 ? `${p.averageLandedCost.toFixed(2)} AZN` : 'N/A';
-                const priceWithMarkupDisplay = p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : 'N/A';
-                const priceWithMarkupPlusVatDisplay = p.priceWithMarkupAndVatCalc > 0 ? `${p.priceWithMarkupAndVatCalc.toFixed(2)} AZN` : 'N/A';
+                const landedCostDisplay = p.averageLandedCost > 0 ? `${p.averageLandedCost.toFixed(2)} AZN` : t('na');
+                const priceWithMarkupDisplay = p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : t('na');
+                const priceWithMarkupPlusVatDisplay = p.priceWithMarkupAndVatCalc > 0 ? `${p.priceWithMarkupAndVatCalc.toFixed(2)} AZN` : t('na');
                 const defaultImage = 'https://placehold.co/100x100/e2e8f0/e2e8f0?text=No-Image';
 
                 return (
@@ -242,7 +243,7 @@ const Products: React.FC = () => {
                     </TableCell>
                     <TableCell className="p-3">{p.name}</TableCell>
                     <TableCell className="p-3">{p.sku}</TableCell>
-                    <TableCell className="p-3">{p.barcode || 'N/A'}</TableCell> {/* New: Display barcode */}
+                    <TableCell className="p-3">{p.barcode || t('na')}</TableCell> {/* New: Display barcode */}
                     {/* Removed Category TableCell */}
                     <TableCell className="p-3">{p.defaultPackingUnitName}</TableCell>
                     <TableCell className={`p-3 font-semibold ${stockIsLow ? 'text-red-500' : ''}`}>
