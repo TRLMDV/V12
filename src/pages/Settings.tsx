@@ -128,7 +128,10 @@ const SettingsPage: React.FC = () => {
           activeCurrencies={settings.activeCurrencies}
           mainCurrency={settings.mainCurrency}
         />
-        <EraseAllDataSection />
+        <EraseAllDataSection
+          t={t}
+          showConfirmationModal={showConfirmationModal}
+        />
       </div>
     </div>
   );
