@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, createContext, useContext } from "react";
-import { setLanguage as setI18nLanguage, addTranslations } from "@/utils/i18n";
+import { setLanguage as setI18nLanguage, getLanguage, loadLanguage, setMissingKeyWarnings } from "@/utils/i18n";
 
 // Shape of the context
 type I18nContextValue = {
@@ -12,17 +12,6 @@ type I18nContextValue = {
 // Create context
 const I18nContext = createContext<I18nContextValue | undefined>(undefined);
 
-// Helper to dynamically import language packs (placeholder for scale)
-async function loadLanguagePack(lang: "en" | "ru") {
-  // For future languages: add dynamic imports here, e.g.:
-  // if (lang === "ru") {
-  //   const pack = await import("@/utils/i18n-packs/ru");
-  //   addTranslations("ru", pack.default || {});
-  // }
-  // Currently, translations live in utils/i18n.ts, so this is a no-op.
-  return;
-}
-
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const initialLang =
     (typeof window !== "undefined" && (localStorage.getItem("appLanguage") as "en" | "ru")) || "en";
@@ -31,18 +20,25 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const applyLanguage = (l: "en" | "ru") => {
     setLangState(l);
-    setI18nLanguage(l); // keep utils/i18n in sync for existing t() imports
+    setI18nLanguage(l);
     if (typeof window !== "undefined") {
       localStorage.setItem("appLanguage", l);
     }
   };
 
   useEffect(() => {
+    // Disable missing key warnings in production (keep them in dev)
+    if (import.meta.env.MODE === "production") {
+      setMissingKeyWarnings(false);
+    }
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
-      await loadLanguagePack(lang);
+      // Ensure language pack is loaded if using dynamic imports for future languages
+      await loadLanguage(lang);
       if (!cancelled) {
-        // Ensure utils i18n is aligned after pack load (merge via addTranslations if needed)
         setI18nLanguage(lang);
       }
     })();

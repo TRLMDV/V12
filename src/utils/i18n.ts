@@ -164,6 +164,14 @@ class I18n {
       l(this.currentLang);
     }
   }
+
+  // ADD: return a namespaced translator function
+  getTranslator(namespace?: string) {
+    return (key: string, replacements?: { [key: string]: string | number }) => {
+      const fullKey = namespace ? `${namespace}.${key}` : String(key);
+      return this.t(fullKey, replacements);
+    };
+  }
 }
 
 // Singleton instance
@@ -229,4 +237,9 @@ export function onLanguageChanged(listener: (lang: AppLanguage) => void) {
 
 export function offLanguageChanged(listener: (lang: AppLanguage) => void) {
   i18n.offLanguageChanged(listener);
+}
+
+// ADD: export getTranslator helper
+export function getTranslator(namespace?: string) {
+  return i18n.getTranslator(namespace);
 }
