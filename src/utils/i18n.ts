@@ -1,7 +1,7 @@
 type Translations = Record<string, string>;
 export type AppLanguage = 'en' | 'ru';
 
-// Base English translations
+// Base English translations (from current app)
 const BASE_EN: Translations = {
   backupRestore: 'Backup & Restore', backupData: 'Backup Data', restoreData: 'Restore Data', restoreWarning: 'This will overwrite all current data. Are you sure you want to proceed?', restoreSuccess: 'Data restored successfully. The application will now reload.', restoreError: 'Invalid backup file.',
   theme: 'Theme', light: 'Light', dark: 'Dark', companyDetails: 'Company Details', companyName: 'Company Name', companyLogo: 'Company Logo', changeLogo: 'Change File', saveCompanyDetails: 'Save Company Details', success: 'Success', detailsUpdated: 'Company details updated.',
@@ -244,7 +244,7 @@ const BASE_EN: Translations = {
   actions: 'Actions'
 };
 
-// Base Russian translations
+// Base Russian translations (from current app)
 const BASE_RU: Translations = {
   backupRestore: 'Резервное копирование и восстановление', backupData: 'Сохранить резервную копию', restoreData: 'Восстановить данные', restoreWarning: 'Это перезапишет все текущие данные. Вы уверены, что хотите продолжить?', restoreSuccess: 'Данные успешно восстановлены. Приложение будет перезагружено.', restoreError: 'Неверный файл резервной копии.',
   theme: 'Тема', light: 'Светлая', dark: 'Тёмная', companyDetails: 'Данные компании', companyName: 'Название компании', companyLogo: 'Логотип компании', changeLogo: 'Выбрать файл', saveCompanyDetails: 'Сохранить данные компании', success: 'Успех', detailsUpdated: 'Данные компании обновлены.',
@@ -486,6 +486,71 @@ const BASE_RU: Translations = {
   enterSku: 'Введите артикул',
   actions: 'действие'
 };
+
+// Extra keys used across the app that were missing in the original base sets
+Object.assign(BASE_EN, {
+  noDot: 'No.',
+  na: 'N/A',
+  none: 'None',
+  warehouse: 'Warehouse',
+  fromWarehouse: 'From Warehouse',
+  customerName: 'Customer Name',
+  contactPerson: 'Contact Person',
+  email: 'Email',
+  phone: 'Phone',
+  defaultWarehouse: 'Default Warehouse',
+  addCustomer: 'Add Customer',
+  editCustomer: 'Edit Customer',
+  createCustomer: 'Create Customer',
+  detailsForOrder: 'Details for Order',
+  allProducts: 'All Products',
+  searchProductBySku: 'Search product by SKU',
+  noProductFound: 'No product found.',
+  piece: 'Piece',
+  exclVat: 'Excl. VAT',
+  inclVat: 'Incl. VAT',
+  partiallypaid: 'Partially Paid',
+  revenueExVat: 'Revenue (Excl. VAT)',
+  cogsTotal: 'COGS Total',
+  costOfGoodsSold: 'Cost of Goods Sold',
+  grossProfitTotal: 'Gross Profit Total',
+  vatCollectedFromSales: 'VAT collected from sales',
+  enableChart: 'Enable Chart',
+  salesChartDisabledMessage: 'Sales chart is currently disabled in Settings.',
+  unknownCustomer: 'Unknown Customer',
+});
+
+Object.assign(BASE_RU, {
+  noDot: '№',
+  na: 'нет данных',
+  none: 'Нет',
+  warehouse: 'Склад',
+  fromWarehouse: 'Из склада',
+  customerName: 'Имя клиента',
+  contactPerson: 'Контактное лицо',
+  email: 'Эл. почта',
+  phone: 'Телефон',
+  defaultWarehouse: 'Склад по умолчанию',
+  addCustomer: 'Добавить клиента',
+  editCustomer: 'Редактировать клиента',
+  createCustomer: 'Создать клиента',
+  detailsForOrder: 'Детали заказа',
+  allProducts: 'Все товары',
+  searchProductBySku: 'Поиск товара по артикулу',
+  noProductFound: 'Товар не найден.',
+  piece: 'шт.',
+  exclVat: 'без НДС',
+  inclVat: 'с НДС',
+  partiallypaid: 'Частично оплачено',
+  revenueExVat: 'Выручка (без НДС)',
+  cogsTotal: 'Итого себестоимость',
+  costOfGoodsSold: 'Себестоимость проданных товаров',
+  grossProfitTotal: 'Итого валовая прибыль',
+  vatCollectedFromSales: 'НДС, начисленный с продаж',
+  enableChart: 'Включить диаграмму',
+  salesChartDisabledMessage: 'Диаграмма продаж сейчас отключена в настройках.',
+  unknownCustomer: 'Неизвестный клиент',
+});
 
 // Modular i18n class
 class I18n {
