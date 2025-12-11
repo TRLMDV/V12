@@ -46,8 +46,9 @@ const Finance: React.FC = () => {
         break;
       case 'allTime':
       default:
+        // For allTime, include all dates by setting an open-ended end date
         start = new Date(0);
-        end = new Date(now);
+        end = new Date('9999-12-31T23:59:59.999Z');
         break;
     }
     return { start, end };
