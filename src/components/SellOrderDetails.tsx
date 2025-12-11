@@ -67,7 +67,7 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
             <TableCell className="p-2">{order.items?.reduce((sum, item) => sum + (item.price * item.qty), 0).toFixed(2)} AZN</TableCell>
           </TableRow>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
-            <TableCell colSpan={3} className="p-2 text-right">VAT ({order.vatPercent}%):</TableCell>
+            <TableCell colSpan={3} className="p-2 text-right">{t('vatPercent')} ({order.vatPercent}%):</TableCell>
             <TableCell className="p-2">{(order.total / (1 + order.vatPercent / 100) * (order.vatPercent / 100)).toFixed(2)} AZN</TableCell>
           </TableRow>
           <TableRow className="bg-gray-200 dark:bg-slate-600 font-bold">

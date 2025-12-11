@@ -382,6 +382,13 @@ const en = {
 
   // Settings descriptions
   currencyRatesDescription: 'Set conversion rates to {mainCurrency} for active currencies.',
+  // Purchase Order Details
+  totalLandedCost: 'Total Landed Cost',
+  // Profitability
+  filterByProduct: 'Filter by Product',
+  // Settings - Erase all data
+  eraseAllData: 'Erase All Data',
+  eraseAllDataDescription: 'This will permanently erase all data from the app. Type the code to confirm.',
 };
 
 export default en;

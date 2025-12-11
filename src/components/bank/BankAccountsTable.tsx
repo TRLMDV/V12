@@ -31,7 +31,7 @@ const BankAccountsTable: React.FC<BankAccountsTableProps> = ({
         <TableHeader>
           <TableRow className="bg-gray-100 dark:bg-slate-700">
             <TableHead className="p-3">No.</TableHead>
-            <TableHead className="p-3">{t('accountName')}</TableHead>
+            <TableHead className="p-3">{t('bankAccountName')}</TableHead>
             <TableHead className="p-3">{t('currency')}</TableHead>
             <TableHead className="p-3 text-right">{t('currentBalance')}</TableHead>
             <TableHead className="p-3 text-right">{t('actions')}</TableHead>

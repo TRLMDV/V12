@@ -345,7 +345,7 @@ const ru = {
   productsToMove: 'Товары для перемещения',
   saveMovement: 'Сохранить перемещение',
   avgSellPrice: 'Ср. цена продажи (за шт.)',
-  totalLandCost: 'Итого себестоимости',
+  totalLandedCost: 'Итого себестоимости',
   rentabilityPercent: 'Рентабельность %',
   profit: 'Прибыль',
   totalProfit: 'Итого прибыль',
@@ -360,6 +360,15 @@ const ru = {
   deletePermanently: 'Удалить навсегда',
   noItemsInRecycleBin: 'В корзине нет элементов.',
   currencyRatesDescription: 'Установите курсы к {mainCurrency} для активных валют.',
+  // Purchase Order Details
+  totalLandedCost: 'Итого себестоимость',
+  // Profitability
+  filterByProduct: 'Фильтр по товару',
+  // Settings - Erase all data
+  eraseAllData: 'Удалить все данные',
+  eraseAllDataDescription: 'Это навсегда удалит все данные в приложении. Введите код для подтверждения.',
+  // Bank account form
+  initialBalance: 'Начальный баланс',
 };
 
 export default ru;
