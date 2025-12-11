@@ -165,7 +165,79 @@ class I18n {
     }
   }
 
-  // ADD: return a namespaced translator function
+  // ADD: simple plural form selector (supports English and Russian basics)
+  private selectPluralForm(lang: AppLanguage, count: number): 'one' | 'few' | 'many' | 'other' {
+    if (lang === 'ru') {
+      const mod10 = count % 10;
+      const mod100 = count % 100;
+      if (mod10 === 1 && mod100 !== 11) return 'one';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'few';
+      if ((mod10 === 0) || (mod10 >= 5 && mod10 <= 9) || (mod100 >= 11 && mod100 <= 14)) return 'many';
+      return 'other';
+    }
+    // Default (English-like)
+    return count === 1 ? 'one' : 'other';
+  }
+
+  // ADD: pluralization helper, expects keys like "item_one", "item_other" (and ru: _few/_many)
+  tPlural(baseKey: string, count: number, replacements?: { [key: string]: string | number }): string {
+    const form = this.selectPluralForm(this.currentLang, count);
+    const orderedForms = form === 'one'
+      ? ['one', 'other']
+      : form === 'few'
+        ? ['few', 'other']
+        : form === 'many'
+          ? ['many', 'other']
+          : ['other', 'one'];
+
+    let text: string | undefined;
+    for (const f of orderedForms) {
+      const keyVariant = `${baseKey}_${f}`;
+      text = this.t(keyVariant, { ...(replacements || {}), count });
+      if (text !== keyVariant) break; // Found a real translation
+      text = undefined;
+    }
+    // Fallback to baseKey if no variants found
+    if (!text) text = this.t(baseKey, { ...(replacements || {}), count });
+
+    return text;
+  }
+
+  // ADD: asynchronous language setter that resolves after dynamic loading
+  async setLanguageAsync(lang: AppLanguage): Promise<void> {
+    this.currentLang = lang;
+    await this.loadLanguage(lang);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('appLanguage', lang);
+    }
+    this.notifyLanguageChange();
+  }
+
+  // ADD: preload multiple languages (useful for future dynamic packs)
+  async preloadLanguages(langs: Array<AppLanguage | string>): Promise<void> {
+    for (const l of langs) {
+      // eslint-disable-next-line no-await-in-loop
+      await this.loadLanguage(String(l));
+    }
+  }
+
+  // ADD: list keys missing in a language compared to the fallback global dict (dev helper)
+  getMissingKeysComparedToFallback(lang: AppLanguage): string[] {
+    const target = this.dictionaries[lang];
+    const fallback = this.dictionaries[this.fallbackLang];
+    if (!target || !fallback) return [];
+
+    const missing: string[] = [];
+    for (const key of Object.keys(fallback.global)) {
+      const resolved = this.resolveKey(target, key);
+      if (resolved === undefined) {
+        missing.push(key);
+      }
+    }
+    return missing;
+  }
+
+  // ADD: return a namespaced translator function (already present if previously added)
   getTranslator(namespace?: string) {
     return (key: string, replacements?: { [key: string]: string | number }) => {
       const fullKey = namespace ? `${namespace}.${key}` : String(key);
@@ -239,7 +311,27 @@ export function offLanguageChanged(listener: (lang: AppLanguage) => void) {
   i18n.offLanguageChanged(listener);
 }
 
-// ADD: export getTranslator helper
+// ADD: export pluralization helper
+export function tPlural(baseKey: string, count: number, replacements?: { [key: string]: string | number }) {
+  return i18n.tPlural(baseKey, count, replacements);
+}
+
+// ADD: export async language switcher (non-breaking alternative to setLanguage)
+export async function setLanguageAsync(lang: AppLanguage): Promise<void> {
+  await i18n.setLanguageAsync(lang);
+}
+
+// ADD: export bulk preload helper
+export async function preloadLanguages(langs: Array<AppLanguage | string>): Promise<void> {
+  await i18n.preloadLanguages(langs);
+}
+
+// ADD: export missing keys inspector (dev helper)
+export function getMissingKeys(lang: AppLanguage): string[] {
+  return i18n.getMissingKeysComparedToFallback(lang);
+}
+
+// ADD: export getTranslator if not exported already
 export function getTranslator(namespace?: string) {
   return i18n.getTranslator(namespace);
 }
