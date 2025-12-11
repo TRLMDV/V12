@@ -54,7 +54,11 @@ const SettingsPage: React.FC = () => {
       <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('settings') || 'Settings'}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CompanyDetailsSettings />
+        <CompanyDetailsSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+        />
         <ThemeSettings />
         <LanguageSettings />
         <MainCurrencySettings
