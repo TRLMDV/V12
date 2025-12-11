@@ -103,7 +103,7 @@ const Suppliers: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
-              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
+              <TableHead className="p-3">{t('noDot')}</TableHead>{/* New: Numbering column */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('name')}>
                 {t('supplierName')} {getSortIndicator('name')}
               </TableHead>

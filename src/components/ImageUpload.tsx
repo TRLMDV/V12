@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { t } from '@/utils/i18n';
 
 interface ImageUploadProps {
   label: string;
@@ -84,7 +85,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           onClick={() => document.getElementById('imageUpload')?.click()}
           variant="outline"
         >
-          Choose File
+          {t('chooseFile')}
         </Button>
       </div>
     </div>

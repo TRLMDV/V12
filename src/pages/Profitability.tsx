@@ -296,34 +296,34 @@ const Profitability: React.FC = () => {
             <TableHeader>
               <TableRow className="bg-gray-100 dark:bg-slate-700">
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('productName')}>
-                  Product name {getSortIndicator('productName')}
+                  {t('productName')} {getSortIndicator('productName')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('sku')}>
-                  SKU {getSortIndicator('sku')}
+                  {t('sku')} {getSortIndicator('sku')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('qtySold')}>
-                  Quantity sold {getSortIndicator('qtySold')}
+                  {t('qtySold')} {getSortIndicator('qtySold')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('avgSellPrice')}>
-                  Sell price (1 piece) {getSortIndicator('avgSellPrice')}
+                  {t('avgSellPrice')} {getSortIndicator('avgSellPrice')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('landCostPerUnit')}>
-                  Land cost (per unit) {getSortIndicator('landCostPerUnit')}
+                  {t('landedCostPerUnit')} {getSortIndicator('landCostPerUnit')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalSales')}>
-                  Total of sold {getSortIndicator('totalSales')}
+                  {t('totalSales')} {getSortIndicator('totalSales')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('totalLandCost')}>
-                  Total of land cost {getSortIndicator('totalLandCost')}
+                  {t('totalLandCost')} {getSortIndicator('totalLandCost')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('rentabilityPercent')}>
-                  Rentability % {getSortIndicator('rentabilityPercent')}
+                  {t('rentabilityPercent')} {getSortIndicator('rentabilityPercent')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('salesPercentage')}>
-                  Sales % {getSortIndicator('salesPercentage')}
+                  {t('salesPercentage')} {getSortIndicator('salesPercentage')}
                 </TableHead>
                 <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('profit')}>
-                  Profit {getSortIndicator('profit')}
+                  {t('profit')} {getSortIndicator('profit')}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -347,7 +347,7 @@ const Profitability: React.FC = () => {
             </TableBody>
             <TableFooter>
               <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
-                <TableCell colSpan={9} className="p-3 text-right text-lg">Total Profit:</TableCell>
+                <TableCell colSpan={9} className="p-3 text-right text-lg">{t('totalProfit')}:</TableCell>
                 <TableCell className={`p-3 text-lg ${totalCleanProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {totalCleanProfit.toFixed(2)} AZN
                 </TableCell>

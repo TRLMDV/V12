@@ -314,6 +314,77 @@ const en = {
   generateProductMovement: 'Generate Product Movement',
   totalValue: 'Total Value',
   exportStock: 'Export Stock',
+
+  // Missing common form labels
+  address: 'Address',
+  save: 'Save',
+  currency: 'Currency',
+  cancel: 'Cancel',
+
+  // Suppliers
+  supplierName: 'Supplier Name',
+  addSupplier: 'Add Supplier',
+  editSupplier: 'Edit Supplier',
+  createSupplier: 'Create Supplier',
+
+  // Customers
+  selectDefaultWarehouse: 'Select Default Warehouse',
+  selectCustomer: 'Select Customer',
+
+  // Pagination and stock
+  stockAvailable: 'Stock available',
+
+  // Purchase/Sell Items field labels
+  packingUnit: 'Packing Unit',
+  selectPackingUnit: 'Select Packing Unit',
+  itemTotal: 'Item Total',
+
+  // Payments
+  paymentDate: 'Payment Date',
+  amountPaid: 'Amount Paid',
+  createIncomingPayment: 'Create Incoming Payment',
+  editIncomingPayment: 'Edit Incoming Payment',
+  createOutgoingPayment: 'Create Outgoing Payment',
+  editOutgoingPayment: 'Edit Outgoing Payment',
+  savePayment: 'Save Payment',
+  payFromVat: 'Pay from VAT',
+  disabledForVatPayments: 'Disabled for VAT payments',
+  vatPaymentNoAccountHint: 'Bank account is not required for VAT payments.',
+
+  // Warehouses
+  createWarehouse: 'Create Warehouse',
+  editWarehouse: 'Edit Warehouse',
+  toWarehouse: 'To Warehouse',
+
+  // Product Movement
+  createProductMovement: 'Create Product Movement',
+  productsToMove: 'Products to Move',
+  saveMovement: 'Save Movement',
+
+  // Profitability page
+  productName: 'Product Name',
+  avgSellPrice: 'Avg sell price (1 piece)',
+  totalSales: 'Total Sales',
+  totalLandCost: 'Total Land Cost',
+  rentabilityPercent: 'Rentability %',
+  salesPercentage: 'Sales %',
+  profit: 'Profit',
+  totalProfit: 'Total Profit',
+  noProductsToAnalyze: 'No products to analyze.',
+
+  // Recycle Bin
+  recycleBin: 'Recycle Bin',
+  itemType: 'Item Type',
+  originalId: 'Original ID',
+  dataSummary: 'Data Summary',
+  deletedAt: 'Deleted At',
+  cleanRecycleBin: 'Clean Recycle Bin',
+  restore: 'Restore',
+  deletePermanently: 'Delete Permanently',
+  noItemsInRecycleBin: 'No items in recycle bin.',
+
+  // Settings descriptions
+  currencyRatesDescription: 'Set conversion rates to {mainCurrency} for active currencies.',
 };
 
 export default en;

@@ -193,7 +193,7 @@ const PurchaseOrderItemsField: React.FC<PurchaseOrderItemsFieldProps> = ({
               />
               <Input
                 type="text"
-                value={item.landedCostPerUnit !== undefined ? formatNumberInput(item.landedCostPerUnit) + ' AZN' : 'N/A'}
+                value={item.landedCostPerUnit !== undefined ? formatNumberInput(item.landedCostPerUnit) + ' AZN' : t('na')}
                 readOnly
                 className="col-span-1 bg-gray-50 dark:bg-slate-700"
               />

@@ -325,7 +325,7 @@ const ProductMovement: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
-              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
+              <TableHead className="p-3">{t('noDot')}</TableHead>{/* New: Numbering column */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('linkedSellOrderCustomerDisplay')}>
                 {t('orderId')} / {t('customer')} {getSortIndicator('linkedSellOrderCustomerDisplay')}
               </TableHead>
@@ -400,9 +400,9 @@ const ProductMovement: React.FC = () => {
         title={t('detailsForMovement') + ` #${selectedMovementDetails?.id}`}
       >
         <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
-          <p><strong>{t('fromWarehouse')}:</strong> {selectedMovementDetails?.sourceWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.sourceWarehouseId] : 'N/A'}</p>
-          <p><strong>{t('toWarehouse')}:</strong> {selectedMovementDetails?.destWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.destWarehouseId] : 'N/A'}</p>
-          <p><strong>{t('date')}:</strong> {selectedMovementDetails?.date ? format(parseISO(selectedMovementDetails.date), 'yyyy-MM-dd HH:mm') : 'N/A'}</p>
+          <p><strong>{t('fromWarehouse')}:</strong> {selectedMovementDetails?.sourceWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.sourceWarehouseId] : t('na')}</p>
+          <p><strong>{t('toWarehouse')}:</strong> {selectedMovementDetails?.destWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.destWarehouseId] : t('na')}</p>
+          <p><strong>{t('date')}:</strong> {selectedMovementDetails?.date ? format(parseISO(selectedMovementDetails.date), 'yyyy-MM-dd HH:mm') : t('na')}</p>
         </div>
         <h3 className="font-semibold mt-4 mb-2">{t('items')}</h3>
         <Table>
@@ -418,8 +418,8 @@ const ProductMovement: React.FC = () => {
               const product = productMap[item.productId];
               return (
                 <TableRow key={index} className="border-b dark:border-slate-600 dark:text-slate-300">
-                  <TableCell className="p-2">{product?.name || 'N/A'}</TableCell>
-                  <TableCell className="p-2">{product?.sku || 'N/A'}</TableCell>
+                  <TableCell className="p-2">{product?.name || t('na')}</TableCell>
+                  <TableCell className="p-2">{product?.sku || t('na')}</TableCell>
                   <TableCell className="p-2">{item.quantity}</TableCell>
                 </TableRow>
               );

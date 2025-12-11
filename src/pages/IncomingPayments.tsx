@@ -351,7 +351,7 @@ const IncomingPayments: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
-              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
+              <TableHead className="p-3">{t('noDot')}</TableHead>{/* New: Numbering column */}
               {/* Removed Payment ID column */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('linkedOrderDisplay')}>
                 {t('linkedOrder')} / {t('manualExpense')} {getSortIndicator('linkedOrderDisplay')}
@@ -389,7 +389,7 @@ const IncomingPayments: React.FC = () => {
                     </TableCell>
                     <TableCell className="p-3">{p.method}</TableCell>
                     <TableCell className={`p-3 font-bold ${p.bankAccountBalance && p.bankAccountBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {p.bankAccountBalance !== undefined ? `${p.bankAccountBalance.toFixed(2)} ${p.bankAccountCurrency}` : 'N/A'}
+                      {p.bankAccountBalance !== undefined ? `${p.bankAccountBalance.toFixed(2)} ${p.bankAccountCurrency}` : t('na')}
                     </TableCell>
                     <TableCell className="p-3">
                       <Button variant="link" onClick={() => handleEditPayment(p.id)} className="mr-2 p-0 h-auto">

@@ -142,7 +142,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label className="text-right">
-            Pay from VAT
+            {t('payFromVat')}
           </Label>
           <div className="col-span-3 flex items-center gap-3">
             <Switch
@@ -161,7 +161,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
             />
             {isVatPayment && (
               <span className="text-xs text-muted-foreground">
-                Bank account is not required for VAT payments.
+                {t('vatPaymentNoAccountHint')}
               </span>
             )}
           </div>
@@ -173,7 +173,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
           </Label>
           <Select onValueChange={handleBankAccountChange} value={String(selectedBankAccountId || '')} disabled={isVatPayment}>
             <SelectTrigger className="col-span-3">
-              <SelectValue placeholder={isVatPayment ? 'Disabled for VAT payments' : t('selectBankAccount')} />
+              <SelectValue placeholder={isVatPayment ? t('disabledForVatPayments') : t('selectBankAccount')} />
             </SelectTrigger>
             <SelectContent>
               {bankAccounts.length > 0 ? (

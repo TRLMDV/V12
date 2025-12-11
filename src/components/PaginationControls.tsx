@@ -11,6 +11,7 @@ import {
   PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { t } from '@/utils/i18n';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationControlsProps {
   totalItems: number;
@@ -81,11 +82,15 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     <Pagination className="mt-6">
       <PaginationContent>
         <PaginationItem>
-          <PaginationPrevious
+          <PaginationLink
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             aria-disabled={currentPage === 1}
-            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-          />
+            className={currentPage === 1 ? 'pointer-events-none opacity-50 gap-1 pl-2.5' : 'gap-1 pl-2.5'}
+            size="default"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>{t('previous')}</span>
+          </PaginationLink>
         </PaginationItem>
         {pageNumbers.map((page, index) => (
           <PaginationItem key={index}>
@@ -102,11 +107,15 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           </PaginationItem>
         ))}
         <PaginationItem>
-          <PaginationNext
+          <PaginationLink
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             aria-disabled={currentPage === totalPages}
-            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-          />
+            className={currentPage === totalPages ? 'pointer-events-none opacity-50 gap-1 pr-2.5' : 'gap-1 pr-2.5'}
+            size="default"
+          >
+            <span>{t('next')}</span>
+            <ChevronRight className="h-4 w-4" />
+          </PaginationLink>
         </PaginationItem>
       </PaginationContent>
     </Pagination>
