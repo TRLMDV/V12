@@ -61,7 +61,7 @@ export const usePaymentFormActions = ({
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedBankAccountId) {
+    if (!selectedBankAccountId && (payment.method || '').toUpperCase() !== 'VAT') {
       showAlertModal('Validation Error', t('selectBankAccount'));
       return;
     }
@@ -82,7 +82,7 @@ export const usePaymentFormActions = ({
       ...payment,
       id: payment.id || 0,
       orderId: payment.orderId || 0,
-      bankAccountId: selectedBankAccountId, // Ensure bankAccountId is set
+      bankAccountId: (payment.method || '').toUpperCase() === 'VAT' ? undefined : selectedBankAccountId, // Ensure bankAccountId is set
       date: payment.date || MOCK_CURRENT_DATE.toISOString().slice(0, 10),
       amount: payment.amount,
       paymentCurrency: selectedPaymentCurrency,

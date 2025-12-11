@@ -12,6 +12,7 @@ import { usePaymentFormState } from '@/hooks/usePaymentFormState';
 import { usePaymentFormCalculations } from '@/hooks/usePaymentFormCalculations';
 import { usePaymentFormHandlers } from '@/hooks/usePaymentFormHandlers';
 import { usePaymentFormActions } from '@/hooks/usePaymentFormActions';
+import { Switch } from '@/components/ui/switch';
 
 interface PaymentFormProps {
   paymentId?: number;
@@ -128,6 +129,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
 
   const isManualExpense = selectedOrderIdentifier === '0';
   const activeCurrencies = settings.activeCurrencies || ['AZN'];
+  const isVatPayment = (payment.method || '').toUpperCase() === 'VAT';
 
   // Determine if manual description should be disabled
   const isManualDescriptionDisabled = selectedManualCategory === 'initialCapital';
@@ -139,12 +141,39 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
+          <Label className="text-right">
+            Pay from VAT
+          </Label>
+          <div className="col-span-3 flex items-center gap-3">
+            <Switch
+              checked={isVatPayment}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  setPayment(prev => ({ ...prev, method: 'VAT' }));
+                  setSelectedBankAccountId(undefined);
+                } else {
+                  setPayment(prev => ({
+                    ...prev,
+                    method: prev.method && prev.method.toUpperCase() === 'VAT' ? '' : (prev.method || ''),
+                  }));
+                }
+              }}
+            />
+            {isVatPayment && (
+              <span className="text-xs text-muted-foreground">
+                Bank account is not required for VAT payments.
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="bankAccount" className="text-right">
             {t('bankAccount')}
           </Label>
-          <Select onValueChange={handleBankAccountChange} value={String(selectedBankAccountId || '')}>
+          <Select onValueChange={handleBankAccountChange} value={String(selectedBankAccountId || '')} disabled={isVatPayment}>
             <SelectTrigger className="col-span-3">
-              <SelectValue placeholder={t('selectBankAccount')} />
+              <SelectValue placeholder={isVatPayment ? 'Disabled for VAT payments' : t('selectBankAccount')} />
             </SelectTrigger>
             <SelectContent>
               {bankAccounts.length > 0 ? (
@@ -313,6 +342,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentId, type, onSuccess, i
             value={payment.method || ''}
             onChange={handleChange}
             className="col-span-3"
+            disabled={isVatPayment}
           />
         </div>
       </div>
