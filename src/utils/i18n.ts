@@ -479,8 +479,8 @@ const baseRu: Translations = {
   packingUnitUpdated: 'Единица упаковки успешно обновлена.',
   packingUnitDeleted: 'Единица упаковки успешно удалена.',
   defaultPacking: 'Упаковка по умолчанию',
-  searchBySku: 'Поиск по SKU',
-  enterSku: 'Введите SKU',
+  searchBySku: 'Поиск по артикулу',
+  enterSku: 'Введите артикул',
   actions: 'действие'
 };
 
