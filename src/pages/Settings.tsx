@@ -73,7 +73,13 @@ const SettingsPage: React.FC = () => {
           activeCurrencies={activeCurrencies}
           setActiveCurrencies={setActiveCurrencies}
         />
-        <ActiveCurrenciesSettings />
+        <ActiveCurrenciesSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+          ALL_CURRENCIES={ALL_CURRENCIES}
+          mainCurrency={settings.mainCurrency}
+        />
         <DefaultVatSettings />
         <DefaultMarkupSettings />
         <DashboardCurrencyRatesToggle />
