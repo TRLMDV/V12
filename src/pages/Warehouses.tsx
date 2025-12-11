@@ -220,7 +220,7 @@ const Warehouses: React.FC = () => {
                       </div>
                       <Button onClick={() => exportWarehouseStock(w.id, w.name)} className="bg-sky-500 text-white px-3 py-1 rounded-md hover:bg-sky-600 text-sm shadow flex items-center">
                         <Download className="w-4 h-4 mr-1" />
-                        Export Stock
+                        {t('exportStock')}
                       </Button>
                     </div>
                   </div>
@@ -246,8 +246,8 @@ const Warehouses: React.FC = () => {
                           <TableHead className="p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('priceWithMarkupPlusVat')}>
                             {t('landedCostPlusMarkupPlusVat')} {getSortIndicator('priceWithMarkupPlusVat')}
                           </TableHead>
-                          <TableHead className="p-2">{t('totalValue')} (Excl. VAT)</TableHead>
-                          <TableHead className="p-2">Total Value (Incl. VAT)</TableHead>
+                          <TableHead className="p-2">{t('totalValue')} ({t('exclVat')})</TableHead>
+                          <TableHead className="p-2">{t('totalValue')} ({t('inclVat')})</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -256,9 +256,9 @@ const Warehouses: React.FC = () => {
                             <TableCell className="p-2">{p.name}</TableCell>
                             <TableCell className="p-2">{p.sku}</TableCell>
                             <TableCell className="p-2 font-bold">{p.quantity}</TableCell>
-                            <TableCell className="p-2">{p.averageLandedCost > 0 ? `${p.averageLandedCost.toFixed(2)} AZN` : 'N/A'}</TableCell>
-                            <TableCell className="p-2">{p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : 'N/A'}</TableCell>
-                            <TableCell className="p-2">{p.priceWithMarkupPlusVat > 0 ? `${p.priceWithMarkupPlusVat.toFixed(2)} AZN` : 'N/A'}</TableCell>
+                            <TableCell className="p-2">{p.averageLandedCost > 0 ? `${p.averageLandedCost.toFixed(2)} AZN` : t('na')}</TableCell>
+                            <TableCell className="p-2">{p.priceWithMarkupCalc > 0 ? `${p.priceWithMarkupCalc.toFixed(2)} AZN` : t('na')}</TableCell>
+                            <TableCell className="p-2">{p.priceWithMarkupPlusVat > 0 ? `${p.priceWithMarkupPlusVat.toFixed(2)} AZN` : t('na')}</TableCell>
                             <TableCell className="p-2 font-semibold">{(p.priceWithMarkupCalc * p.quantity).toFixed(2)} AZN</TableCell>
                             <TableCell className="p-2 font-semibold text-sky-600 dark:text-sky-400">{(p.priceWithMarkupPlusVat * p.quantity).toFixed(2)} AZN</TableCell>
                           </TableRow>

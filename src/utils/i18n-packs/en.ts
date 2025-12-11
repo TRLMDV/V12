@@ -282,6 +282,38 @@ const en = {
   reportPeriod: 'Report Period',
   ordersList: 'Orders List',
   totalToPay: 'Total to Pay',
+
+  // Filters & search (suppliers/customers/products)
+  filterBySupplier: 'Filter by Supplier',
+  allSuppliers: 'All Suppliers',
+  searchSupplierByName: 'Search supplier by name',
+  noSupplierFound: 'No supplier found',
+  filterByCustomer: 'Filter by Customer',
+  allCustomers: 'All Customers',
+  searchCustomerByName: 'Search customer by name',
+  noCustomerFound: 'No customer found',
+  all: 'All',
+
+  // Warehouse form and labels
+  warehouseName: 'Warehouse Name',
+  location: 'Location',
+  warehouseType: 'Warehouse Type',
+  mainWarehouseType: 'Main',
+  secondaryWarehouseType: 'Secondary',
+  selectWarehouseType: 'Select Warehouse Type',
+  saveWarehouse: 'Save Warehouse',
+
+  // Common labels used in forms
+  orderCurrency: 'Order Currency',
+  selectSupplier: 'Select Supplier',
+  selectWarehouse: 'Select Warehouse',
+  totalFees: 'Total Fees',
+  totalVat: 'Total VAT',
+  totalCleanProfit: 'Clean Profit',
+  generateIncomingPayment: 'Generate Incoming Payment',
+  generateProductMovement: 'Generate Product Movement',
+  totalValue: 'Total Value',
+  exportStock: 'Export Stock',
 };
 
 export default en;

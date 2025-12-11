@@ -282,6 +282,38 @@ const ru = {
   reportPeriod: 'Период отчёта',
   ordersList: 'Список заказов',
   totalToPay: 'Итого к выплате',
+
+  // Filters & search (suppliers/customers/products)
+  filterBySupplier: 'Фильтр по поставщику',
+  allSuppliers: 'Все поставщики',
+  searchSupplierByName: 'Поиск поставщика по имени',
+  noSupplierFound: 'Поставщик не найден',
+  filterByCustomer: 'Фильтр по клиенту',
+  allCustomers: 'Все клиенты',
+  searchCustomerByName: 'Поиск клиента по имени',
+  noCustomerFound: 'Клиент не найден',
+  all: 'Все',
+
+  // Warehouse form and labels
+  warehouseName: 'Название склада',
+  location: 'Местоположение',
+  warehouseType: 'Тип склада',
+  mainWarehouseType: 'Основной',
+  secondaryWarehouseType: 'Вторичный',
+  selectWarehouseType: 'Выберите тип склада',
+  saveWarehouse: 'Сохранить склад',
+
+  // Common labels used in forms
+  orderCurrency: 'Валюта заказа',
+  selectSupplier: 'Выберите поставщика',
+  selectWarehouse: 'Выберите склад',
+  totalFees: 'Итого сборы',
+  totalVat: 'Итого НДС',
+  totalCleanProfit: 'Чистая прибыль',
+  generateIncomingPayment: 'Создать входящий платёж',
+  generateProductMovement: 'Создать перемещение товара',
+  totalValue: 'Общая стоимость',
+  exportStock: 'Экспорт остатков',
 };
 
 export default ru;

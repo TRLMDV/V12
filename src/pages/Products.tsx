@@ -186,7 +186,7 @@ const Products: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-slate-700">
-              <TableHead className="p-3">No.</TableHead>{/* New: Numbering column */}
+              <TableHead className="p-3">{t('noDot')}</TableHead>
               <TableHead className="p-3">{t('image')}</TableHead>
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('name')}>
                 {t('name')} {sortConfig.key === 'name' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
@@ -228,7 +228,7 @@ const Products: React.FC = () => {
 
                 return (
                   <TableRow key={p.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                    <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
+                    <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>
                     <TableCell className="p-3">
                       <img
                         src={p.imageUrl || defaultImage}
