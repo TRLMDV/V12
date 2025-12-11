@@ -362,12 +362,9 @@ const en = {
   saveMovement: 'Save Movement',
 
   // Profitability page
-  productName: 'Product Name',
   avgSellPrice: 'Avg sell price (1 piece)',
-  totalSales: 'Total Sales',
   totalLandCost: 'Total Land Cost',
   rentabilityPercent: 'Rentability %',
-  salesPercentage: 'Sales %',
   profit: 'Profit',
   totalProfit: 'Total Profit',
   noProductsToAnalyze: 'No products to analyze.',
