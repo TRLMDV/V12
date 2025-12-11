@@ -1,4 +1,3 @@
-Артикул, actions -> действие.">
 import { useState, useEffect } from 'react';
 
 const i18n = {
