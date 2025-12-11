@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import FormModal from '@/components/FormModal';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
 import { Product, PurchaseOrder, SellOrder, Supplier, Customer, Currency } from '@/types';
@@ -143,6 +143,12 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     return sortedOrders.slice(startIndex, endIndex);
   }, [product, purchaseOrders, supplierMap, mainCurrency, currencyRates, productId, purchaseOrderSortConfig, purchaseOrderCurrentPage, poStartDateFilter, poEndDateFilter]);
 
+  // totals for displayed purchase orders
+  const poTotals = useMemo(() => {
+    const quantity = relevantPurchaseOrders.reduce((sum, po) => sum + (po.quantity || 0), 0);
+    return { quantity };
+  }, [relevantPurchaseOrders]);
+
   const totalPurchaseOrders = useMemo(() => {
     if (!product) return 0;
     let filtered = purchaseOrders.filter(order => order.items.some(item => item.productId === productId));
@@ -201,17 +207,13 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
     return sortedOrders.slice(startIndex, endIndex);
   }, [product, sellOrders, customerMap, productId, salesOrderSortConfig, salesOrderCurrentPage, soStartDateFilter, soEndDateFilter]);
 
-  const totalSellOrders = useMemo(() => {
-    if (!product) return 0;
-    let filtered = sellOrders.filter(order => order.items.some(item => item.productId === productId));
-    if (soStartDateFilter) {
-      filtered = filtered.filter(order => parseISO(order.orderDate) >= parseISO(soStartDateFilter)); // Parse ISO string
-    }
-    if (soEndDateFilter) {
-      filtered = filtered.filter(order => parseISO(order.orderDate) <= parseISO(soEndDateFilter)); // Parse ISO string
-    }
-    return filtered.length;
-  }, [product, sellOrders, productId, soStartDateFilter, soEndDateFilter]);
+  // totals for displayed sales orders
+  const soTotals = useMemo(() => {
+    const quantity = relevantSellOrders.reduce((sum, so) => sum + (so.quantity || 0), 0);
+    const priceExclVat = relevantSellOrders.reduce((sum, so) => sum + (so.priceExclVat || 0), 0);
+    const priceInclVat = relevantSellOrders.reduce((sum, so) => sum + (so.priceInclVat || 0), 0);
+    return { quantity, priceExclVat, priceInclVat };
+  }, [relevantSellOrders]);
 
   if (!product) return null;
 
@@ -308,6 +310,15 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                         </TableRow>
                       ))}
                     </TableBody>
+                    <TableFooter>
+                      <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
+                        <TableCell colSpan={3} className="p-3 text-right">{t('totals')}:</TableCell>
+                        <TableCell className="p-3">{poTotals.quantity}</TableCell>
+                        <TableCell className="p-3"></TableCell>
+                        <TableCell className="p-3"></TableCell>
+                        <TableCell className="p-3"></TableCell>
+                      </TableRow>
+                    </TableFooter>
                   </Table>
                   <PaginationControls
                     totalItems={totalPurchaseOrders}
@@ -406,6 +417,15 @@ const ProductTransactionsModal: React.FC<ProductTransactionsModalProps> = ({ isO
                         </TableRow>
                       ))}
                     </TableBody>
+                    <TableFooter>
+                      <TableRow className="bg-gray-100 dark:bg-slate-700 font-bold">
+                        <TableCell colSpan={3} className="p-3 text-right">{t('totals')}:</TableCell>
+                        <TableCell className="p-3">{soTotals.quantity}</TableCell>
+                        <TableCell className="p-3"></TableCell>
+                        <TableCell className="p-3">{soTotals.priceExclVat.toFixed(2)} {mainCurrency}</TableCell>
+                        <TableCell className="p-3">{soTotals.priceInclVat.toFixed(2)} {mainCurrency}</TableCell>
+                      </TableRow>
+                    </TableFooter>
                   </Table>
                   <PaginationControls
                     totalItems={totalSellOrders}
