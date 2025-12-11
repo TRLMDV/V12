@@ -10,6 +10,7 @@ import CompanyDetailsSettings from '@/components/settings/CompanyDetailsSettings
 import ThemeSettings from '@/components/settings/ThemeSettings';
 // import DisplayScalingSettings from '@/components/settings/DisplayScalingSettings'; // Removed
 import DefaultVatSettings from '@/components/settings/DefaultVatSettings';
+import LanguageSettings from '@/components/settings/LanguageSettings';
 import DefaultMarkupSettings from '@/components/settings/DefaultMarkupSettings';
 import MainCurrencySettings from '@/components/settings/MainCurrencySettings';
 import ActiveCurrenciesSettings from '@/components/settings/ActiveCurrenciesSettings';
@@ -50,114 +51,23 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('settings')}</h1>
+      <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200 mb-6">{t('settings') || 'Settings'}</h1>
 
-      <CompanyDetailsSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      <ThemeSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      {/* Removed DisplayScalingSettings */}
-
-      <DefaultVatSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      <DefaultMarkupSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      <MainCurrencySettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-        ALL_CURRENCIES={ALL_CURRENCIES}
-        activeCurrencies={activeCurrencies}
-        setActiveCurrencies={setActiveCurrencies}
-      />
-
-      <ActiveCurrenciesSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-        ALL_CURRENCIES={ALL_CURRENCIES}
-        mainCurrency={settings.mainCurrency}
-      />
-
-      <CurrencyRatesSettings
-        currencyRates={currencyRates}
-        setCurrencyRates={setCurrencyRates}
-        t={t}
-        activeCurrencies={settings.activeCurrencies} // Use global activeCurrencies for rates display
-        mainCurrency={settings.mainCurrency} // Pass mainCurrency
-      />
-
-      <PaymentCategoriesSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-        showConfirmationModal={showConfirmationModal}
-        getNextId={(key) => getNextId(key as 'paymentCategories')} // Cast key
-        setNextIdForCollection={(key, nextId) => setNextIdForCollection(key as 'paymentCategories', nextId)} // Cast key
-      />
-
-      <PackingSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-        showConfirmationModal={showConfirmationModal}
-        getNextId={(key) => getNextId(key as 'packingUnits')} // Cast key
-        setNextIdForCollection={(key, nextId) => setNextIdForCollection(key as 'packingUnits', nextId)} // Cast key
-      />
-
-      <QuickButtonsSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-        showConfirmationModal={showConfirmationModal}
-        getNextId={(key) => getNextId(key as 'quickButtons')}
-        setNextIdForCollection={(key, nextId) => setNextIdForCollection(key as 'quickButtons', nextId)}
-      />
-
-      <DashboardCurrencyRatesToggle
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      <SalesChartSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      <ClockSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      <CalendarSettings
-        settings={settings}
-        setSettings={setSettings}
-        t={t}
-      />
-
-      <EraseAllDataSection
-        t={t}
-        showConfirmationModal={showConfirmationModal}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <CompanyDetailsSettings />
+        <ThemeSettings />
+        <LanguageSettings />
+        <MainCurrencySettings />
+        <ActiveCurrenciesSettings />
+        <DefaultVatSettings />
+        <DefaultMarkupSettings />
+        <DashboardCurrencyRatesToggle />
+        <CalendarSettings />
+        <ClockSettings />
+        <PackingSettings />
+        <QuickButtonsSettings />
+        <CurrencyRatesSettings />
+      </div>
     </div>
   );
 };

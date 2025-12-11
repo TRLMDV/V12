@@ -196,6 +196,7 @@ export interface Settings {
   packingUnits: PackingUnit[];
   quickButtons: QuickButton[]; // New: Quick buttons for dashboard
   reminders: Reminder[]; // New: Reminders for calendar
+  language?: 'en' | 'ru'; // New: App language
 }
 
 // --- Quick Buttons ---
