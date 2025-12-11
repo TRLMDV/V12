@@ -114,9 +114,13 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
                   <TableCell className="p-3">{order.warehouseName}</TableCell>
                   <TableCell className="p-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'Shipped' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                      order.status === 'Confirmed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                      order.status === 'Shipped'
+                        ? (order.productMovementId
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' // Shipped WITH movement: light green
+                            : 'bg-green-600 text-white dark:bg-green-700 dark:text-white') // Shipped WITHOUT movement: dark green
+                        : order.status === 'Confirmed'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                     }`}>
                       {t(order.status.toLowerCase() as keyof typeof t)}
                     </span>
