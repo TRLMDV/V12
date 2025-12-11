@@ -557,6 +557,9 @@ class I18n {
   private dictionaries: Record<AppLanguage, Translations>;
   private currentLang: AppLanguage;
   private loaders: Record<string, () => Promise<{ default?: Translations } | Translations>> = {};
+  private fallbackLang: AppLanguage = 'en';
+  private missingKeyWarnings = true;
+  private listeners: Array<(lang: AppLanguage) => void> = [];
 
   constructor() {
     this.dictionaries = {
@@ -568,11 +571,26 @@ class I18n {
   }
 
   t(key: keyof typeof BASE_EN | string, replacements?: { [key: string]: string | number }): string {
-    const dict = this.dictionaries[this.currentLang] || this.dictionaries.en;
-    let text = (dict as Record<string, string>)[key] || (this.dictionaries.en as Record<string, string>)[key] || key;
+    const dict = this.dictionaries[this.currentLang] || this.dictionaries[this.fallbackLang];
+    let text =
+      (dict as Record<string, string>)[key] ??
+      (this.dictionaries[this.fallbackLang] as Record<string, string>)[key] ??
+      String(key);
+
+    // Warn when missing key in current language (dev aid, non-breaking)
+    if (this.missingKeyWarnings && text === key) {
+      // Only warn if key truly missing from both current and fallback dictionaries
+      const presentInFallback = (this.dictionaries[this.fallbackLang] as Record<string, string>)[key] !== undefined;
+      if (!presentInFallback) {
+        console.warn(`[i18n] Missing translation key "${key}" for language "${this.currentLang}".`);
+      }
+    }
+
     if (replacements) {
       for (const placeholder in replacements) {
-        text = text.replace(`{${placeholder}}`, String(replacements[placeholder]));
+        // Replace ALL occurrences of placeholder using global regex
+        const regex = new RegExp(`\\{${placeholder}\\}`, 'g');
+        text = text.replace(regex, String(replacements[placeholder]));
       }
     }
     return text;
@@ -596,10 +614,16 @@ class I18n {
 
   setLanguage(lang: AppLanguage) {
     this.currentLang = lang;
-    this.loadLanguage(lang);
+    // Trigger async load if a loader exists
+    this.loadLanguage(lang).then(() => {
+      // Notify subscribers after potential async load completes
+      this.notifyLanguageChange();
+    });
     if (typeof window !== 'undefined') {
       localStorage.setItem('appLanguage', lang);
     }
+    // Notify immediately as well so UI can update synchronously
+    this.notifyLanguageChange();
   }
 
   getLanguage(): AppLanguage {
@@ -607,7 +631,36 @@ class I18n {
   }
 
   addTranslations(lang: AppLanguage, entries: Translations) {
+    if (!this.dictionaries[lang]) {
+      this.dictionaries[lang] = {};
+    }
     Object.assign(this.dictionaries[lang], entries);
+  }
+
+  setFallbackLanguage(lang: AppLanguage) {
+    this.fallbackLang = lang;
+  }
+
+  setMissingKeyWarnings(enabled: boolean) {
+    this.missingKeyWarnings = enabled;
+  }
+
+  getAvailableLanguages(): string[] {
+    return Object.keys(this.dictionaries);
+  }
+
+  onLanguageChanged(listener: (lang: AppLanguage) => void) {
+    this.listeners.push(listener);
+  }
+
+  offLanguageChanged(listener: (lang: AppLanguage) => void) {
+    this.listeners = this.listeners.filter(l => l !== listener);
+  }
+
+  private notifyLanguageChange() {
+    for (const l of this.listeners) {
+      l(this.currentLang);
+    }
   }
 }
 
@@ -641,4 +694,16 @@ export function registerLanguageLoader(lang: string, loader: () => Promise<{ def
 
 export async function loadLanguage(lang: AppLanguage | string): Promise<void> {
   await i18n.loadLanguage(lang as string);
+}
+
+export function setFallbackLanguage(lang: AppLanguage) {
+  i18n.setFallbackLanguage(lang);
+}
+
+export function setMissingKeyWarnings(enabled: boolean) {
+  i18n.setMissingKeyWarnings(enabled);
+}
+
+export function getAvailableLanguages(): string[] {
+  return i18n.getAvailableLanguages();
 }
