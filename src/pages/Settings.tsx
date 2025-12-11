@@ -113,7 +113,14 @@ const SettingsPage: React.FC = () => {
           getNextId={getNextId}
           setNextIdForCollection={setNextIdForCollection}
         />
-        <QuickButtonsSettings />
+        <QuickButtonsSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+          showConfirmationModal={showConfirmationModal}
+          getNextId={(key: 'quickButtons') => getNextId('quickButtons')}
+          setNextIdForCollection={(key: 'quickButtons', nextId: number) => setNextIdForCollection('quickButtons', nextId)}
+        />
         <CurrencyRatesSettings
           currencyRates={currencyRates}
           setCurrencyRates={setCurrencyRates}
