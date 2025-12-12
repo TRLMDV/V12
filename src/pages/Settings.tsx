@@ -140,6 +140,14 @@ const SettingsPage: React.FC = () => {
       <div className="mt-8 text-center text-3xl md:text-4xl font-cinzel uppercase tracking-widest text-muted-foreground">
         Omnia Videntem Oculum
       </div>
+
+      {/* Monochrome logo below, tinted to current page text color */}
+      <div className="mt-4 flex justify-center">
+        <div
+          className="text-foreground bg-current h-16 md:h-24 w-64 md:w-80 [mask-image:url('/omnia-eye.png')] [-webkit-mask-image:url('/omnia-eye.png')] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+          aria-label="Omnia logo"
+        />
+      </div>
     </div>
   );
 };
