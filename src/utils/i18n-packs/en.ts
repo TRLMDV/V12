@@ -193,6 +193,8 @@ const en = {
   barcodeScannedDescription: 'Product "{productName}" added to order.',
   barcode: 'Barcode',
   enterBarcode: 'Enter Barcode',
+  // NEW: Product HSS code
+  hssCode: 'HSS Code',
   quantityIncremented: 'quantity incremented',
   addedToOrder: 'added to order',
   found: 'found',

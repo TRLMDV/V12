@@ -197,6 +197,9 @@ const Products: React.FC = () => {
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('barcode')}>
                 {t('barcode')} {sortConfig.key === 'barcode' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
               </TableHead>
+              <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('hssCode')}>
+                {t('hssCode')} {sortConfig.key === 'hssCode' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+              </TableHead>
               {/* Removed Category TableHead */}
               <TableHead className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600" onClick={() => requestSort('defaultPackingUnitName')}>
                 {t('defaultPacking')} {sortConfig.key === 'defaultPackingUnitName' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
@@ -242,7 +245,8 @@ const Products: React.FC = () => {
                     </TableCell>
                     <TableCell className="p-3">{p.name}</TableCell>
                     <TableCell className="p-3">{p.sku}</TableCell>
-                    <TableCell className="p-3">{p.barcode || t('na')}</TableCell> {/* New: Display barcode */}
+                    <TableCell className="p-3">{p.barcode || t('na')}</TableCell>
+                    <TableCell className="p-3">{p.hssCode || t('na')}</TableCell>
                     {/* Removed Category TableCell */}
                     <TableCell className="p-3">{p.defaultPackingUnitName}</TableCell>
                     <TableCell className={`p-3 font-semibold ${stockIsLow ? 'text-red-500' : ''}`}>
@@ -271,7 +275,7 @@ const Products: React.FC = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={11} className="p-4 text-center text-gray-500 dark:text-slate-400"> {/* Adjusted colSpan */}
+                <TableCell colSpan={12} className="p-4 text-center text-gray-500 dark:text-slate-400">
                   {t('noItemsFound')}
                 </TableCell>
               </TableRow>

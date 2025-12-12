@@ -16,6 +16,7 @@ export type ProductStatus = 'Active' | 'Discontinued' | 'Low Stock';
 export interface Product extends BaseItem {
   sku: string;
   barcode?: string; // New: Optional barcode field
+  hssCode?: string; // NEW: Optional HSS code field
   description?: string;
   imageUrl?: string;
   // category: string; // Removed as it's no longer used in the form

@@ -93,6 +93,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
       name: product.name,
       sku: product.sku,
       barcode: barcode.trim() || undefined, // Save barcode, or undefined if empty
+      hssCode: (product.hssCode || '').trim() || undefined, // NEW: Save HSS code
       // category: product.category || '', // Removed Category Input Field
       description: product.description || '',
       minStock: product.minStock || 0,
@@ -143,6 +144,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess }) => {
             onChange={(e) => setBarcode(e.target.value)}
             className="col-span-3"
             placeholder={t('enterBarcode')}
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="hssCode" className="text-right">
+            {t('hssCode')}
+          </Label>
+          <Input
+            id="hssCode"
+            value={product.hssCode || ''}
+            onChange={handleChange}
+            className="col-span-3"
+            placeholder="e.g., 1234.56.78"
           />
         </div>
         {/* Removed Category Input Field */}

@@ -193,6 +193,8 @@ const ru = {
   barcodeScannedDescription: 'Товар "{productName}" добавлен в заказ.',
   barcode: 'Штрихкод',
   enterBarcode: 'Введите штрихкод',
+  // NEW: Product HSS code
+  hssCode: 'Код HSS',
   quantityIncremented: 'количество увеличено',
   addedToOrder: 'добавлено в заказ',
   found: 'найден',
