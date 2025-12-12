@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const ExpeditorsReport: React.FC = () => {
   const { sellOrders, warehouseMap, settings } = useData();
-  const divisor = settings.expeditorProfitDivisor || 1.17;
+  const percent = settings.expeditorProfitPercent ?? 15;
 
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -30,12 +30,11 @@ const ExpeditorsReport: React.FC = () => {
         const wh = warehouseMap[o.warehouseId];
         const expeditor = wh?.expeditor || '';
         const base = o.total / (1 + (o.vatPercent || 0) / 100);
-        const companyShare = base / divisor;
-        const profit = expeditor ? (base - companyShare) : 0;
+        const profit = expeditor ? (base * (percent / 100)) : 0;
         return { ...o, expeditor, profit };
       })
       .filter(o => o.expeditor && (selectedExpeditor === 'all' || o.expeditor === selectedExpeditor));
-  }, [sellOrders, warehouseMap, divisor, startDate, endDate, selectedExpeditor]);
+  }, [sellOrders, warehouseMap, percent, startDate, endDate, selectedExpeditor]);
 
   const expeditorNames = useMemo(() => {
     const names = new Set<string>();

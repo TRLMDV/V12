@@ -276,6 +276,11 @@ const en = {
   expeditorTotals: 'Totals by Expeditor',
   selectExpeditor: 'Select Expeditor',
   allExpeditors: 'All Expeditors',
+  // ADDED: percentage-based settings
+  expeditorPercentSettings: 'Expeditor Profit Percentage',
+  expeditorPercent: 'Expeditor Profit (%)',
+  saveExpeditorPercent: 'Save Percentage',
+  // (Legacy keys kept for compatibility)
   divisorSettings: 'Expeditor Profit Divisor',
   profitDivisor: 'Profit Divisor (e.g., 1.17)',
   saveDivisor: 'Save Divisor',

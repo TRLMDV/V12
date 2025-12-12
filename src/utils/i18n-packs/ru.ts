@@ -276,6 +276,11 @@ const ru = {
   expeditorTotals: 'Итоги по экспедиторам',
   selectExpeditor: 'Выберите экспедитора',
   allExpeditors: 'Все экспедиторы',
+  // ADDED: percentage-based settings
+  expeditorPercentSettings: 'Процент прибыли экспедитора',
+  expeditorPercent: 'Прибыль экспедитора (%)',
+  saveExpeditorPercent: 'Сохранить процент',
+  // (Legacy keys kept for compatibility)
   divisorSettings: 'Делитель прибыли экспедитора',
   profitDivisor: 'Делитель прибыли (например, 1.17)',
   saveDivisor: 'Сохранить делитель',

@@ -198,7 +198,7 @@ export interface Settings {
   quickButtons: QuickButton[]; // New: Quick buttons for dashboard
   reminders: Reminder[]; // New: Reminders for calendar
   language?: 'en' | 'ru'; // New: App language
-  expeditorProfitDivisor?: number; // NEW: Configurable divisor (e.g., 1.17) for expeditor profit
+  expeditorProfitPercent?: number; // NEW: Configurable percentage (e.g., 15) for expeditor profit
 }
 
 // --- Quick Buttons ---
