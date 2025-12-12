@@ -144,7 +144,7 @@ const SettingsPage: React.FC = () => {
       {/* Monochrome logo below, tinted to current page text color */}
       <div className="mt-4 flex justify-center">
         <div
-          className="text-foreground bg-current h-16 md:h-24 w-64 md:w-80 [mask-image:url('/omnia-eye.png')] [-webkit-mask-image:url('/omnia-eye.png')] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+          className="text-muted-foreground bg-current h-16 md:h-24 w-64 md:w-80 [mask-image:url('/omnia-eye.png')] [-webkit-mask-image:url('/omnia-eye.png')] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
           aria-label="Omnia logo"
         />
       </div>
