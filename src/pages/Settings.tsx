@@ -135,6 +135,11 @@ const SettingsPage: React.FC = () => {
           showConfirmationModal={showConfirmationModal}
         />
       </div>
+
+      {/* Added footer phrase in a serif font */}
+      <div className="mt-8 text-center text-sm md:text-base font-serif text-muted-foreground">
+        Omnia Videntem Oculum
+      </div>
     </div>
   );
 };
