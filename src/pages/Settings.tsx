@@ -146,7 +146,7 @@ const SettingsPage: React.FC = () => {
         <img
           src="/omnia-eye.png"
           alt="Omnia logo"
-          className="h-28 md:h-40 w-auto"
+          className="h-48 md:h-64 w-auto"
           loading="lazy"
         />
       </div>
