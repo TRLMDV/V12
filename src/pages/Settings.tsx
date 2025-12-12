@@ -136,8 +136,8 @@ const SettingsPage: React.FC = () => {
         />
       </div>
 
-      {/* Added footer phrase in a serif font */}
-      <div className="mt-8 text-center text-2xl md:text-3xl font-serif text-muted-foreground">
+      {/* Added footer phrase with Cinzel font and enhanced styling */}
+      <div className="mt-8 text-center text-3xl md:text-4xl font-cinzel uppercase tracking-widest text-muted-foreground">
         Omnia Videntem Oculum
       </div>
     </div>

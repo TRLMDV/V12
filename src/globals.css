@@ -118,3 +118,9 @@
     -moz-appearance: textfield; /* Firefox */
   }
 }
+
+@layer utilities {
+  .font-cinzel {
+    font-family: 'Cinzel', serif;
+  }
+}
