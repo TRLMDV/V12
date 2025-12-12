@@ -89,7 +89,7 @@ const Finance: React.FC = () => {
 
     // ADD: expeditor totals accumulator (by warehouse expeditor name)
     const expeditorTotals: Record<string, number> = {};
-    const divisor = settings.expeditorProfitDivisor || 1.17;
+    const percent = settings.expeditorProfitPercent ?? 15;
 
     filteredSellOrders.forEach(order => {
       if (order.status === 'Shipped') {
@@ -101,8 +101,7 @@ const Finance: React.FC = () => {
         // ADD: accumulate expeditor profit for orders shipped from warehouses with an expeditor
         const wh = warehouseMap[order.warehouseId];
         if (wh && wh.expeditor) {
-          const companyShare = subtotalExVatInMainCurrency / divisor;
-          const expeditorShare = subtotalExVatInMainCurrency - companyShare;
+          const expeditorShare = subtotalExVatInMainCurrency * (percent / 100);
           expeditorTotals[wh.expeditor] = (expeditorTotals[wh.expeditor] || 0) + expeditorShare;
         }
 
@@ -153,7 +152,7 @@ const Finance: React.FC = () => {
       // ADD: return expeditor totals for UI section
       expeditorTotals,
     };
-  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates, settings.mainCurrency, settings.expeditorProfitDivisor, warehouseMap, convertCurrency]);
+  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates, settings.mainCurrency, settings.expeditorProfitPercent, warehouseMap, convertCurrency]);
 
   return (
     <div className="container mx-auto p-4">

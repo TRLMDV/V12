@@ -40,7 +40,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
 }) => {
   const { packingUnitMap, warehouseMap, settings } = useData(); // Access warehouse map and settings
 
-  const divisor = settings.expeditorProfitDivisor || 1.17;
+  const percent = settings.expeditorProfitPercent ?? 15;
 
   const totalSumExclVat = orders.reduce((sum, order) => sum + order.totalExclVat, 0);
   const totalSumInclVat = orders.reduce((sum, order) => sum + order.totalInclVat, 0);
@@ -48,8 +48,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
     const wh = warehouseMap[order.warehouseId];
     if (wh && wh.expeditor) {
       const base = order.totalExclVat;
-      const companyShare = base / divisor;
-      const expeditorShare = base - companyShare;
+      const expeditorShare = base * (percent / 100);
       return sum + expeditorShare;
     }
     return sum;
@@ -103,8 +102,7 @@ const SellOrdersTable: React.FC<SellOrdersTableProps> = ({
             orders.map((order, index) => {
               const wh = warehouseMap[order.warehouseId];
               const base = order.totalExclVat;
-              const companyShare = base / divisor;
-              const expeditorProfit = wh && wh.expeditor ? (base - companyShare) : 0;
+              const expeditorProfit = wh && wh.expeditor ? (base * (percent / 100)) : 0;
               return (
                 <TableRow key={order.id} className="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                   <TableCell className="p-3 font-semibold">{(currentPage - 1) * itemsPerPage + index + 1}.</TableCell>{/* New: Numbering cell */}
