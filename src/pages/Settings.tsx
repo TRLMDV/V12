@@ -138,7 +138,7 @@ const SettingsPage: React.FC = () => {
 
       {/* Added footer phrase with Cinzel font and enhanced styling */}
       <div className="mt-8 text-center text-3xl md:text-4xl font-cinzel uppercase tracking-widest text-muted-foreground">
-        Omnia Videntem Oculum
+        Oculus qui universa conspicit
       </div>
 
       {/* Monochrome logo below, tinted to current page text color */}
