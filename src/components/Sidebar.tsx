@@ -51,7 +51,7 @@ const Sidebar: React.FC = () => {
           </>
         ) : companyName ? (
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{companyName}</h1>
-        ) : null
+        ) : null}
       </div>
       <nav className="flex-grow overflow-y-auto">
         <ul>
