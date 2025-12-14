@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useData } from '@/context/DataContext';
 import { Settings } from '@/types'; // Import types from types file
+import MobileHeader from '@/components/MobileHeader';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -35,9 +36,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-slate-900">
-      <Sidebar />
-      <div id="main-content" className="ml-64 p-8 flex-grow overflow-y-auto h-screen">
-        {children}
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+      <div className="flex-1 min-w-0">
+        {/* Mobile header */}
+        <MobileHeader />
+        <div id="main-content" className="lg:ml-64 p-4 sm:p-6 lg:p-8 flex-grow overflow-y-auto h-screen">
+          {children}
+        </div>
       </div>
     </div>
   );
