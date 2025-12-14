@@ -4,25 +4,26 @@ import React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ImageBlock from './ImageBlock';
+import { t } from '@/utils/i18n';
 
 const DataHelp: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Import/Export & Recycle Bin</CardTitle>
+        <CardTitle>{t('help.data.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Accordion type="single" collapsible>
           <AccordionItem value="d-1">
-            <AccordionTrigger>Backup, restore and recycle bin</AccordionTrigger>
+            <AccordionTrigger>{t('help.data.backupTitle')}</AccordionTrigger>
             <AccordionContent>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm">
-                    Use Data Import/Export to back up and restore. Deleted items go to the Recycle Bin, where you can restore or permanently delete.
+                    {t('help.data.backupText')}
                   </p>
                 </div>
-                <ImageBlock alt="JSON backup/restore and recycle bin" src="/help/data/backup-recyclebin.png" />
+                <ImageBlock alt={t('help.data.backupImageAlt')} src="/help/data/backup-recyclebin.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

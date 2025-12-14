@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart } from 'lucide-react';
 import ImageBlock from './ImageBlock';
+import { t } from '@/utils/i18n';
 
 const FinanceHelp: React.FC = () => {
   return (
@@ -12,34 +13,34 @@ const FinanceHelp: React.FC = () => {
       <CardHeader>
         <div className="flex items-center gap-2">
           <BarChart className="h-5 w-5 text-sky-600" />
-          <CardTitle>Finance & Profitability</CardTitle>
+          <CardTitle>{t('help.finance.title')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
         <Accordion type="single" collapsible>
           <AccordionItem value="f-1">
-            <AccordionTrigger>Finance overview</AccordionTrigger>
+            <AccordionTrigger>{t('help.finance.overviewTitle')}</AccordionTrigger>
             <AccordionContent>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm">
-                    Review income and expenses, currency conversions, and totals in your main currency.
+                    {t('help.finance.overviewText')}
                   </p>
                 </div>
-                <ImageBlock alt="Finance page overview" src="/help/finance/overview.png" />
+                <ImageBlock alt={t('help.finance.overviewImageAlt')} src="/help/finance/overview.png" />
               </div>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="f-2">
-            <AccordionTrigger>Profitability</AccordionTrigger>
+            <AccordionTrigger>{t('help.finance.profitTitle')}</AccordionTrigger>
             <AccordionContent>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm">
-                    Analyze profits using average landed costs from purchase orders and revenues from sell orders.
+                    {t('help.finance.profitText')}
                   </p>
                 </div>
-                <ImageBlock alt="Profitability charts and tables" src="/help/finance/profitability.png" />
+                <ImageBlock alt={t('help.finance.profitImageAlt')} src="/help/finance/profitability.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

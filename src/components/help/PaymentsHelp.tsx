@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign } from 'lucide-react';
 import ImageBlock from './ImageBlock';
+import { t } from '@/utils/i18n';
 
 const PaymentsHelp: React.FC = () => {
   return (
@@ -12,21 +13,21 @@ const PaymentsHelp: React.FC = () => {
       <CardHeader>
         <div className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-sky-600" />
-          <CardTitle>Payments</CardTitle>
+          <CardTitle>{t('help.payments.title')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
         <Accordion type="single" collapsible>
           <AccordionItem value="pay-1">
-            <AccordionTrigger>Incoming and outgoing payments</AccordionTrigger>
+            <AccordionTrigger>{t('help.payments.overviewTitle')}</AccordionTrigger>
             <AccordionContent>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm">
-                    Record payments in their respective pages. Link them to orders or enter manual descriptions and categories.
+                    {t('help.payments.overviewText')}
                   </p>
                 </div>
-                <ImageBlock alt="Payments list and add payment dialog" src="/help/payments/list.png" />
+                <ImageBlock alt={t('help.payments.listImageAlt')} src="/help/payments/list.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

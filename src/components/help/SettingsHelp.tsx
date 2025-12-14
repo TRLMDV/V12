@@ -5,6 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings as SettingsIcon } from 'lucide-react';
 import ImageBlock from './ImageBlock';
+import { t } from '@/utils/i18n';
 
 const SettingsHelp: React.FC = () => {
   return (
@@ -12,33 +13,33 @@ const SettingsHelp: React.FC = () => {
       <CardHeader>
         <div className="flex items-center gap-2">
           <SettingsIcon className="h-5 w-5 text-sky-600" />
-          <CardTitle>Settings</CardTitle>
+          <CardTitle>{t('help.settings.title')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
         <Accordion type="multiple" className="w-full">
           <AccordionItem value="s-1">
-            <AccordionTrigger>Theme and Language</AccordionTrigger>
+            <AccordionTrigger>{t('help.settings.themeLangTitle')}</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Theme and language options" src="/help/settings/theme-language.png" />
+              <ImageBlock alt={t('help.settings.themeLangImageAlt')} src="/help/settings/theme-language.png" />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="s-2">
-            <AccordionTrigger>Currencies and Rates</AccordionTrigger>
+            <AccordionTrigger>{t('help.settings.currenciesTitle')}</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Main and active currencies, rates editor" src="/help/settings/currencies.png" />
+              <ImageBlock alt={t('help.settings.currenciesImageAlt')} src="/help/settings/currencies.png" />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="s-3">
-            <AccordionTrigger>Quick Buttons, Calendar & Clock</AccordionTrigger>
+            <AccordionTrigger>{t('help.settings.quickWidgetsTitle')}</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Dashboard widgets and quick buttons settings" src="/help/settings/dashboard-widgets.png" />
+              <ImageBlock alt={t('help.settings.dashboardWidgetsImageAlt')} src="/help/settings/dashboard-widgets.png" />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="s-4">
-            <AccordionTrigger>Packing Units and Payment Categories</AccordionTrigger>
+            <AccordionTrigger>{t('help.settings.packingPaymentsTitle')}</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Manage packing units and payment categories" src="/help/settings/packing-payments.png" />
+              <ImageBlock alt={t('help.settings.packingPaymentsImageAlt')} src="/help/settings/packing-payments.png" />
             </AccordionContent>
           </AccordionItem>
         </Accordion>

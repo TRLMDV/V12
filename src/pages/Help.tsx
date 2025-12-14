@@ -25,31 +25,31 @@ const Help: React.FC = () => {
         <div className="flex items-center gap-2">
           <HelpCircle className="h-6 w-6 text-sky-600" />
           <h1 className="text-3xl font-bold text-gray-800 dark:text-slate-200">
-            {t('help') || 'Help & Tutorials'}
+            {t('help.title')}
           </h1>
         </div>
         <p className="text-muted-foreground mt-1">
-          {t('learnToUseApp') || 'Learn how to use every part of the app with step-by-step guides and illustrations.'}
+          {t('help.subtitle')}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          Add your screenshots under public/help/... (e.g., /help/products/add-product.png). If a file is missing, a diagram will show instead.
+          {t('help.screenshotNote')}
         </p>
       </div>
 
       <Tabs defaultValue="getting-started" className="w-full">
         <TabsList className="flex flex-wrap gap-1">
-          <TabsTrigger value="getting-started">Getting Started</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="suppliers-customers">Suppliers & Customers</TabsTrigger>
-          <TabsTrigger value="warehouses">Warehouses</TabsTrigger>
-          <TabsTrigger value="orders">Purchase & Sell Orders</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="stock">Stock & Movements</TabsTrigger>
-          <TabsTrigger value="bank">Bank</TabsTrigger>
-          <TabsTrigger value="finance">Finance & Profitability</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="data">Import/Export & Recycle Bin</TabsTrigger>
+          <TabsTrigger value="getting-started">{t('help.tabs.gettingStarted')}</TabsTrigger>
+          <TabsTrigger value="products">{t('help.tabs.products')}</TabsTrigger>
+          <TabsTrigger value="suppliers-customers">{t('help.tabs.suppliersCustomers')}</TabsTrigger>
+          <TabsTrigger value="warehouses">{t('help.tabs.warehouses')}</TabsTrigger>
+          <TabsTrigger value="orders">{t('help.tabs.orders')}</TabsTrigger>
+          <TabsTrigger value="payments">{t('help.tabs.payments')}</TabsTrigger>
+          <TabsTrigger value="stock">{t('help.tabs.stock')}</TabsTrigger>
+          <TabsTrigger value="bank">{t('help.tabs.bank')}</TabsTrigger>
+          <TabsTrigger value="finance">{t('help.tabs.finance')}</TabsTrigger>
+          <TabsTrigger value="settings">{t('help.tabs.settings')}</TabsTrigger>
+          <TabsTrigger value="dashboard">{t('help.tabs.dashboard')}</TabsTrigger>
+          <TabsTrigger value="data">{t('help.tabs.data')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="getting-started" className="mt-4">
