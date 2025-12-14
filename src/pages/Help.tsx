@@ -52,51 +52,51 @@ const Help: React.FC = () => {
           <TabsTrigger value="data">{t('help.tabs.data')}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="getting-started" className="mt-4">
+        <TabsContent value="getting-started" className="mt-10">
           <GettingStartedHelp />
         </TabsContent>
 
-        <TabsContent value="products" className="mt-4">
+        <TabsContent value="products" className="mt-10">
           <ProductsHelp />
         </TabsContent>
 
-        <TabsContent value="suppliers-customers" className="mt-4">
+        <TabsContent value="suppliers-customers" className="mt-10">
           <SuppliersCustomersHelp />
         </TabsContent>
 
-        <TabsContent value="warehouses" className="mt-4">
+        <TabsContent value="warehouses" className="mt-10">
           <WarehousesHelp />
         </TabsContent>
 
-        <TabsContent value="orders" className="mt-4">
+        <TabsContent value="orders" className="mt-10">
           <OrdersHelp />
         </TabsContent>
 
-        <TabsContent value="payments" className="mt-4">
+        <TabsContent value="payments" className="mt-10">
           <PaymentsHelp />
         </TabsContent>
 
-        <TabsContent value="stock" className="mt-4">
+        <TabsContent value="stock" className="mt-10">
           <StockHelp />
         </TabsContent>
 
-        <TabsContent value="bank" className="mt-4">
+        <TabsContent value="bank" className="mt-10">
           <BankHelp />
         </TabsContent>
 
-        <TabsContent value="finance" className="mt-4">
+        <TabsContent value="finance" className="mt-10">
           <FinanceHelp />
         </TabsContent>
 
-        <TabsContent value="settings" className="mt-4">
+        <TabsContent value="settings" className="mt-10">
           <SettingsHelp />
         </TabsContent>
 
-        <TabsContent value="dashboard" className="mt-4">
+        <TabsContent value="dashboard" className="mt-10">
           <DashboardHelp />
         </TabsContent>
 
-        <TabsContent value="data" className="mt-4">
+        <TabsContent value="data" className="mt-10">
           <DataHelp />
         </TabsContent>
       </Tabs>
