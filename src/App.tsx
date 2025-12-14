@@ -24,6 +24,7 @@ import ExpeditorsReport from "./pages/ExpeditorsReport";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import AuthGuard from "./components/AuthGuard";
+import Help from "./pages/Help";
 // MOCK_CURRENT_DATE is not used directly in App.tsx, removing import
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/bank" element={<AuthGuard><MainLayout><Bank /></MainLayout></AuthGuard>} />
             <Route path="/utilization" element={<AuthGuard><MainLayout><Utilization /></MainLayout></AuthGuard>} />
             <Route path="/expeditors-report" element={<AuthGuard><MainLayout><ExpeditorsReport /></MainLayout></AuthGuard>} />
+            <Route path="/help" element={<AuthGuard><MainLayout><Help /></MainLayout></AuthGuard>} />
             <Route path="*" element={<AuthGuard><NotFound /></AuthGuard>} />
           </Routes>
       </BrowserRouter>

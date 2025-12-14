@@ -41,6 +41,7 @@ const MobileHeader: React.FC = () => {
     { id: 'profitability', to: '/profitability', label: t('profitability') },
     { id: 'bank', to: '/bank', label: t('bank') },
     { id: 'dataImportExport', to: '/data-import-export', label: t('dataImportExport') },
+    { id: 'help', to: '/help', label: t('help') || 'Help' },
     { id: 'settings', to: '/settings', label: t('settings') },
   ];
 
