@@ -39,6 +39,7 @@ const MobileHeader: React.FC = () => {
     { id: 'expeditorsReport', to: '/expeditors-report', label: t('expeditorsReport') },
     { id: 'finance', to: '/finance', label: t('finance') },
     { id: 'profitability', to: '/profitability', label: t('profitability') },
+    { id: 'bank', to: '/bank', label: t('bank') },
     { id: 'dataImportExport', to: '/data-import-export', label: t('dataImportExport') },
     { id: 'settings', to: '/settings', label: t('settings') },
   ];
