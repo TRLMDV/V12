@@ -28,7 +28,7 @@ const WarehousesHelp: React.FC = () => {
                     <li>Save the warehouse.</li>
                   </ol>
                 </div>
-                <ImageBlock alt="Add warehouse form fields" />
+                <ImageBlock alt="Add warehouse form fields" src="/help/warehouses/add-warehouse.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

@@ -26,7 +26,7 @@ const PaymentsHelp: React.FC = () => {
                     Record payments in their respective pages. Link them to orders or enter manual descriptions and categories.
                   </p>
                 </div>
-                <ImageBlock alt="Payments list and add payment dialog" />
+                <ImageBlock alt="Payments list and add payment dialog" src="/help/payments/list.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

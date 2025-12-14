@@ -22,7 +22,7 @@ const DashboardHelp: React.FC = () => {
                     Customize your dashboard with currency rates, sales chart, clock, calendar, and quick buttons in Settings.
                   </p>
                 </div>
-                <ImageBlock alt="Dashboard with widgets and quick buttons" />
+                <ImageBlock alt="Dashboard with widgets and quick buttons" src="/help/dashboard/overview.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

@@ -26,7 +26,7 @@ const StockHelp: React.FC = () => {
                     Move stock between warehouses with Product Movement; quantities adjust at source and destination.
                   </p>
                 </div>
-                <ImageBlock alt="Product movement form between warehouses" />
+                <ImageBlock alt="Product movement form between warehouses" src="/help/stock/movement.png" />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -39,7 +39,7 @@ const StockHelp: React.FC = () => {
                     Create utilization orders to write off damaged or expired goods; stock is reduced in the selected warehouse.
                   </p>
                 </div>
-                <ImageBlock alt="Utilization order form" />
+                <ImageBlock alt="Utilization order form" src="/help/stock/utilization.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

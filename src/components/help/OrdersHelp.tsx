@@ -29,7 +29,7 @@ const OrdersHelp: React.FC = () => {
                     <li>Save. Receiving will update stock and costs.</li>
                   </ol>
                 </div>
-                <ImageBlock alt="Purchase order form with items" />
+                <ImageBlock alt="Purchase order form with items" src="/help/orders/purchase-order.png" />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -45,7 +45,7 @@ const OrdersHelp: React.FC = () => {
                     <li>Confirm to decrease stock and track revenue.</li>
                   </ol>
                 </div>
-                <ImageBlock alt="Sell order form with items and VAT" />
+                <ImageBlock alt="Sell order form with items and VAT" src="/help/orders/sell-order.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

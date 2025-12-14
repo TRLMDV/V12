@@ -28,7 +28,7 @@ const GettingStartedHelp: React.FC = () => {
                     <li>Mobile: Tap the menu button to open navigation.</li>
                   </ul>
                 </div>
-                <ImageBlock alt="App navigation: sidebar on desktop and mobile menu" />
+                <ImageBlock alt="App navigation: sidebar on desktop and mobile menu" src="/help/getting-started/navigation.png" />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -48,7 +48,7 @@ const GettingStartedHelp: React.FC = () => {
                     <li>Currencies: pick active and main currency.</li>
                   </ul>
                 </div>
-                <ImageBlock alt="Settings overview with theme, VAT, markup, currencies" />
+                <ImageBlock alt="Settings overview with theme, VAT, markup, currencies" src="/help/settings/overview.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

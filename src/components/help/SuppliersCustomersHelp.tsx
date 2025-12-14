@@ -30,7 +30,7 @@ const SuppliersCustomersHelp: React.FC = () => {
                     <li>Default currency/warehouse can be set for faster orders.</li>
                   </ul>
                 </div>
-                <ImageBlock alt="Supplier and customer forms" />
+                <ImageBlock alt="Supplier and customer forms" src="/help/contacts/forms.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

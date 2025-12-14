@@ -31,6 +31,9 @@ const Help: React.FC = () => {
         <p className="text-muted-foreground mt-1">
           {t('learnToUseApp') || 'Learn how to use every part of the app with step-by-step guides and illustrations.'}
         </p>
+        <p className="text-xs text-muted-foreground mt-2">
+          Add your screenshots under public/help/... (e.g., /help/products/add-product.png). If a file is missing, a diagram will show instead.
+        </p>
       </div>
 
       <Tabs defaultValue="getting-started" className="w-full">

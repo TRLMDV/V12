@@ -26,7 +26,7 @@ const FinanceHelp: React.FC = () => {
                     Review income and expenses, currency conversions, and totals in your main currency.
                   </p>
                 </div>
-                <ImageBlock alt="Finance page overview" />
+                <ImageBlock alt="Finance page overview" src="/help/finance/overview.png" />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -39,7 +39,7 @@ const FinanceHelp: React.FC = () => {
                     Analyze profits using average landed costs from purchase orders and revenues from sell orders.
                   </p>
                 </div>
-                <ImageBlock alt="Profitability charts and tables" />
+                <ImageBlock alt="Profitability charts and tables" src="/help/finance/profitability.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

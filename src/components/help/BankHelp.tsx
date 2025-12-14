@@ -28,7 +28,7 @@ const BankHelp: React.FC = () => {
                     <li>Open transaction history for detailed view.</li>
                   </ol>
                 </div>
-                <ImageBlock alt="Bank accounts table and transaction modals" />
+                <ImageBlock alt="Bank accounts table and transaction modals" src="/help/bank/accounts.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

@@ -22,7 +22,7 @@ const DataHelp: React.FC = () => {
                     Use Data Import/Export to back up and restore. Deleted items go to the Recycle Bin, where you can restore or permanently delete.
                   </p>
                 </div>
-                <ImageBlock alt="JSON backup/restore and recycle bin" />
+                <ImageBlock alt="JSON backup/restore and recycle bin" src="/help/data/backup-recyclebin.png" />
               </div>
             </AccordionContent>
           </AccordionItem>

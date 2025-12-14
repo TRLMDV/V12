@@ -20,25 +20,25 @@ const SettingsHelp: React.FC = () => {
           <AccordionItem value="s-1">
             <AccordionTrigger>Theme and Language</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Theme and language options" />
+              <ImageBlock alt="Theme and language options" src="/help/settings/theme-language.png" />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="s-2">
             <AccordionTrigger>Currencies and Rates</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Main and active currencies, rates editor" />
+              <ImageBlock alt="Main and active currencies, rates editor" src="/help/settings/currencies.png" />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="s-3">
             <AccordionTrigger>Quick Buttons, Calendar & Clock</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Dashboard widgets and quick buttons settings" />
+              <ImageBlock alt="Dashboard widgets and quick buttons settings" src="/help/settings/dashboard-widgets.png" />
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="s-4">
             <AccordionTrigger>Packing Units and Payment Categories</AccordionTrigger>
             <AccordionContent>
-              <ImageBlock alt="Manage packing units and payment categories" />
+              <ImageBlock alt="Manage packing units and payment categories" src="/help/settings/packing-payments.png" />
             </AccordionContent>
           </AccordionItem>
         </Accordion>

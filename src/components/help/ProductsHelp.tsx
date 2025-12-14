@@ -29,7 +29,7 @@ const ProductsHelp: React.FC = () => {
                     <li>Save to create the product.</li>
                   </ol>
                 </div>
-                <ImageBlock alt="Add product form with fields and save button" />
+                <ImageBlock alt="Add product form with fields and save button" src="/help/products/add-product.png" />
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -42,7 +42,7 @@ const ProductsHelp: React.FC = () => {
                     Edit products to update details. Stock updates come from purchase orders, sell orders, product movements, and utilization.
                   </p>
                 </div>
-                <ImageBlock alt="Product list and edit actions" />
+                <ImageBlock alt="Product list and edit actions" src="/help/products/edit-product.png" />
               </div>
             </AccordionContent>
           </AccordionItem>
