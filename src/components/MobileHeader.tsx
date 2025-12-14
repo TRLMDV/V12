@@ -47,7 +47,7 @@ const MobileHeader: React.FC = () => {
   const currentPath = location.pathname;
 
   return (
-    <div className="lg:hidden sticky top-0 z-30 bg-white dark:bg-slate-900 border-b dark:border-slate-800">
+    <div className="md:hidden sticky top-0 z-30 bg-white dark:bg-slate-900 border-b dark:border-slate-800">
       <div className="flex items-center justify-between px-3 py-2">
         <Sheet>
           <SheetTrigger asChild>
