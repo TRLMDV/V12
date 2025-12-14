@@ -1,4 +1,4 @@
-const en = {
+const core = {
   backupRestore: 'Backup & Restore', backupData: 'Backup Data', restoreData: 'Restore Data', restoreWarning: 'This will overwrite all current data. Are you sure you want to proceed?', restoreSuccess: 'Data restored successfully. The application will now reload.', restoreError: 'Invalid backup file.',
   theme: 'Theme', light: 'Light', dark: 'Dark', companyDetails: 'Company Details', companyName: 'Company Name', companyLogo: 'Company Logo', changeLogo: 'Change File', saveCompanyDetails: 'Save Company Details', success: 'Success', detailsUpdated: 'Company details updated.',
   dashboard: 'Dashboard', products: 'Products', purchaseOrders: 'Purchase Orders', sellOrders: 'Sell Orders', suppliers: 'Suppliers', customers: 'Customers', incomingPayments: 'Incoming Payments', outgoingPayments: 'Outgoing Payments', warehouses: 'Warehouses', productMovement: 'Product Movement', utilization: 'Utilization', finance: 'Finance', profitability: 'Profitability', dataImportExport: 'Data Import/Export',
@@ -193,7 +193,6 @@ const en = {
   barcodeScannedDescription: 'Product "{productName}" added to order.',
   barcode: 'Barcode',
   enterBarcode: 'Enter Barcode',
-  // NEW: Product HSS code
   hssCode: 'HSS Code',
   quantityIncremented: 'quantity incremented',
   addedToOrder: 'added to order',
@@ -240,7 +239,6 @@ const en = {
   searchBySku: 'Search by SKU',
   enterSku: 'Enter SKU',
   actions: 'Actions',
-  // Extras used across app
   noDot: 'No.',
   na: 'N/A',
   none: 'None',
@@ -270,7 +268,6 @@ const en = {
   enableChart: 'Enable Chart',
   salesChartDisabledMessage: 'Sales chart is currently disabled in Settings.',
   unknownCustomer: 'Unknown Customer',
-  // NEW: Expeditor feature
   expeditor: 'Expeditor',
   expeditorNamePlaceholder: 'e.g., John Doe',
   expeditorProfit: 'Expeditor Profit',
@@ -278,19 +275,15 @@ const en = {
   expeditorTotals: 'Totals by Expeditor',
   selectExpeditor: 'Select Expeditor',
   allExpeditors: 'All Expeditors',
-  // ADDED: percentage-based settings
   expeditorPercentSettings: 'Expeditor Profit Percentage',
   expeditorPercent: 'Expeditor Profit (%)',
   saveExpeditorPercent: 'Save Percentage',
-  // (Legacy keys kept for compatibility)
   divisorSettings: 'Expeditor Profit Divisor',
   profitDivisor: 'Profit Divisor (e.g., 1.17)',
   saveDivisor: 'Save Divisor',
   reportPeriod: 'Report Period',
   ordersList: 'Orders List',
   totalToPay: 'Total to Pay',
-
-  // Filters & search (suppliers/customers/products)
   filterBySupplier: 'Filter by Supplier',
   allSuppliers: 'All Suppliers',
   searchSupplierByName: 'Search supplier by name',
@@ -300,8 +293,6 @@ const en = {
   searchCustomerByName: 'Search customer by name',
   noCustomerFound: 'No customer found',
   all: 'All',
-
-  // Warehouse form and labels
   warehouseName: 'Warehouse Name',
   location: 'Location',
   warehouseType: 'Warehouse Type',
@@ -309,8 +300,6 @@ const en = {
   secondaryWarehouseType: 'Secondary',
   selectWarehouseType: 'Select Warehouse Type',
   saveWarehouse: 'Save Warehouse',
-
-  // Common labels used in forms
   orderCurrency: 'Order Currency',
   selectSupplier: 'Select Supplier',
   selectWarehouse: 'Select Warehouse',
@@ -321,32 +310,20 @@ const en = {
   generateProductMovement: 'Generate Product Movement',
   totalValue: 'Total Value',
   exportStock: 'Export Stock',
-
-  // Missing common form labels
   address: 'Address',
   save: 'Save',
   currency: 'Currency',
   cancel: 'Cancel',
-
-  // Suppliers
   supplierName: 'Supplier Name',
   addSupplier: 'Add Supplier',
   editSupplier: 'Edit Supplier',
   createSupplier: 'Create Supplier',
-
-  // Customers
   selectDefaultWarehouse: 'Select Default Warehouse',
   selectCustomer: 'Select Customer',
-
-  // Pagination and stock
   stockAvailable: 'Stock available',
-
-  // Purchase/Sell Items field labels
   packingUnit: 'Packing Unit',
   selectPackingUnit: 'Select Packing Unit',
   itemTotal: 'Item Total',
-
-  // Payments
   paymentDate: 'Payment Date',
   amountPaid: 'Amount Paid',
   createIncomingPayment: 'Create Incoming Payment',
@@ -357,26 +334,18 @@ const en = {
   payFromVat: 'Pay from VAT',
   disabledForVatPayments: 'Disabled for VAT payments',
   vatPaymentNoAccountHint: 'Bank account is not required for VAT payments.',
-
-  // Warehouses
   createWarehouse: 'Create Warehouse',
   editWarehouse: 'Edit Warehouse',
   toWarehouse: 'To Warehouse',
-
-  // Product Movement
   createProductMovement: 'Create Product Movement',
   productsToMove: 'Products to Move',
   saveMovement: 'Save Movement',
-
-  // Profitability page
   avgSellPrice: 'Avg sell price (1 piece)',
-  totalLandCost: 'Total Land Cost',
+  totalLandedCost: 'Total Land Cost',
   rentabilityPercent: 'Rentability %',
   profit: 'Profit',
   totalProfit: 'Total Profit',
   noProductsToAnalyze: 'No products to analyze.',
-
-  // Recycle Bin
   recycleBin: 'Recycle Bin',
   itemType: 'Item Type',
   originalId: 'Original ID',
@@ -386,19 +355,15 @@ const en = {
   restore: 'Restore',
   deletePermanently: 'Delete Permanently',
   noItemsInRecycleBin: 'No items in recycle bin.',
-
-  // Settings descriptions
   currencyRatesDescription: 'Set conversion rates to {mainCurrency} for active currencies.',
-  // Purchase Order Details
-  totalLandedCost: 'Total Landed Cost',
-  // Profitability
   filterByProduct: 'Filter by Product',
-  // Settings - Erase all data
   eraseAllData: 'Erase All Data',
   eraseAllDataDescription: 'This will permanently erase all data from the app. Type the code to confirm.',
-  // Help & Tutorials
   help: 'Help',
   learnToUseApp: 'Learn how to use every part of the app with step-by-step guides and illustrations.',
+};
+
+const help = {
   'help.title': 'Help & Tutorials',
   'help.subtitle': 'Learn how to use every part of the app with step-by-step guides and illustrations.',
   'help.screenshotNote': 'Add your screenshots under public/help/... (e.g., /help/products/add-product.png). If a file is missing, a diagram will show instead.',
@@ -414,6 +379,7 @@ const en = {
   'help.tabs.settings': 'Settings',
   'help.tabs.dashboard': 'Dashboard',
   'help.tabs.data': 'Import/Export & Recycle Bin',
+
   'help.gettingStarted.title': 'Getting Started',
   'help.gettingStarted.navTitle': '1) Navigating the App',
   'help.gettingStarted.navText': 'Use the left sidebar on desktop, or the menu button on mobile, to move between pages like Dashboard, Products, Orders, Bank, and Settings.',
@@ -426,6 +392,7 @@ const en = {
   'help.gettingStarted.taxesBullet': 'Taxes and markups: set defaults for calculations.',
   'help.gettingStarted.currenciesBullet': 'Currencies: pick active and main currency.',
   'help.gettingStarted.settingsImageAlt': 'Settings overview with theme, VAT, markup, currencies',
+
   'help.products.title': 'Products',
   'help.products.addTitle': 'How to add a product',
   'help.products.addStep1': 'Go to Products.',
@@ -436,18 +403,21 @@ const en = {
   'help.products.editTitle': 'Editing and managing stock',
   'help.products.editText': 'Edit products to update details. Stock updates come from purchase orders, sell orders, product movements, and utilization.',
   'help.products.editImageAlt': 'Product list and edit actions',
+
   'help.contacts.title': 'Suppliers & Customers',
   'help.contacts.addTitle': 'Adding suppliers and customers',
   'help.contacts.addText': 'Use the Add button on Suppliers or Customers page to create contacts.',
   'help.contacts.optionalBullet': 'Optional fields: email, phone, address.',
   'help.contacts.defaultBullet': 'Default currency/warehouse can be set for faster orders.',
   'help.contacts.formsImageAlt': 'Supplier and customer forms',
+
   'help.warehouses.title': 'Warehouses',
   'help.warehouses.addTitle': 'Adding a warehouse',
   'help.warehouses.step1': 'Go to Warehouses and click Add.',
   'help.warehouses.step2': 'Enter name, location, and type.',
   'help.warehouses.step3': 'Save the warehouse.',
   'help.warehouses.addImageAlt': 'Add warehouse form fields',
+
   'help.orders.title': 'Purchase & Sell Orders',
   'help.orders.poTitle': 'Create a purchase order',
   'help.orders.poStep1': 'Go to Purchase Orders and click Add.',
@@ -461,10 +431,12 @@ const en = {
   'help.orders.soStep3': 'Add items, VAT, and prices.',
   'help.orders.soStep4': 'Confirm to decrease stock and track revenue.',
   'help.orders.soImageAlt': 'Sell order form with items and VAT',
+
   'help.payments.title': 'Payments',
   'help.payments.overviewTitle': 'Incoming and outgoing payments',
   'help.payments.overviewText': 'Record payments in their respective pages. Link them to orders or enter manual descriptions and categories.',
   'help.payments.listImageAlt': 'Payments list and add payment dialog',
+
   'help.stock.title': 'Stock & Movements',
   'help.stock.movementsTitle': 'Product movements',
   'help.stock.movementsText': 'Move stock between warehouses with Product Movement; quantities adjust at source and destination.',
@@ -472,12 +444,14 @@ const en = {
   'help.stock.utilizationTitle': 'Utilization',
   'help.stock.utilizationText': 'Create utilization orders to write off damaged or expired goods; stock is reduced in the selected warehouse.',
   'help.stock.utilizationImageAlt': 'Utilization order form',
+
   'help.bank.title': 'Bank',
   'help.bank.overviewTitle': 'Bank accounts and transactions',
   'help.bank.step1': 'Go to Bank and add a bank account with currency.',
   'help.bank.step2': 'Record deposits or withdrawals; balances update automatically.',
   'help.bank.step3': 'Open transaction history for detailed view.',
   'help.bank.accountsImageAlt': 'Bank accounts table and transaction modals',
+
   'help.finance.title': 'Finance & Profitability',
   'help.finance.overviewTitle': 'Finance overview',
   'help.finance.overviewText': 'Review income and expenses, currency conversions, and totals in your main currency.',
@@ -485,6 +459,7 @@ const en = {
   'help.finance.profitTitle': 'Profitability',
   'help.finance.profitText': 'Analyze profits using average landed costs from purchase orders and revenues from sell orders.',
   'help.finance.profitImageAlt': 'Profitability charts and tables',
+
   'help.settings.title': 'Settings',
   'help.settings.themeLangTitle': 'Theme and Language',
   'help.settings.currenciesTitle': 'Currencies and Rates',
@@ -494,14 +469,18 @@ const en = {
   'help.settings.currenciesImageAlt': 'Main and active currencies, rates editor',
   'help.settings.dashboardWidgetsImageAlt': 'Dashboard widgets and quick buttons settings',
   'help.settings.packingPaymentsImageAlt': 'Manage packing units and payment categories',
+
   'help.dashboard.title': 'Dashboard',
   'help.dashboard.widgetsTitle': 'Widgets and quick actions',
   'help.dashboard.widgetsText': 'Customize your dashboard with currency rates, sales chart, clock, calendar, and quick buttons in Settings.',
   'help.dashboard.overviewImageAlt': 'Dashboard with widgets and quick buttons',
+
   'help.data.title': 'Import/Export & Recycle Bin',
   'help.data.backupTitle': 'Backup, restore and recycle bin',
   'help.data.backupText': 'Use Data Import/Export to back up and restore. Deleted items go to the Recycle Bin, where you can restore or permanently delete.',
   'help.data.backupImageAlt': 'JSON backup/restore and recycle bin',
 };
+
+const en = { ...core, ...help };
 
 export default en;
