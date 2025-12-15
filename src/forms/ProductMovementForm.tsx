@@ -277,14 +277,14 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
           <Label className="text-right">{t('sellOrders')}</Label>
           <div className="col-span-3">
             <Select
-              onValueChange={(val) => setSellOrderId(val ? Number(val) : '')}
-              value={sellOrderId === '' ? '' : String(sellOrderId)}
+              onValueChange={(val) => setSellOrderId(val === 'none' ? '' : Number(val))}
+              value={sellOrderId === '' ? undefined : String(sellOrderId)}
             >
               <SelectTrigger>
                 <SelectValue placeholder={t('selectCustomer') || 'Select Sell Order'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">{t('none')}</SelectItem>
+                <SelectItem value="none">{t('none')}</SelectItem>
                 {sellOrders.map((so) => (
                   <SelectItem key={so.id} value={String(so.id)}>
                     {t('order')} #{so.id}
