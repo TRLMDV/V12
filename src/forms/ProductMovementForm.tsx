@@ -6,12 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useData } from '@/context/DataContext';
 import { t } from '@/utils/i18n';
-import { ProductMovement, Product, Warehouse } from '@/types';
+import { Id, ProductMovement, SellOrder, Warehouse, Product } from '@/types';
 import { format, parseISO } from 'date-fns';
 import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
 import { toast } from 'sonner';
@@ -30,36 +27,11 @@ interface MovementItemState {
 const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, onSuccess }) => {
   const { productMovements, products, warehouses, saveItem, showAlertModal, setProducts, packingUnits } = useData();
   const isEdit = movementId !== undefined;
+  const [sellOrderId, setSellOrderId] = React.useState<Id | ''>('');
 
-  const [sourceWarehouseId, setSourceWarehouseId] = useState<number | ''>('');
-  const [destWarehouseId, setDestWarehouseId] = useState<number | ''>('');
-  const [movementItems, setMovementItems] = useState<MovementItemState[]>([{ productId: '', quantity: 1 }]);
-  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const { sellOrders } = useData();
 
-  const [date, setDate] = useState(() => {
-    if (isEdit && movementId !== undefined) {
-      const existingMovement = productMovements.find(m => m.id === movementId);
-      if (existingMovement) return format(parseISO(existingMovement.date), 'yyyy-MM-dd');
-    }
-    return format(new Date(), 'yyyy-MM-dd');
-  });
-  const [selectedHour, setSelectedHour] = useState<string>(() => {
-    if (isEdit && movementId !== undefined) {
-      const existingMovement = productMovements.find(m => m.id === movementId);
-      if (existingMovement) return String(new Date(existingMovement.date).getHours()).padStart(2, '0');
-    }
-    return String(new Date().getHours()).padStart(2, '0');
-  });
-  const [selectedMinute, setSelectedMinute] = useState<string>(() => {
-    if (isEdit && movementId !== undefined) {
-      const existingMovement = productMovements.find(m => m.id === movementId);
-      if (existingMovement) return String(new Date(existingMovement.date).getMinutes()).padStart(2, '0');
-    }
-    return String(new Date().getMinutes()).padStart(2, '0');
-  });
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (isEdit) {
       const existingMovement = productMovements.find(m => m.id === movementId);
       if (existingMovement) {
@@ -171,11 +143,12 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
     setProducts(productsCopy);
 
     const movementToSave: ProductMovement = {
-      id: movementId || 0,
-      sourceWarehouseId: sourceWarehouseId as number,
-      destWarehouseId: destWarehouseId as number,
-      items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
-      date: movementDateTime,
+      id: movementId,
+      sourceWarehouseId,
+      destWarehouseId,
+      items: movementItems,
+      date,
+      sellOrderId: sellOrderId === '' ? undefined : sellOrderId,
     };
 
     saveItem('productMovements', movementToSave);
@@ -287,6 +260,28 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label className="text-right">{t('sellOrders')}</Label>
+          <div className="col-span-3">
+            <Select
+              onValueChange={(val) => setSellOrderId(val ? Number(val) : '')}
+              value={sellOrderId === '' ? '' : String(sellOrderId)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('selectCustomer') || 'Select Sell Order'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">{t('none')}</SelectItem>
+                {sellOrders.map((so) => (
+                  <SelectItem key={so.id} value={String(so.id)}>
+                    {t('order')} #{so.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <h4 className="font-semibold mt-4 mb-2 text-gray-700 dark:text-slate-200">{t('productsToMove')}</h4>

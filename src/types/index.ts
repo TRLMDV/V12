@@ -142,6 +142,7 @@ export interface ProductMovement {
   destWarehouseId: Id;
   items: { productId: Id; quantity: number }[];
   date: string; // ISO date string (YYYY-MM-DDTHH:mm:ss.sssZ)
+  sellOrderId?: Id; // Optional: link to a sell order
 }
 
 // --- Utilization Order ---
