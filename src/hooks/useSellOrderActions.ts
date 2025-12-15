@@ -234,6 +234,7 @@ export const useSellOrderActions = ({
       destWarehouseId: orderToSave.warehouseId as number,
       items: newMovementItems,
       date: orderToSave.orderDate,
+      sellOrderId: orderToSave.id, // link movement back to this sell order
     };
 
     saveItem('productMovements', newMovement);
@@ -382,11 +383,11 @@ export const useSellOrderActions = ({
     const noWarehouseId = !order?.warehouseId;
     const noMainWarehouse = !mainWarehouse;
     const sameWarehouse = order?.warehouseId === mainWarehouse?.id;
-    const notShipped = order?.status !== 'Shipped';
     const movementAlreadyGenerated = !!order?.productMovementId;
     const noValidItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
 
-    const disabled = noOrder || noWarehouseId || noMainWarehouse || sameWarehouse || notShipped || movementAlreadyGenerated || noValidItems;
+    // Allow generating movement regardless of order status to support regeneration
+    const disabled = noOrder || noWarehouseId || noMainWarehouse || sameWarehouse || movementAlreadyGenerated || noValidItems;
 
     return disabled;
   }, [order, mainWarehouse, orderItems]);
