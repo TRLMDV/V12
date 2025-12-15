@@ -4,8 +4,8 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import OrderDetailsExcelExportButton from '@/components/OrderDetailsExcelExportButton';
 import { t } from '@/utils/i18n';
-import { SellOrder, Product, Customer, Warehouse, CurrencyRates, PackingUnit } from '@/types'; // Import PackingUnit
-import { useData } from '@/context/DataContext'; // Import useData to get packingUnitMap
+import { SellOrder, Product, Customer, Warehouse, CurrencyRates, PackingUnit, Payment, ProductMovement, BankAccount } from '@/types';
+import { useData } from '@/context/DataContext';
 import { format, parseISO } from 'date-fns'; // Import format and parseISO
 
 interface SellOrderDetailsProps {
@@ -23,7 +23,18 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
   productMap,
   currencyRates,
 }) => {
-  const { packingUnitMap } = useData(); // Access packingUnitMap
+  const { packingUnitMap, incomingPayments, productMovements, bankAccounts } = useData();
+
+  // Find linked incoming payment by explicit ID or by orderId
+  const linkedPayment: Payment | undefined =
+    (order.incomingPaymentId ? incomingPayments.find(p => p.id === order.incomingPaymentId) : incomingPayments.find(p => p.orderId === order.id));
+  const paymentBankAccountName =
+    linkedPayment?.bankAccountId ? bankAccounts.find(ba => ba.id === linkedPayment.bankAccountId)?.name : undefined;
+
+  // Find linked product movement by explicit ID or by sellOrderId
+  const linkedMovement: ProductMovement | undefined =
+    (order.productMovementId ? productMovements.find(m => m.id === order.productMovementId) : productMovements.find(m => m.sellOrderId === order.id));
+  const movementTotalItems = linkedMovement ? (linkedMovement.items || []).reduce((sum, i) => sum + i.quantity, 0) : 0;
 
   return (
     <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
@@ -32,6 +43,34 @@ const SellOrderDetails: React.FC<SellOrderDetailsProps> = ({
       <p><strong>{t('orderDate')}:</strong> {format(parseISO(order.orderDate), 'yyyy-MM-dd HH:mm')}</p>
       <p><strong>{t('orderStatus')}:</strong> {t(order.status.toLowerCase() as keyof typeof t)}</p>
       <p><strong>{t('vatPercent')}:</strong> {order.vatPercent}%</p>
+
+      {(linkedMovement || linkedPayment) && (
+        <div className="mt-2 grid gap-4">
+          {linkedMovement && (
+            <div className="rounded-md border p-3 bg-white dark:bg-slate-800">
+              <h3 className="font-semibold mb-2">{t('productMovement')} #{linkedMovement.id}</h3>
+              <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                <p><strong>{t('from')}:</strong> {warehouseMap[linkedMovement.sourceWarehouseId]?.name || 'N/A'}</p>
+                <p><strong>{t('to')}:</strong> {warehouseMap[linkedMovement.destWarehouseId]?.name || 'N/A'}</p>
+                <p><strong>{t('orderDate')}:</strong> {format(parseISO(linkedMovement.date), 'yyyy-MM-dd HH:mm')}</p>
+                <p><strong>{t('totalItems')}:</strong> {movementTotalItems}</p>
+              </div>
+            </div>
+          )}
+          {linkedPayment && (
+            <div className="rounded-md border p-3 bg-white dark:bg-slate-800">
+              <h3 className="font-semibold mb-2">{t('incomingPayments')} #{linkedPayment.id}</h3>
+              <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                <p><strong>{t('amount')}:</strong> {linkedPayment.amount.toFixed(2)} {linkedPayment.paymentCurrency}</p>
+                <p><strong>{t('date')}:</strong> {format(parseISO(linkedPayment.date), 'yyyy-MM-dd HH:mm')}</p>
+                <p><strong>{t('bankAccount')}:</strong> {paymentBankAccountName || 'N/A'}</p>
+                <p><strong>{t('method')}:</strong> {linkedPayment.method || 'N/A'}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <h3 className="font-semibold mt-4 mb-2">{t('orderItems')}</h3>
       <Table>
         <TableHeader>
