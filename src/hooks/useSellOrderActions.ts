@@ -234,7 +234,7 @@ export const useSellOrderActions = ({
       destWarehouseId: orderToSave.warehouseId as number,
       items: newMovementItems,
       date: orderToSave.orderDate,
-      sellOrderId: orderToSave.id, // link movement back to this sell order
+      sellOrderId: orderToSave.id, // Link movement to this sell order
     };
 
     saveItem('productMovements', newMovement);
@@ -386,7 +386,7 @@ export const useSellOrderActions = ({
     const movementAlreadyGenerated = !!order?.productMovementId;
     const noValidItems = orderItems.filter(item => item.productId !== '' && parseFloat(String(item.packingQuantity)) > 0).length === 0;
 
-    // Allow generating movement regardless of order status to support regeneration
+    // Allow generation regardless of status to support regeneration after deletions
     const disabled = noOrder || noWarehouseId || noMainWarehouse || sameWarehouse || movementAlreadyGenerated || noValidItems;
 
     return disabled;
