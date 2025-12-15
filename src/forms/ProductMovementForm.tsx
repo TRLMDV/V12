@@ -12,6 +12,10 @@ import { format, parseISO } from 'date-fns';
 import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
 import { toast } from 'sonner';
 import { formatNumberInput } from '@/utils/formatters'; // Import formatNumberInput
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ProductMovementFormProps {
   movementId?: number;
