@@ -207,10 +207,18 @@ export function useCrudOperations({
       const existingItemIndex = prevItems.findIndex(i => i.id === item.id);
       let updatedItems;
 
-      if (item.id === 0 || existingItemIndex === -1) {
-        const newItemId = getNextId(key);
-        updatedItems = [...prevItems, { ...item, id: newItemId }];
-        setNextIdForCollection(key, newItemId + 1);
+      if (existingItemIndex === -1) {
+        if (key === 'productMovements' && typeof item.id === 'number' && item.id > 0) {
+          // Preserve provided movement ID to maintain linkage with sell order
+          updatedItems = [...prevItems, item];
+          const currentNext = getNextId(key);
+          const nextCandidate = item.id + 1;
+          if (nextCandidate > currentNext) setNextIdForCollection(key, nextCandidate);
+        } else {
+          const newItemId = getNextId(key);
+          updatedItems = [...prevItems, { ...item, id: newItemId }];
+          setNextIdForCollection(key, newItemId + 1);
+        }
       } else {
         updatedItems = prevItems.map(i => i.id === item.id ? item : i);
       }
