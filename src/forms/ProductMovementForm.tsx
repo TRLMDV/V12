@@ -27,6 +27,8 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   const { productMovements, products, warehouses, saveItem, showAlertModal, setProducts, packingUnits } = useData();
   const isEdit = movementId !== undefined;
   const [sellOrderId, setSellOrderId] = React.useState<Id | ''>('');
+  const [searchQuery, setSearchQuery] = useState<string>(''); // Added: state for product search input
+  const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // Added: controls which combobox is open
 
   const { sellOrders } = useData();
 
