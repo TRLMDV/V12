@@ -27,6 +27,12 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
   const { productMovements, products, warehouses, saveItem, showAlertModal, setProducts, packingUnits } = useData();
   const isEdit = movementId !== undefined;
   const [sellOrderId, setSellOrderId] = React.useState<Id | ''>('');
+  const [sourceWarehouseId, setSourceWarehouseId] = useState<number | ''>('');
+  const [destWarehouseId, setDestWarehouseId] = useState<number | ''>('');
+  const [movementItems, setMovementItems] = useState<MovementItemState[]>([{ productId: '', quantity: 1 }]);
+  const [date, setDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedHour, setSelectedHour] = useState<string>(String(new Date().getHours()).padStart(2, '0'));
+  const [selectedMinute, setSelectedMinute] = useState<string>(String(new Date().getMinutes()).padStart(2, '0'));
   const [searchQuery, setSearchQuery] = useState<string>(''); // Added: state for product search input
   const [openComboboxIndex, setOpenComboboxIndex] = useState<number | null>(null); // Added: controls which combobox is open
 
