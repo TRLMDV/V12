@@ -208,18 +208,20 @@ export function useCrudOperations({
       let updatedItems;
 
       if (existingItemIndex === -1) {
-        if (key === 'productMovements' && typeof item.id === 'number' && item.id > 0) {
-          // Preserve provided movement ID to maintain linkage with sell order
+        // If a valid ID was provided, preserve it to maintain cross-links (e.g., sellOrderId/productMovementId)
+        if (typeof item.id === 'number' && item.id > 0) {
           updatedItems = [...prevItems, item];
           const currentNext = getNextId(key);
           const nextCandidate = item.id + 1;
           if (nextCandidate > currentNext) setNextIdForCollection(key, nextCandidate);
         } else {
+          // Otherwise, auto-assign a new ID
           const newItemId = getNextId(key);
           updatedItems = [...prevItems, { ...item, id: newItemId }];
           setNextIdForCollection(key, newItemId + 1);
         }
       } else {
+        // Update existing item
         updatedItems = prevItems.map(i => i.id === item.id ? item : i);
       }
       
