@@ -113,7 +113,7 @@ export const useSellOrderActions = ({
   ): { isValid: boolean } => {
     const productsForValidation: Product[] = JSON.parse(JSON.stringify(currentProducts));
 
-    // If editing a shipped order, temporarily restore its items.
+    // Restore previous shipped order stock for accurate re-validation
     if (isEditMode && existingOrder && existingOrder.status === 'Shipped') {
       (existingOrder.items || []).forEach(item => {
         const p = productsForValidation.find(prod => prod.id === item.productId);
@@ -123,21 +123,23 @@ export const useSellOrderActions = ({
       });
     }
 
-    // If a product movement is linked, include its quantities in the destination warehouse
-    if (orderToSave.productMovementId) {
-      const linkedMovement = productMovements.find(m => m.id === orderToSave.productMovementId);
-      if (linkedMovement) {
-        (linkedMovement.items || []).forEach(mi => {
-          const p = productsForValidation.find(prod => prod.id === mi.productId);
-          if (p) {
-            if (!p.stock) p.stock = {};
-            p.stock[orderToSave.warehouseId] = (p.stock[orderToSave.warehouseId] || 0) + mi.quantity;
-          }
-        });
-      }
+    // Include linked product movement quantities into destination warehouse stock
+    const linkedMovement =
+      (orderToSave.productMovementId
+        ? productMovements.find(m => m.id === orderToSave.productMovementId)
+        : productMovements.find(m => m.sellOrderId === orderToSave.id)) || null;
+
+    if (linkedMovement) {
+      (linkedMovement.items || []).forEach(mi => {
+        const p = productsForValidation.find(prod => prod.id === mi.productId);
+        if (p) {
+          if (!p.stock) p.stock = {};
+          p.stock[orderToSave.warehouseId] = (p.stock[orderToSave.warehouseId] || 0) + mi.quantity;
+        }
+      });
     }
 
-    // Now, check stock for shipped orders
+    // Only validate stock when saving a shipped order
     if (orderToSave.status === 'Shipped') {
       for (const item of finalOrderItems) {
         const p = productsForValidation.find(prod => prod.id === item.productId);
