@@ -157,7 +157,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       id: movementId,
       sourceWarehouseId,
       destWarehouseId,
-      items: movementItems,
+      items: newItems.map(item => ({ productId: item.productId as number, quantity: item.quantity })),
       date,
       sellOrderId: sellOrderId === '' ? undefined : sellOrderId,
     };
