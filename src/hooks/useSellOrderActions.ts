@@ -56,6 +56,7 @@ export const useSellOrderActions = ({
     bankAccounts,
     incomingPayments,
     updateStockForProductMovement,
+    productMovements,
   } = useData();
 
   const mainCurrency = settings.mainCurrency;
@@ -112,8 +113,7 @@ export const useSellOrderActions = ({
   ): { isValid: boolean } => {
     const productsForValidation: Product[] = JSON.parse(JSON.stringify(currentProducts));
 
-    // If editing an order that was already 'Shipped', temporarily add back its items to stock
-    // to correctly re-validate against the new items/quantities.
+    // If editing a shipped order, temporarily restore its items.
     if (isEditMode && existingOrder && existingOrder.status === 'Shipped') {
       (existingOrder.items || []).forEach(item => {
         const p = productsForValidation.find(prod => prod.id === item.productId);
@@ -123,7 +123,21 @@ export const useSellOrderActions = ({
       });
     }
 
-    // Now, check if there's enough stock for the *new* order items if the status is 'Shipped'
+    // If a product movement is linked, include its quantities in the destination warehouse
+    if (orderToSave.productMovementId) {
+      const linkedMovement = productMovements.find(m => m.id === orderToSave.productMovementId);
+      if (linkedMovement) {
+        (linkedMovement.items || []).forEach(mi => {
+          const p = productsForValidation.find(prod => prod.id === mi.productId);
+          if (p) {
+            if (!p.stock) p.stock = {};
+            p.stock[orderToSave.warehouseId] = (p.stock[orderToSave.warehouseId] || 0) + mi.quantity;
+          }
+        });
+      }
+    }
+
+    // Now, check stock for shipped orders
     if (orderToSave.status === 'Shipped') {
       for (const item of finalOrderItems) {
         const p = productsForValidation.find(prod => prod.id === item.productId);
@@ -140,7 +154,7 @@ export const useSellOrderActions = ({
       }
     }
     return { isValid: true };
-  }, [showAlertModal, products, productMap, t]);
+  }, [showAlertModal, products, productMovements, productMap, t]);
 
   const handleGenerateProductMovement = useCallback(() => {
     const { finalOrderItems, isValid } = validateAndPrepareOrderData();
