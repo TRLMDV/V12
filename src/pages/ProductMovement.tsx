@@ -164,6 +164,15 @@ const ProductMovement: React.FC = () => {
     }
   };
 
+  // Helper: get linked sell order for the selected movement (by productMovementId or sellOrderId)
+  const linkedSellOrder =
+    selectedMovementDetails
+      ? sellOrders.find(so => so.productMovementId === selectedMovementDetails.id) ||
+        (selectedMovementDetails.sellOrderId
+          ? sellOrders.find(so => so.id === selectedMovementDetails.sellOrderId)
+          : undefined)
+      : undefined;
+
   const requestSort = (key: SortConfig['key']) => {
     let direction: SortConfig['direction'] = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -404,6 +413,17 @@ const ProductMovement: React.FC = () => {
         title={t('detailsForMovement') + ` #${selectedMovementDetails?.id}`}
       >
         <div className="grid gap-4 py-4 text-gray-800 dark:text-slate-300">
+          {linkedSellOrder && (
+            <div className="rounded-md border p-3 bg-white dark:bg-slate-800">
+              <h3 className="font-semibold mb-2">{t('sellOrders')} #{linkedSellOrder.id}</h3>
+              <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                <p><strong>{t('customer')}:</strong> {customerMap[linkedSellOrder.contactId] || 'N/A'}</p>
+                <p><strong>{t('orderDate')}:</strong> {format(parseISO(linkedSellOrder.orderDate), 'yyyy-MM-dd HH:mm')}</p>
+                <p><strong>{t('orderStatus')}:</strong> {t(linkedSellOrder.status.toLowerCase() as keyof typeof t)}</p>
+                <p><strong>{t('total')}:</strong> {linkedSellOrder.total.toFixed(2)} AZN</p>
+              </div>
+            </div>
+          )}
           <p><strong>{t('fromWarehouse')}:</strong> {selectedMovementDetails?.sourceWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.sourceWarehouseId] : t('na')}</p>
           <p><strong>{t('toWarehouse')}:</strong> {selectedMovementDetails?.destWarehouseId !== undefined ? warehouseMap[selectedMovementDetails.destWarehouseId] : t('na')}</p>
           <p><strong>{t('date')}:</strong> {selectedMovementDetails?.date ? format(parseISO(selectedMovementDetails.date), 'yyyy-MM-dd HH:mm') : t('na')}</p>
