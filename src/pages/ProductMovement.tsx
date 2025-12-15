@@ -61,6 +61,10 @@ const ProductMovement: React.FC = () => {
     return sellOrders.reduce((acc, so) => ({ ...acc, [so.productMovementId as number]: so }), {} as { [key: number]: SellOrder });
   }, [sellOrders]);
 
+  const sellOrdersById = useMemo(() => {
+    return sellOrders.reduce((acc, so) => ({ ...acc, [so.id]: so }), {} as { [key: number]: SellOrder });
+  }, [sellOrders]);
+
   const customerMap = useMemo(() => {
     return customers.reduce((acc, c) => ({ ...acc, [c.id]: c.name }), {} as { [key: number]: string });
   }, [customers]);
@@ -88,7 +92,7 @@ const ProductMovement: React.FC = () => {
 
     const sortableItems = filteredMovements.map(m => {
       const totalItems = m.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
-      const linkedSellOrder = sellOrderMap[m.id];
+      const linkedSellOrder = sellOrderMap[m.id] || (m.sellOrderId ? sellOrdersById[m.sellOrderId] : undefined);
       const linkedSellOrderCustomerDisplay = linkedSellOrder ? `${t('orderId')} #${linkedSellOrder.id} (${customerMap[linkedSellOrder.contactId] || 'N/A'})` : undefined;
 
       return {
@@ -122,7 +126,7 @@ const ProductMovement: React.FC = () => {
       });
     }
     return sortableItems;
-  }, [productMovements, warehouseMap, sortConfig, filterSourceWarehouseId, filterDestWarehouseId, startDateFilter, endDateFilter, productFilterId, sellOrderMap, customerMap, t]);
+  }, [productMovements, warehouseMap, sortConfig, filterSourceWarehouseId, filterDestWarehouseId, startDateFilter, endDateFilter, productFilterId, sellOrderMap, sellOrdersById, customerMap, t]);
 
   // Apply pagination to the filtered and sorted movements
   const paginatedMovements = useMemo(() => {
