@@ -52,6 +52,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
         setDate(format(parseISO(existingMovement.date), 'yyyy-MM-dd'));
         setSelectedHour(String(new Date(existingMovement.date).getHours()).padStart(2, '0'));
         setSelectedMinute(String(new Date(existingMovement.date).getMinutes()).padStart(2, '0'));
+        setSellOrderId(existingMovement.sellOrderId ?? '');
       }
     } else {
       setSourceWarehouseId('');
@@ -60,6 +61,7 @@ const ProductMovementForm: React.FC<ProductMovementFormProps> = ({ movementId, o
       setDate(format(new Date(), 'yyyy-MM-dd'));
       setSelectedHour(String(new Date().getHours()).padStart(2, '0'));
       setSelectedMinute(String(new Date().getMinutes()).padStart(2, '0'));
+      setSellOrderId('');
     }
   }, [movementId, isEdit, productMovements]);
 
