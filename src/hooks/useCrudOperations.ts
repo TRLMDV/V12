@@ -70,9 +70,36 @@ export function useCrudOperations({
   products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
 }: UseCrudOperationsProps) {
 
+  // Compute the smallest unused positive integer for a given collection
+  const computeNextIdForCollection = useCallback((key: CollectionKey): number => {
+    const idsFrom = (arr: Array<{ id: number }>) => new Set((arr || []).map(i => i.id).filter(id => typeof id === 'number' && id > 0));
+    let idSet: Set<number>;
+    switch (key) {
+      case 'products': idSet = idsFrom(products); break;
+      case 'suppliers': idSet = idsFrom(suppliers); break;
+      case 'customers': idSet = idsFrom(customers); break;
+      case 'warehouses': idSet = idsFrom(warehouses); break;
+      case 'purchaseOrders': idSet = idsFrom(purchaseOrders); break;
+      case 'sellOrders': idSet = idsFrom(sellOrders); break;
+      case 'incomingPayments': idSet = idsFrom(incomingPayments); break;
+      case 'outgoingPayments': idSet = idsFrom(outgoingPayments); break;
+      case 'productMovements': idSet = idsFrom(productMovements); break;
+      case 'utilizationOrders': idSet = idsFrom(utilizationOrders); break;
+      case 'packingUnits': idSet = idsFrom(packingUnits); break;
+      case 'paymentCategories': idSet = idsFrom(settings.paymentCategories || []); break;
+      case 'bankAccounts': idSet = idsFrom(bankAccounts); break;
+      case 'quickButtons': idSet = idsFrom(settings.quickButtons || []); break;
+      case 'reminders': idSet = idsFrom(settings.reminders || []); break;
+      default: idSet = new Set<number>(); break;
+    }
+    let candidate = 1;
+    while (idSet.has(candidate)) candidate++;
+    return candidate;
+  }, [products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts]);
+
   const getNextId = useCallback((key: CollectionKey) => {
-    return nextIds[key] || 1;
-  }, [nextIds]);
+    return computeNextIdForCollection(key);
+  }, [computeNextIdForCollection]);
 
   const setNextIdForCollection = useCallback((key: CollectionKey, newNextId: number) => {
     setNextIds(prev => ({ ...prev, [key]: newNextId }));
@@ -104,10 +131,11 @@ export function useCrudOperations({
           const existingItemIndex = existingCategories.findIndex((i: any) => i.id === item.id);
           let updatedCategories;
 
-          if (item.id === 0 || existingItemIndex === -1) {
-            const newItemId = getNextId(key);
-            updatedCategories = [...existingCategories, { ...item, id: newItemId }];
-            setNextIdForCollection(key, newItemId + 1);
+          if (existingItemIndex === -1) {
+            const ids = new Set(existingCategories.map(c => c.id));
+            let candidate = 1;
+            while (ids.has(candidate)) candidate++;
+            updatedCategories = [...existingCategories, { ...item, id: candidate }];
           } else {
             updatedCategories = existingCategories.map((i: any) => i.id === item.id ? item : i);
           }
@@ -121,10 +149,11 @@ export function useCrudOperations({
           const existingItemIndex = existingButtons.findIndex((i: any) => i.id === item.id);
           let updatedButtons;
 
-          if (item.id === 0 || existingItemIndex === -1) {
-            const newItemId = getNextId(key);
-            updatedButtons = [...existingButtons, { ...item, id: newItemId }];
-            setNextIdForCollection(key, newItemId + 1);
+          if (existingItemIndex === -1) {
+            const ids = new Set(existingButtons.map(b => b.id));
+            let candidate = 1;
+            while (ids.has(candidate)) candidate++;
+            updatedButtons = [...existingButtons, { ...item, id: candidate }];
           } else {
             updatedButtons = existingButtons.map((i: any) => i.id === item.id ? item : i);
           }
@@ -138,10 +167,11 @@ export function useCrudOperations({
           const existingItemIndex = existingReminders.findIndex((i: any) => i.id === item.id);
           let updatedReminders;
 
-          if (item.id === 0 || existingItemIndex === -1) {
-            const newItemId = getNextId(key);
-            updatedReminders = [...existingReminders, { ...item, id: newItemId }];
-            setNextIdForCollection(key, newItemId + 1);
+          if (existingItemIndex === -1) {
+            const ids = new Set(existingReminders.map(r => r.id));
+            let candidate = 1;
+            while (ids.has(candidate)) candidate++;
+            updatedReminders = [...existingReminders, { ...item, id: candidate }];
           } else {
             updatedReminders = existingReminders.map((i: any) => i.id === item.id ? item : i);
           }
@@ -208,20 +238,14 @@ export function useCrudOperations({
       let updatedItems;
 
       if (existingItemIndex === -1) {
-        // If a valid ID was provided, preserve it to maintain cross-links (e.g., sellOrderId/productMovementId)
-        if (typeof item.id === 'number' && item.id > 0) {
+        if (key === 'productMovements' && typeof item.id === 'number' && item.id > 0) {
+          // Preserve provided movement ID to maintain external links
           updatedItems = [...prevItems, item];
-          const currentNext = getNextId(key);
-          const nextCandidate = item.id + 1;
-          if (nextCandidate > currentNext) setNextIdForCollection(key, nextCandidate);
         } else {
-          // Otherwise, auto-assign a new ID
-          const newItemId = getNextId(key);
+          const newItemId = computeNextIdForCollection(key);
           updatedItems = [...prevItems, { ...item, id: newItemId }];
-          setNextIdForCollection(key, newItemId + 1);
         }
       } else {
-        // Update existing item
         updatedItems = prevItems.map(i => i.id === item.id ? item : i);
       }
       
@@ -239,6 +263,7 @@ export function useCrudOperations({
     setIncomingPayments, setOutgoingPayments, setProductMovements, setUtilizationOrders, setPackingUnits, setSettings, setBankAccounts,
     getNextId, setNextIdForCollection, showAlertModal, updateStockForUtilization, updateStockForProductMovement,
     products, suppliers, customers, warehouses, purchaseOrders, sellOrders, incomingPayments, outgoingPayments, productMovements, utilizationOrders, packingUnits, settings, bankAccounts,
+    computeNextIdForCollection,
   ]);
 
   const deleteItem = useCallback((key: CollectionKey, id: number) => {
