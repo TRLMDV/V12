@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format, parseISO } from 'date-fns';
@@ -15,6 +15,14 @@ type ExpenseItem = {
   amountMain: number;
 };
 
+// NEW: sort configuration type
+type SortKey = 'date' | 'category' | 'description' | 'amount';
+type SortDirection = 'ascending' | 'descending';
+interface SortConfig {
+  key: SortKey;
+  direction: SortDirection;
+}
+
 interface ExpensesListModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -23,6 +31,53 @@ interface ExpensesListModalProps {
 }
 
 const ExpensesListModal: React.FC<ExpensesListModalProps> = ({ isOpen, onClose, expenses, mainCurrency }) => {
+  // NEW: sorting state
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'date', direction: 'ascending' });
+
+  const requestSort = (key: SortKey) => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'ascending' ? 'descending' : 'ascending' };
+      }
+      return { key, direction: 'ascending' };
+    });
+  };
+
+  const getSortIndicator = (key: SortKey) => {
+    if (sortConfig.key !== key) return '';
+    return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
+  };
+
+  // NEW: sorted expenses based on sortConfig
+  const sortedExpenses = useMemo(() => {
+    const list = [...expenses];
+    list.sort((a, b) => {
+      let comparison = 0;
+      switch (sortConfig.key) {
+        case 'date': {
+          comparison = parseISO(a.date).getTime() - parseISO(b.date).getTime();
+          break;
+        }
+        case 'category': {
+          comparison = (a.category || '').localeCompare(b.category || '', undefined, { sensitivity: 'base' });
+          break;
+        }
+        case 'description': {
+          comparison = (a.description || '').localeCompare(b.description || '', undefined, { sensitivity: 'base' });
+          break;
+        }
+        case 'amount': {
+          comparison = (a.amount || 0) - (b.amount || 0);
+          break;
+        }
+        default:
+          comparison = 0;
+      }
+      return sortConfig.direction === 'ascending' ? comparison : -comparison;
+    });
+    return list;
+  }, [expenses, sortConfig]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
@@ -35,16 +90,36 @@ const ExpensesListModal: React.FC<ExpensesListModalProps> = ({ isOpen, onClose, 
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-100 dark:bg-slate-700">
-                <TableHead className="p-3">Date</TableHead>
-                <TableHead className="p-3">Category</TableHead>
-                <TableHead className="p-3">Description</TableHead>
-                <TableHead className="p-3 text-right">Amount</TableHead>
+                <TableHead
+                  className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600"
+                  onClick={() => requestSort('date')}
+                >
+                  Date{getSortIndicator('date')}
+                </TableHead>
+                <TableHead
+                  className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600"
+                  onClick={() => requestSort('category')}
+                >
+                  Category{getSortIndicator('category')}
+                </TableHead>
+                <TableHead
+                  className="p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600"
+                  onClick={() => requestSort('description')}
+                >
+                  Description{getSortIndicator('description')}
+                </TableHead>
+                <TableHead
+                  className="p-3 text-right cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-600"
+                  onClick={() => requestSort('amount')}
+                >
+                  Amount{getSortIndicator('amount')}
+                </TableHead>
                 <TableHead className="p-3 text-right">Converted</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.length > 0 ? (
-                expenses.map((e) => (
+              {sortedExpenses.length > 0 ? (
+                sortedExpenses.map((e) => (
                   <TableRow key={e.id} className="border-b dark:border-slate-700">
                     <TableCell className="p-3">{format(parseISO(e.date), 'yyyy-MM-dd HH:mm')}</TableCell>
                     <TableCell className="p-3">{e.category}</TableCell>
