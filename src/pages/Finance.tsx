@@ -131,28 +131,26 @@ const Finance: React.FC = () => {
       totalOutgoingInMainCurrency += convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
     });
 
-    // NEW: Expenses from categorized outgoing payments (manual categories except capital/withdrawal + order fees)
+    // NEW: Valid categories from settings
+    const validCategoryNames = new Set((settings.paymentCategories || []).map(c => c.name));
+
+    // UPDATED: Expenses from manual categorized outgoing payments ONLY
     let expensesInMainCurrency = 0;
     filteredOutgoingPayments.forEach(p => {
       const isVatPayment = (p.method || '').toUpperCase() === 'VAT';
-      if (isVatPayment) return; // exclude VAT, handled separately
+      if (isVatPayment) return;
 
-      const amountMain = convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
-
+      // Only manual expenses (orderId === 0) and only if category is in settings
       if (p.orderId === 0) {
-        const cat = p.paymentCategory || 'manual';
-        if (cat !== 'initialCapital' && cat !== 'Withdrawal') {
-          expensesInMainCurrency += amountMain;
+        const cat = p.paymentCategory || '';
+        if (validCategoryNames.has(cat)) {
+          expensesInMainCurrency += convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
         }
-      } else {
-        if (p.paymentCategory === 'fees') {
-          expensesInMainCurrency += amountMain;
-        }
-        // Note: exclude 'products' to avoid double counting with COGS
       }
+      // Ignore order-linked payments (e.g., 'fees') for Expenses card
     });
 
-    // NEW: VAT used and VAT balance
+    // VAT used and VAT balance (unchanged)
     let totalVatUsedInMainCurrency = 0;
     filteredOutgoingPayments.forEach(p => {
       if ((p.method || '').toUpperCase() === 'VAT') {
@@ -161,35 +159,27 @@ const Finance: React.FC = () => {
     });
 
     const vatBalanceInMainCurrency = totalVatCollectedInMainCurrency - totalVatUsedInMainCurrency;
-    
     const netCashFlowInMainCurrency = totalIncomingInMainCurrency - totalOutgoingInMainCurrency;
 
     const cleanProfitAfterExpenses = grossProfitInMainCurrency - expensesInMainCurrency;
 
-    // NEW: Expenses list items for modal
+    // UPDATED: Expenses list items for modal (manual + listed categories only)
     const expensesList = filteredOutgoingPayments
       .filter(p => {
         const isVatPayment = (p.method || '').toUpperCase() === 'VAT';
         if (isVatPayment) return false;
-        if (p.orderId === 0) {
-          const cat = p.paymentCategory || 'manual';
-          return cat !== 'initialCapital' && cat !== 'Withdrawal';
-        } else {
-          return p.paymentCategory === 'fees';
-        }
+        if (p.orderId !== 0) return false;
+        const cat = p.paymentCategory || '';
+        return validCategoryNames.has(cat);
       })
       .map(p => {
         const amountMain = convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
-        const isManual = p.orderId === 0;
-        const category = isManual ? (p.paymentCategory || 'Manual Expense') : t('fees');
-        const description = isManual
-          ? (p.manualDescription || '')
-          : `${t('orderId')} #${p.orderId} - ${t('fees')}`;
+        const cat = p.paymentCategory || '';
         return {
           id: p.id,
           date: p.date,
-          description,
-          category,
+          description: p.manualDescription || '',
+          category: cat,
           amount: p.amount,
           currency: p.paymentCurrency,
           amountMain,
@@ -206,14 +196,12 @@ const Finance: React.FC = () => {
       totalIncoming: totalIncomingInMainCurrency,
       totalOutgoing: totalOutgoingInMainCurrency,
       netCashFlow: netCashFlowInMainCurrency,
-      expensesTotal: expensesInMainCurrency,            // NEW
-      cleanProfitAfterExpenses,                         // NEW
-      // ADD: expenses list for modal
+      expensesTotal: expensesInMainCurrency,
+      cleanProfitAfterExpenses,
       expensesList,
-      // ADD: return expeditor totals for UI section
       expeditorTotals,
     };
-  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates, settings.mainCurrency, settings.expeditorProfitPercent, warehouseMap, convertCurrency]);
+  }, [purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, effectiveStartDate, effectiveEndDate, currencyRates, settings.mainCurrency, settings.expeditorProfitPercent, warehouseMap, convertCurrency, settings.paymentCategories]);
 
   return (
     <div className="container mx-auto p-4">
