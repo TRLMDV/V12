@@ -267,8 +267,12 @@ const ru = {
   cogsTotal: 'Итого себестоимость',
   costOfGoodsSold: 'Себестоимость проданных товаров',
   grossProfitTotal: 'Итого валовая прибыль',
-  totalRevenuePlusVatCollected: 'Выручка + НДС начисленный',
+  totalRevenuePlusVatCollected: 'Выручка + начисленный НДС',
   vatCollectedFromSales: 'НДС, начисленный с продаж',
+  expensesTotal: 'Расходы',
+  expensesFromCategories: 'Все категоризированные исходящие платежи (сборы и ручные категории)',
+  grossProfitMinusExpenses: 'Валовая прибыль - Расходы',
+  cleanProfitAfterExpenses: 'Чистая прибыль (после расходов)',
   enableChart: 'Включить диаграмму',
   salesChartDisabledMessage: 'Диаграмма продаж сейчас отключена в настройках.',
   unknownCustomer: 'Неизвестный клиент',
@@ -481,6 +485,18 @@ const ru = {
   eraseAllDataDescription: 'Это навсегда удалит все данные в приложении. Введите код для подтверждения.',
   // Bank account form
   initialBalance: 'Начальный баланс',
+  paymentCategories: 'Категории платежей',
+  addCategory: 'Добавить категорию',
+  editCategory: 'Редактировать категорию',
+  saveCategory: 'Сохранить категорию',
+  categoryName: 'Название категории',
+  categoryNameRequired: 'Введите название категории.',
+  deleteCategory: 'Удалить категорию',
+  deleteCategoryWarning: 'Удалить эту категорию? Это действие необратимо.',
+  categoryAdded: 'Категория добавлена.',
+  categoryUpdated: 'Категория обновлена.',
+  categoryDeleted: 'Категория удалена.',
+  noPaymentCategoriesFound: 'Категории платежей не найдены.',
 };
 
 export default ru;

@@ -130,6 +130,14 @@ const SettingsPage: React.FC = () => {
           activeCurrencies={settings.activeCurrencies}
           mainCurrency={settings.mainCurrency}
         />
+        <PaymentCategoriesSettings
+          settings={settings}
+          setSettings={setSettings}
+          t={t}
+          showConfirmationModal={showConfirmationModal}
+          getNextId={(key: 'paymentCategories') => getNextId('paymentCategories')}
+          setNextIdForCollection={(key: 'paymentCategories', nextId: number) => setNextIdForCollection('paymentCategories', nextId)}
+        />
         <EraseAllDataSection
           t={t}
           showConfirmationModal={showConfirmationModal}

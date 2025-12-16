@@ -127,6 +127,27 @@ const Finance: React.FC = () => {
       totalOutgoingInMainCurrency += convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
     });
 
+    // NEW: Expenses from categorized outgoing payments (manual categories except capital/withdrawal + order fees)
+    let expensesInMainCurrency = 0;
+    filteredOutgoingPayments.forEach(p => {
+      const isVatPayment = (p.method || '').toUpperCase() === 'VAT';
+      if (isVatPayment) return; // exclude VAT, handled separately
+
+      const amountMain = convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
+
+      if (p.orderId === 0) {
+        const cat = p.paymentCategory || 'manual';
+        if (cat !== 'initialCapital' && cat !== 'Withdrawal') {
+          expensesInMainCurrency += amountMain;
+        }
+      } else {
+        if (p.paymentCategory === 'fees') {
+          expensesInMainCurrency += amountMain;
+        }
+        // Note: exclude 'products' to avoid double counting with COGS
+      }
+    });
+
     // NEW: VAT used and VAT balance
     let totalVatUsedInMainCurrency = 0;
     filteredOutgoingPayments.forEach(p => {
@@ -139,6 +160,8 @@ const Finance: React.FC = () => {
     
     const netCashFlowInMainCurrency = totalIncomingInMainCurrency - totalOutgoingInMainCurrency;
 
+    const cleanProfitAfterExpenses = grossProfitInMainCurrency - expensesInMainCurrency;
+
     return {
       totalRevenue: totalRevenueInMainCurrency,
       totalCOGS: totalCOGSInMainCurrency,
@@ -149,6 +172,8 @@ const Finance: React.FC = () => {
       totalIncoming: totalIncomingInMainCurrency,
       totalOutgoing: totalOutgoingInMainCurrency,
       netCashFlow: netCashFlowInMainCurrency,
+      expensesTotal: expensesInMainCurrency,            // NEW
+      cleanProfitAfterExpenses,                         // NEW
       // ADD: return expeditor totals for UI section
       expeditorTotals,
     };
@@ -272,6 +297,34 @@ const Finance: React.FC = () => {
               {filteredData.vatBalance.toFixed(2)} {mainCurrency}
             </div>
             <p className="text-xs text-muted-foreground">{t('vatBalanceOnHand')}</p>
+          </CardContent>
+        </Card>
+
+        {/* NEW: Expenses card */}
+        <Card className="dark:bg-slate-800 dark:border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('expensesTotal')}</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+              {filteredData.expensesTotal.toFixed(2)} {mainCurrency}
+            </div>
+            <p className="text-xs text-muted-foreground">{t('expensesFromCategories')}</p>
+          </CardContent>
+        </Card>
+
+        {/* NEW: Clean Profit (Gross Profit - Expenses) */}
+        <Card className="dark:bg-slate-800 dark:border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('grossProfitMinusExpenses')}</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${filteredData.cleanProfitAfterExpenses >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              {filteredData.cleanProfitAfterExpenses.toFixed(2)} {mainCurrency}
+            </div>
+            <p className="text-xs text-muted-foreground">{t('cleanProfitAfterExpenses')}</p>
           </CardContent>
         </Card>
       </div>
