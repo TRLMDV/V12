@@ -11,6 +11,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { BarChart, DollarSign, TrendingUp, Wallet } from 'lucide-react';
 import { PurchaseOrder, SellOrder, Payment, Product } from '@/types'; // Import types from types file
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Eye } from 'lucide-react';
+import ExpensesListModal from '@/components/ExpensesListModal';
 
 const Finance: React.FC = () => {
   const { purchaseOrders, sellOrders, incomingPayments, outgoingPayments, products, currencyRates, settings, convertCurrency, warehouseMap } = useData();
@@ -19,6 +22,7 @@ const Finance: React.FC = () => {
   const [period, setPeriod] = useState<'allTime' | 'thisYear' | 'thisMonth' | 'thisWeek' | 'today'>('allTime');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
 
   const getPeriodDates = useCallback(() => {
     const now = MOCK_CURRENT_DATE;
@@ -162,6 +166,36 @@ const Finance: React.FC = () => {
 
     const cleanProfitAfterExpenses = grossProfitInMainCurrency - expensesInMainCurrency;
 
+    // NEW: Expenses list items for modal
+    const expensesList = filteredOutgoingPayments
+      .filter(p => {
+        const isVatPayment = (p.method || '').toUpperCase() === 'VAT';
+        if (isVatPayment) return false;
+        if (p.orderId === 0) {
+          const cat = p.paymentCategory || 'manual';
+          return cat !== 'initialCapital' && cat !== 'Withdrawal';
+        } else {
+          return p.paymentCategory === 'fees';
+        }
+      })
+      .map(p => {
+        const amountMain = convertCurrency(p.amount, p.paymentCurrency, mainCurrency);
+        const isManual = p.orderId === 0;
+        const category = isManual ? (p.paymentCategory || 'Manual Expense') : t('fees');
+        const description = isManual
+          ? (p.manualDescription || '')
+          : `${t('orderId')} #${p.orderId} - ${t('fees')}`;
+        return {
+          id: p.id,
+          date: p.date,
+          description,
+          category,
+          amount: p.amount,
+          currency: p.paymentCurrency,
+          amountMain,
+        };
+      });
+
     return {
       totalRevenue: totalRevenueInMainCurrency,
       totalCOGS: totalCOGSInMainCurrency,
@@ -174,6 +208,8 @@ const Finance: React.FC = () => {
       netCashFlow: netCashFlowInMainCurrency,
       expensesTotal: expensesInMainCurrency,            // NEW
       cleanProfitAfterExpenses,                         // NEW
+      // ADD: expenses list for modal
+      expensesList,
       // ADD: return expeditor totals for UI section
       expeditorTotals,
     };
@@ -304,7 +340,12 @@ const Finance: React.FC = () => {
         <Card className="dark:bg-slate-800 dark:border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-700 dark:text-slate-300">{t('expensesTotal')}</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" aria-label={t('view')} onClick={() => setIsExpensesModalOpen(true)}>
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
@@ -392,6 +433,14 @@ const Finance: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* ADD: Expenses list modal */}
+      <ExpensesListModal
+        isOpen={isExpensesModalOpen}
+        onClose={() => setIsExpensesModalOpen(false)}
+        expenses={filteredData.expensesList || []}
+        mainCurrency={mainCurrency}
+      />
     </div>
   );
 };
