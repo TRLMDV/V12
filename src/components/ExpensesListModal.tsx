@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format, parseISO } from 'date-fns';
+import PaginationControls from '@/components/PaginationControls';
 
 type ExpenseItem = {
   id: number;
@@ -31,11 +32,17 @@ interface ExpensesListModalProps {
 }
 
 const ExpensesListModal: React.FC<ExpensesListModalProps> = ({ isOpen, onClose, expenses, mainCurrency }) => {
+  // NEW: pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100;
+
   // NEW: sorting state
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'date', direction: 'ascending' });
 
   const requestSort = (key: SortKey) => {
     setSortConfig(prev => {
+      // Reset to first page when sorting changes
+      setCurrentPage(1);
       if (prev.key === key) {
         return { key, direction: prev.direction === 'ascending' ? 'descending' : 'ascending' };
       }
@@ -78,6 +85,12 @@ const ExpensesListModal: React.FC<ExpensesListModalProps> = ({ isOpen, onClose, 
     return list;
   }, [expenses, sortConfig]);
 
+  // NEW: paginated slice
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedExpenses = useMemo(() => {
+    return sortedExpenses.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedExpenses, startIndex, itemsPerPage]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
@@ -118,8 +131,8 @@ const ExpensesListModal: React.FC<ExpensesListModalProps> = ({ isOpen, onClose, 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedExpenses.length > 0 ? (
-                sortedExpenses.map((e) => (
+              {paginatedExpenses.length > 0 ? (
+                paginatedExpenses.map((e) => (
                   <TableRow key={e.id} className="border-b dark:border-slate-700">
                     <TableCell className="p-3">{format(parseISO(e.date), 'yyyy-MM-dd HH:mm')}</TableCell>
                     <TableCell className="p-3">{e.category}</TableCell>
@@ -141,6 +154,15 @@ const ExpensesListModal: React.FC<ExpensesListModalProps> = ({ isOpen, onClose, 
               )}
             </TableBody>
           </Table>
+        </div>
+
+        <div className="mt-4">
+          <PaginationControls
+            totalItems={sortedExpenses.length}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </DialogContent>
     </Dialog>
